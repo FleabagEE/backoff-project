@@ -75,7 +75,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
-| A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | pending | pending | valid quiet/light rub; below 15 dB median target |
+| A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | pending | quiet/light/normal rub valid; hard knock pending |
 | B gain | pending | pending | pending | pending | pending | unmeasured |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
@@ -107,3 +107,14 @@ Against the recorded A quiet median, the median contrast is **10.19 dB** and P10
 contrast **5.09 dB**. The median is below the 15 dB target, and weaker rub windows
 have less separation. Normal rub and hardest-knock measurements remain pending;
 do not select a final setup or change gain until the A baseline is complete.
+
+### Recorded baseline normal rub
+
+Run `59b4d67412a1`, `A_current_rub_normal`, 2026-10-17T23:39:02Z, same reported
+configuration/gain. Complete 10.00 s, 200 50 ms windows, zero overflow and zero
+digital clipping. ch2 median RMS **0.3778285% FS**, P10 RMS **0.1759558% FS**,
+overall RMS **0.4750260% FS**, maximum peak **2.6062012% FS**. Relative to A quiet,
+median contrast is **10.42 dB**, P10 contrast **3.79 dB**. This take's P10 is lower
+than the light-rub take: stronger intended pressure did not consistently improve
+all windows. Do not assume monotonic rub strength or change gain to explain it;
+preserve the observations and finish the hardest-knock reference next.
