@@ -1,511 +1,435 @@
+﻿"""UM2 collection GUI: fixed 48 kHz / 50 ms FFT, physical input 2."""
+import argparse
+import hashlib
+from importlib.metadata import version
 import json
 from pathlib import Path
-import threading
+import time
+import traceback
+import uuid
 
+import dearpygui.dearpygui as dpg
 import numpy as np
 import pyaudio
 
-import dearpygui.dearpygui as dpg
-
-from models import (
-    train_model,
-    load_model,
-    save_model,
-    get_ear,
-    get_audio_features,
-    preprocess_data,
-    predict,
-    DEFAULT_MODEL_TYPE,
-    MODEL_OPTIONS,
-)
-
-# Ensure metadata directory exists
-Path("metadata/").mkdir(exist_ok=True)
-
-
-# ——— Device Persistence Helpers ———
-
-
-def save_metadata():
-    with open("metadata/metadata.json", "w") as f:
-        json.dump(metadata, f, indent=4)
-
-
-def load_metadata():
-    defaults = {
-        "default_device": "",
-        "data_classes": [],
-        "model_type": DEFAULT_MODEL_TYPE,
-    }
-    try:
-        with open("metadata/metadata.json", "r") as f:
-            return defaults | json.load(f)
-    except FileNotFoundError:
-        return defaults
-
-
-metadata = load_metadata()
-if metadata["model_type"] not in MODEL_OPTIONS:
-    metadata["model_type"] = DEFAULT_MODEL_TYPE
-
-# ——— Global State ———
-
-FFT_Y_AXIS_MAX = 500_000
-
-ear = None  # StreamAnalyzer instance or None
-
-device_list = []  # Available input device names
-device_indices_by_name = {}  # {device_name: system audio device index}
-
-collected_data = {}  # { class_name: [data]}
-record_val = None  # Currently selected class
-is_recording = False  # Whether training data is currently being collected
-
-model = None  # Loaded/trained model
-infer_classes = []
-
-# ——— Initialization ———
-# Populate device_list with input-capable devices
-audio = pyaudio.PyAudio()
-for idx in range(audio.get_device_count()):
-    info = audio.get_device_info_by_index(idx)
-    if info.get("maxInputChannels", 0) > 0:
-        device_list.append(info["name"])
-        device_indices_by_name[info["name"]] = idx
-
-# Determine default device
-default_device = device_list[0] if device_list else None
-laptop_mic = next((name for name in device_list if "MacBook" in name and "Microphone" in name), None)
-if laptop_mic:
-    default_device = laptop_mic
-saved = metadata["default_device"]
-if saved in device_list:
-    default_device = saved
-
-# Instantiate audio reader ('ear') if possible
-if default_device:
-    device_idx = device_indices_by_name[default_device]
-    ear = get_ear(device=device_idx)
-else:
-    ear = None
-
-# data management
-
-
-def set_infer_classes(new_classes):
-    global infer_classes
-    infer_classes = new_classes
-    dpg.configure_item("infer_classes_list", items=infer_classes)
-
-
-def format_collected_data(collected_data):
-    # turns collected data into arrays for training
-    x = []
-    y = []
-    class_names = []
-
-    for i, (key, val) in enumerate(collected_data.items()):
-        x.extend(val)
-        y.extend([i for _ in range(len(val))])
-        class_names.append(key)
-
-    # maybe need to shuffle later
-
-    x = np.array(x)
-    y = np.array(y)
-
-    return x, y, class_names
-
-
-def update_recording_ui():
-    """Keep the recording button and status text in sync with state."""
-    if not dpg.does_item_exist("record_button"):
-        return
-
-    if is_recording:
-        dpg.configure_item("record_button", label="Stop Recording")
-        dpg.set_value("recording_status", f"Collecting data: {record_val}")
-        dpg.configure_item("recording_status", color=(80, 180, 100))
-    elif record_val:
-        dpg.configure_item("record_button", label="Record Data")
-        dpg.set_value("recording_status", f"Ready: {record_val}")
-        dpg.configure_item("recording_status", color=(180, 180, 180))
-    else:
-        dpg.configure_item("record_button", label="Record Data")
-        dpg.set_value("recording_status", "Select a class first")
-        dpg.configure_item("recording_status", color=(180, 180, 180))
-
-
-def set_recording(recording):
-    global is_recording
-    is_recording = bool(recording and record_val)
-    update_recording_ui()
-
-
-# ——— Callback Definitions ———
-def device_select_callback(s, a, u):
-    """Handle user selecting a new audio device."""
-    device_name = a
-    metadata["default_device"] = device_name
-    save_metadata()
-    global ear
-    ear = get_ear(device=device_indices_by_name[device_name])
-
-
-def model_select_callback(s, a, u):
-    metadata["model_type"] = a
-    save_metadata()
-
-
-# Class management callbacks
-
-
-def add_class_callback():
-    cls = dpg.get_value("class_input").strip()
-    add_class(cls)
-
-
-def add_class(cls):
-    if not cls or cls in collected_data:
-        dpg.set_value("class_input", "")
-        return
-    collected_data[cls] = []
-    # Create UI group for the new class
-    with dpg.group(parent="class_list", tag=f"grp_{cls}"):
-        dpg.add_text(f"{cls}: 0", bullet=True, tag=f"cls_{cls}")
-        with dpg.group(horizontal=True):
-            dpg.add_button(label="Select", callback=lambda: select_class_callback(cls))
-            dpg.add_button(label="Clear", callback=lambda: clear_class(cls))
-            dpg.add_button(label="Delete", callback=lambda: delete_class(cls))
-        dpg.add_separator()
-    dpg.set_value("class_input", "")
-
-    # updates the metadata
-    metadata["data_classes"] = list(collected_data.keys())
-    save_metadata()
-
-
-def select_class_callback(cls):
-    """Switch recording target to the chosen class."""
-    global record_val
-    record_val = cls
-    dpg.set_value("selected_class", f"Selected: {cls}")
-    dpg.configure_item("record_button", enabled=True)
-    set_recording(False)
-
-
-def record_button_callback():
-    if not record_val:
-        set_recording(False)
-        return
-    set_recording(not is_recording)
-
-
-def clear_class(cls):
-    collected_data[cls] = []
-    dpg.set_value(f"cls_{cls}", f"{cls}: 0")
-
-
-def clear_all_classes():
-    for k in collected_data.keys():
-        clear_class(k)
-
-
-def delete_class(cls):
-    global record_val
-    collected_data.pop(cls, None)
-    dpg.delete_item(f"grp_{cls}")
-
-    if cls == record_val:
-        record_val = None
-        dpg.set_value("selected_class", f"Selected: {record_val}")
-        dpg.configure_item("record_button", enabled=False)
-        set_recording(False)
-
-    # updates the metadata
-    metadata["data_classes"] = list(collected_data.keys())
-    save_metadata()
-
-
-def delete_all_classes():
-    for k in collected_data.keys():
-        delete_class(k)
-
-
-# Mode switching
-def switch_mode(selected):
-    """Toggle between Train and Infer UI groups."""
-    train_visible = selected == "Train"
-    dpg.configure_item("train_group", show=train_visible)
-    dpg.configure_item("infer_group", show=not train_visible)
-    dpg.set_value("mode", selected)
-
-
-# Training/inference buttons
-def train_model_callback():
-    # makes sure theres some data to even train with (2 class min)
-    data_collected = False
-    n_valid = 0
-    for key, val in collected_data.items():
-        if len(val) > 0:
-            n_valid += 1
-        if n_valid >= 2:
-            data_collected = True
-            break
-
-    dpg.configure_item("train_button", enabled=False)
-    dpg.configure_item("training_status_text", show=True)
-
-    def _background_training():
-        X, y, class_names = format_collected_data(collected_data)
-        X = preprocess_data(X)
-        model_type = dpg.get_value("model_combo")
-
-        # train and set the global model
-        global model
-        model, infer_classes = train_model(X, y, class_names, model_type)
-        set_infer_classes(infer_classes)
-
-        dpg.configure_item("train_button", enabled=True)
-        dpg.configure_item("training_status_text", show=False)
-        switch_mode("Infer")
-
-    if data_collected:
-        threading.Thread(target=_background_training, daemon=True).start()
-
-
-def load_model_callback():
-    dpg.configure_item("load_model_dialog", show=True)
-
-
-def save_model_callback():
-    dpg.configure_item("save_model_dialog", show=True)
-
-
-# File dialog callbacks
-def load_model_dialog_callback(s, a, u):
-    path = a.get("file_path_name", None)
-    print(path)
-
-    def _background_loading():
+from collection import CollectionSession, utc_now
+from models import (get_ear, get_audio_features, preprocess_data, train_model,
+                    predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
+
+
+class App:
+    def __init__(self, session_root='data_sessions', device=None):
+        self.session_root = session_root
+        self.ear = None
+        self.session = None
+        self.pending_take = None
+        self.frames = []
+        self.times = []
+        self.rms = []
+        self.peaks = []
+        self.record_val = None
+        self.is_recording = False
+        self.collected_data = {}
+        self.model = None
+        self.infer_classes = []
+        self.fault = None
+        self.last_fft_time = None
+        self.plot_max = 1000.0
+        self.unsaved = False
+        self.metadata_path = Path('metadata/metadata.json')
         try:
-            p = Path(path)
-            global model
-            model, infer_classes = load_model(p)
-            set_infer_classes(infer_classes)
-        except:
-            print("Loading Failed. Continuing without loading any model.")
-
-    if path:
-        threading.Thread(target=_background_loading, daemon=True).start()
-
-
-def save_model_dialog_callback(s, a, u):
-    path = a.get("file_path_name", None)
-
-    def _background_saving():
-        p = Path(path)
-        global model
-        global infer_classes
-        save_model(model, infer_classes, p)
-
-    if path:
-        threading.Thread(target=_background_saving, daemon=True).start()
-
-
-def frame_callback():
-    # get the live data
-    freqs, amps = get_audio_features(ear)
-
-    # Plot FFT amplitude against its corresponding frequency in Hz.
-    dpg.set_value("fft_series", [list(freqs), list(amps)])
-    if len(freqs) and len(amps):
-        peak_index = int(np.argmax(amps))
-        peak_frequency = float(freqs[peak_index])
-        peak_amplitude = float(amps[peak_index])
-        dpg.set_value(
-            "fft_status",
-            f"Peak: {peak_frequency:.1f} Hz / amplitude {peak_amplitude:.3g}",
-        )
-        dpg.set_axis_limits("x_axis", 0, float(freqs[-1]))
-        dpg.set_axis_limits("y_axis", 0, FFT_Y_AXIS_MAX)
-
-    # recording data to collected data
-    if is_recording and record_val:
-        # TODO: Maybe save the frequency X values for preprocessing?
-        collected_data[record_val].append(amps)
-        dpg.set_value(
-            f"cls_{record_val}", f"{record_val}: {len(collected_data[record_val])}"
-        )
-
-    # live prediction
-    if (dpg.get_value("mode") == "Infer") and model is not None:
-        amps = np.array([amps])
-        X = preprocess_data(amps)
-        y_pred = predict(model, X)[0]
-        if y_pred < len(infer_classes):
-            y_label = infer_classes[y_pred]  # get the name
-            dpg.set_value("pred_text", y_label)
-            dpg.configure_item("infer_classes_list", default_value=y_label)
+            self.metadata = json.loads(self.metadata_path.read_text(encoding='utf-8'))
+        except (OSError, ValueError):
+            self.metadata = {}
+        self.devices = {}
+        pa = pyaudio.PyAudio()
+        try:
+            for index in range(pa.get_device_count()):
+                info = pa.get_device_info_by_index(index)
+                if info['maxInputChannels'] < 2:
+                    continue
+                api = pa.get_host_api_info_by_index(info['hostApi'])['name']
+                # Default DPG font cannot display CJK. API and index remain unambiguous.
+                name = info['name'].encode('ascii', errors='replace').decode('ascii')
+                label = f"[{index}] {api} | {name}"
+                self.devices[label] = dict(index=index, name=info['name'], host_api=api)
+        finally:
+            pa.terminate()
+        selected = None
+        for label, info in self.devices.items():
+            if device == info['index']:
+                selected = label
+                break
+            if (device is None and 'USB Audio CODEC' in info['name']
+                    and info['host_api'] == 'Windows WASAPI'):
+                selected = label
+        self.selected_device = selected
+        dpg.create_context()
+        dpg.configure_app(manual_callback_management=True)
+        dpg.create_viewport(title='FFT Trainer - UM2 input 2', width=1180, height=880)
+        self.build_ui()
+        if selected:
+            self.open_device(selected)
         else:
-            pass
-            raise ValueError("Y label predicted is not in the infer classes")
+            self.message('Select a stereo USB Audio CODEC input. Connect UM2 and restart if absent.')
+        # Default classes are ready for collection; no prior samples are assumed.
+        for name in ('neutral', 'knock', 'rub'):
+            self.add_class(name)
 
-    dpg.set_frame_callback(dpg.get_frame_count() + 1, frame_callback)
+    def message(self, text):
+        print(text, flush=True)
+        dpg.set_value('status', text)
+
+    def build_ui(self):
+        with dpg.window(tag='fft_window', label='Live input / FFT', no_move=True, no_resize=True,
+                        no_close=True, pos=(0, 0), width=740, height=840):
+            dpg.add_combo(list(self.devices), tag='device_combo', label='Device', width=-1,
+                          default_value=self.selected_device or '', callback=self.device_callback)
+            dpg.add_text('Frozen profile: 48000 Hz | stereo int16 -> ch2 | FFT 50 ms / 2400 samples')
+            dpg.add_text('Waiting for audio', tag='audio_status', wrap=690)
+            dpg.add_text('Waiting for FFT', tag='fft_status')
+            dpg.add_checkbox(label='Auto-scale plot (display only)', tag='auto_scale', default_value=True)
+            with dpg.plot(label='FFT amplitude', width=-1, height=-1):
+                dpg.add_plot_axis(dpg.mvXAxis, label='Frequency (Hz)', tag='x_axis')
+                dpg.add_plot_axis(dpg.mvYAxis, label='Amplitude', tag='y_axis')
+                dpg.add_line_series([], [], parent='y_axis', tag='fft_series')
+                dpg.set_axis_limits('x_axis', 0, 24000)
+                dpg.set_axis_limits('y_axis', 0, 1000)
+        with dpg.window(tag='controls', label='Collection / model', no_move=True, no_resize=True,
+                        no_close=True, pos=(740, 0), width=425, height=840):
+            dpg.add_text('Ready', tag='status', wrap=385)
+            dpg.add_text('No session yet', tag='session_path', wrap=385)
+            dpg.add_combo(['Train', 'Infer'], default_value='Train', tag='mode', callback=self.mode_callback)
+            with dpg.group(tag='train_group'):
+                dpg.add_input_text(label='Performer', tag='performer', default_value='A', width=210)
+                dpg.add_input_text(label='Variation / notes', tag='variation', width=210,
+                                   hint='force, position, action')
+                dpg.add_input_float(label='Take limit (s)', tag='take_limit', default_value=25.0,
+                                    min_value=5.0, max_value=60.0, min_clamped=True, max_clamped=True, width=140)
+                with dpg.group(horizontal=True):
+                    dpg.add_input_text(tag='class_input', width=185, hint='new class')
+                    dpg.add_button(label='Add Class', callback=self.add_class_callback)
+                dpg.add_child_window(tag='class_list', height=210, width=-1)
+                dpg.add_text('Selected: none', tag='selected_class')
+                dpg.add_button(label='Record Data', tag='record_button', enabled=False,
+                               callback=self.record_callback)
+                dpg.add_text('Each stopped take is saved automatically.', tag='recording_status', wrap=385)
+                dpg.add_button(label='Export Dataset for B', callback=self.export_callback)
+                dpg.add_separator()
+                dpg.add_text('Optional model training (B can do this later)')
+                dpg.add_combo(MODEL_OPTIONS, tag='model_type', default_value=DEFAULT_MODEL_TYPE, width=220)
+                dpg.add_button(label='Train Model', tag='train_button', callback=self.train_callback)
+            with dpg.group(tag='infer_group', show=False):
+                dpg.add_text('Prediction: ---', tag='prediction')
+                dpg.add_button(label='Save Model', callback=lambda: dpg.show_item('save_model_dialog'))
+                dpg.add_button(label='Load Model', callback=lambda: dpg.show_item('load_model_dialog'))
+            dpg.add_separator()
+            dpg.add_text('Keep gain / mounting fixed. Windows audio enhancements OFF.', wrap=385)
+        for action, callback in [('save', self.save_model_callback), ('load', self.load_model_callback)]:
+            with dpg.file_dialog(tag=f'{action}_model_dialog', show=False, callback=callback,
+                                 width=700, height=420, default_path='.', default_filename='model.model'):
+                dpg.add_file_extension('.model')
+        dpg.set_viewport_resize_callback(self.resize)
+
+    def resize(self, *_):
+        width = dpg.get_viewport_client_width()
+        height = dpg.get_viewport_client_height()
+        left = max(400, width - 430)
+        dpg.configure_item('fft_window', width=left, height=height)
+        dpg.configure_item('controls', pos=(left, 0), width=max(300, width-left), height=height)
+
+    def open_device(self, label):
+        if self.is_recording or self.session is not None:
+            raise ValueError('Restart for a different device/session; keep this dataset configuration fixed.')
+        if self.ear is not None:
+            self.ear.stream_reader.terminate()
+            self.ear = None
+        self.selected_device = label
+        self.fault = None
+        self.last_fft_time = None
+        info = self.devices[label]
+        try:
+            self.ear = get_ear(info['index'])
+            if self.ear.rate != 48000 or self.ear.FFT_window_size != 2400:
+                raise ValueError('Frozen sample rate / FFT size mismatch')
+            self.metadata.update(default_device=info['name'], default_host_api=info['host_api'])
+            self.metadata_path.parent.mkdir(exist_ok=True)
+            self.metadata_path.write_text(json.dumps(self.metadata, indent=2), encoding='utf-8')
+            self.message(f"Input opened: [{info['index']}] {info['host_api']}, ch2. Waiting for fresh audio.")
+        except Exception as exc:
+            if self.ear is not None:
+                self.ear.stream_reader.terminate()
+                self.ear = None
+            self.message(f'Cannot open input: {exc}. Select another entry; rate stays 48000 Hz.')
+
+    def device_callback(self, sender, value):
+        self.open_device(value)
+
+    def add_class_callback(self):
+        name = dpg.get_value('class_input').strip()
+        if not name or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in name):
+            self.message('Use class names with letters, numbers, underscore or hyphen.')
+            return
+        self.add_class(name)
+        dpg.set_value('class_input', '')
+
+    def add_class(self, name):
+        if name in self.collected_data:
+            return
+        self.collected_data[name] = []
+        with dpg.group(parent='class_list', tag=f'class_group_{name}'):
+            dpg.add_text(f'{name}: 0', tag=f'count_{name}')
+            with dpg.group(horizontal=True):
+                dpg.add_button(label='Select', callback=lambda s, a, u: self.select_class(u), user_data=name)
+                dpg.add_button(label='Clear data', callback=lambda s, a, u: self.clear_class(u), user_data=name)
+            dpg.add_separator()
+
+    def select_class(self, name):
+        self.stop_take()
+        self.record_val = name
+        dpg.set_value('selected_class', f'Selected: {name}')
+
+    def clear_class(self, name):
+        self.stop_take()
+        if self.pending_take is not None:
+            raise ValueError('Save pending take first')
+        if self.session:
+            self.session.exclude_class(name)
+        self.collected_data[name] = []
+        dpg.set_value(f'count_{name}', f'{name}: 0')
+        self.message(f'{name} cleared; saved originals are retained as excluded takes.')
+
+    def healthy(self):
+        if self.ear is None or self.fault:
+            return False
+        r = self.ear.stream_reader
+        return (r.last_capture_time is not None and time.monotonic()-r.last_capture_time < 1.0
+                and self.last_fft_time is not None and time.monotonic()-self.last_fft_time < 1.0
+                and self.ear.num_ffts >= 4 and not r.last_error and r.stream.is_active())
+
+    def config(self):
+        info = self.devices[self.selected_device]
+        return dict(device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
+                    backend='PyAudio', physical_input='UM2 INST 2', captured_channels=2,
+                    selected_channel_1_based=2, dtype='int16', sample_rate=48000,
+                    frames_per_capture_block=self.ear.stream_reader.update_window_n_frames,
+                    fft_window_ms=50, fft_window_samples=2400, feature_count=len(self.ear.fft),
+                    feature_source='full FFT amplitude; NOT 512 grouped bins',
+                    feature_pipeline='starter Hamming/rFFT/drop DC/pink weighting/temporal smoothing',
+                    preprocessing='models.preprocess_data; currently identity',
+                    smoothing_length_ms=self.ear.smoothing_length_ms, target_feature_updates_per_second=30,
+                    windows_overlap=True, windows_are_not_independent_trials=True,
+                    windows_input_level=100, audio_enhancements='OFF (operator must verify)',
+                    library_versions={name: version(name) for name in
+                                      ('numpy', 'scipy', 'pyaudio', 'dearpygui', 'scikit-learn')},
+                    source_sha256={name: hashlib.sha256(Path(name).read_bytes()).hexdigest()
+                                   for name in ('models.py', 'src/stream_reader.py',
+                                                'src/stream_analyzer.py', 'src/utils.py', 'visualizer.py')},
+                    hardware_reference='SETUP.md; photograph exact gain and mounting before final data')
+
+    def record_callback(self):
+        if self.pending_take is not None:
+            self.persist_pending()
+        elif self.is_recording:
+            self.stop_take()
+        else:
+            if not self.healthy() or not self.record_val or dpg.get_value('mode') != 'Train':
+                self.message('Select a class and wait for healthy live input before recording.')
+                return
+            if not dpg.get_value('performer').strip():
+                self.message('Enter performer before recording.')
+                return
+            if self.session is None:
+                self.session = CollectionSession(self.config(), self.session_root)
+                dpg.set_value('session_path', str(self.session.path.resolve()))
+                dpg.disable_item('device_combo')
+            self.frames, self.times, self.rms, self.peaks = [], [], [], []
+            self.take_start = time.monotonic()
+            self.take_notes = dict(performer=dpg.get_value('performer').strip(),
+                                   variation=dpg.get_value('variation'), started_utc=utc_now())
+            self.take_limit = max(5, min(60, dpg.get_value('take_limit')))
+            self.status_start = self.ear.stream_reader.status_count
+            self.is_recording = True
+            dpg.configure_item('record_button', label='Stop Recording')
+            self.message(f'Recording {self.record_val}; auto-stop after {self.take_limit:g}s.')
+
+    def stop_take(self, valid=True, reason=''):
+        if not self.is_recording:
+            return
+        self.is_recording = False
+        dpg.configure_item('record_button', label='Record Data')
+        if not self.frames:
+            self.message('No fresh FFT frames captured; no take saved.')
+            return
+        if self.ear.stream_reader.status_count != self.status_start:
+            valid, reason = False, 'PortAudio reported capture status during this take'
+        self.pending_take = dict(take_id=f'take_{uuid.uuid4().hex}',
+                                 class_name=self.record_val, X=np.array(self.frames, dtype=np.float32),
+                                 elapsed_s=self.times, rms_fs=self.rms, peak_fs=self.peaks,
+                                 duration_s=time.monotonic()-self.take_start,
+                                 valid=valid, reason=reason, **self.take_notes)
+        self.persist_pending()
+
+    def persist_pending(self):
+        if self.pending_take is None:
+            return
+        try:
+            path = self.session.save_take(**self.pending_take)
+        except Exception:
+            self.unsaved = True
+            dpg.configure_item('record_button', label='Retry Save', enabled=True)
+            self.message('SAVE FAILED: take retained in memory. Check disk; click Retry Save before closing.')
+            raise
+        if self.pending_take['valid']:
+            name = self.pending_take['class_name']
+            self.collected_data[name].extend(self.pending_take['X'])
+            dpg.set_value(f'count_{name}', f'{name}: {len(self.collected_data[name])}')
+        self.pending_take = None
+        self.unsaved = False
+        self.frames, self.times, self.rms, self.peaks = [], [], [], []
+        dpg.configure_item('record_button', label='Record Data')
+        self.message(f'Saved {path.name}' + (' (excluded: capture problem)' if '.excluded.' in path.name else ''))
+
+    def export_callback(self):
+        self.stop_take()
+        if self.pending_take is not None:
+            self.persist_pending()
+        if self.session is None:
+            self.message('Record at least one take first.')
+            return
+        path = self.session.export()
+        self.message(f'Exported {path.resolve()}')
+
+    def mode_callback(self, sender, value):
+        self.stop_take()
+        dpg.configure_item('train_group', show=value == 'Train')
+        dpg.configure_item('infer_group', show=value == 'Infer')
+
+    def train_callback(self):
+        self.stop_take()
+        names = [name for name, values in self.collected_data.items() if values]
+        if len(names) < 2:
+            self.message('Need saved data from at least two classes to train.')
+            return
+        self.export_callback()
+        X = np.concatenate([self.collected_data[name] for name in names])
+        y = np.concatenate([np.full(len(self.collected_data[name]), i) for i, name in enumerate(names)])
+        self.message('Training...')
+        self.model, self.infer_classes = train_model(preprocess_data(X), y, names, dpg.get_value('model_type'))
+        dpg.set_value('mode', 'Infer')
+        self.mode_callback(None, 'Infer')
+        self.message('Model trained. Dataset remains saved on disk.')
+
+    def save_model_callback(self, sender, data):
+        if self.model is None:
+            raise ValueError('No trained model to save')
+        save_model(self.model, self.infer_classes, Path(data['file_path_name']))
+        self.message('Model saved.')
+
+    def load_model_callback(self, sender, data):
+        self.model, self.infer_classes = load_model(Path(data['file_path_name']))
+        if getattr(self.model, 'n_features_in_', 1200) != 1200:
+            self.model = None
+            raise ValueError('Model feature count does not match this 1200-feature profile')
+        self.message('Model loaded; use only models trained with this exact capture profile.')
+
+    def update(self):
+        if self.ear is None or self.fault:
+            return
+        r = self.ear.stream_reader
+        if r.last_error:
+            raise RuntimeError(r.last_error)
+        if not r.stream.is_active():
+            raise RuntimeError('Audio stream stopped. Stop collecting and reopen input.')
+        previous = self.ear.num_ffts
+        freqs, amps = get_audio_features(self.ear)
+        fresh = self.ear.num_ffts != previous
+        if fresh:
+            self.last_fft_time = time.monotonic()
+            dpg.set_value('fft_series', [freqs.tolist(), amps.tolist()])
+            index = int(np.argmax(amps))
+            dpg.set_value('fft_status', f'Peak: {freqs[index]:.1f} Hz / amplitude {amps[index]:.3g}')
+            self.plot_max = max(float(np.max(amps))*1.2, self.plot_max*0.94, 1000)
+            dpg.set_axis_limits('y_axis', 0, self.plot_max if dpg.get_value('auto_scale') else 500000)
+        healthy = self.healthy()
+        rms = getattr(self.ear, 'pcm_rms', 0)/32768
+        peak = getattr(self.ear, 'pcm_peak', 0)/32768
+        dpg.set_value('audio_status', f"{'LIVE' if healthy else 'WAIT / NO FRESH AUDIO'} | ch2 RMS {100*rms:.3f}% FS | "
+                      f'peak {100*peak:.2f}% FS | FFT updates {self.ear.num_ffts} | capture status {r.status_count}')
+        dpg.configure_item('record_button', enabled=self.pending_take is not None or
+                           (healthy and self.record_val is not None and dpg.get_value('mode') == 'Train'))
+        if self.is_recording:
+            if not healthy:
+                self.stop_take(valid=False, reason='Audio stopped or stale')
+                return
+            elapsed = time.monotonic()-self.take_start
+            if elapsed >= self.take_limit:
+                self.stop_take()
+            elif fresh:
+                # Copy immutable snapshots; never record cached FFT or dummy spectra.
+                self.frames.append(np.array(amps, dtype=np.float32, copy=True))
+                self.times.append(elapsed)
+                self.rms.append(rms)
+                self.peaks.append(peak)
+                dpg.set_value('recording_status', f'{self.record_val}: {elapsed:.1f}s / '
+                              f'{self.take_limit:g}s | {len(self.frames)} new FFT frames')
+        if fresh and healthy and dpg.get_value('mode') == 'Infer' and self.model is not None:
+            label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
+            dpg.set_value('prediction', 'Prediction: ' + self.infer_classes[label])
+
+    def run(self, seconds=None):
+        dpg.setup_dearpygui()
+        dpg.show_viewport()
+        self.resize()
+        start = time.monotonic()
+        next_update = start
+        try:
+            while dpg.is_dearpygui_running():
+                # Keep widget callbacks and audio/FFT UI work on one main thread.
+                for job in dpg.get_callback_queue() or []:
+                    try:
+                        dpg.run_callbacks([job])
+                    except Exception as exc:
+                        traceback.print_exc()
+                        self.message(f'Action failed: {exc}')
+                now = time.monotonic()
+                if now >= next_update:
+                    try:
+                        self.update()
+                    except Exception as exc:
+                        traceback.print_exc()
+                        self.fault = str(exc)
+                        self.stop_take(valid=False, reason=str(exc))
+                        self.message(f'Capture paused: {exc}. Restart after resolving the problem.')
+                    next_update = now + 1/30
+                dpg.render_dearpygui_frame()
+                if seconds is not None and now-start >= seconds:
+                    break
+        finally:
+            try:
+                self.stop_take()
+                if self.pending_take is not None:
+                    self.persist_pending()
+                if self.session and self.session.take_paths():
+                    self.export_callback()
+            finally:
+                if self.ear:
+                    self.ear.stream_reader.terminate()
+                dpg.destroy_context()
+        print(f'GUI stopped; FFT updates={self.ear.num_ffts if self.ear else 0}', flush=True)
 
 
-# Resize handler
-def on_vp_resize(s, a):
-    W, H = dpg.get_viewport_width(), dpg.get_viewport_height()
-    w2 = int(W * .95 * 0.7)
-    h2 = .95 * H
-    # Position and size windows dynamically
-    dpg.configure_item("fft_vis", pos=(0, 0), width=w2, height=h2)
-    dpg.configure_item("ctrl_win", pos=(w2, 0), width=W - w2, height=h2)
-    if dpg.does_item_exist("recording_status"):
-        dpg.configure_item("recording_status", wrap=max(140, W - w2 - 24))
+def main():
+    import sys
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(errors='backslashreplace')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--device', type=int, help='explicit PyAudio input index (normally auto-select WASAPI USB Audio CODEC)')
+    parser.add_argument('--session-root', default='data_sessions')
+    parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
+    args = parser.parse_args()
+    App(args.session_root, args.device).run(args.smoke_seconds)
 
 
-# ——— UI Construction ———
-
-dpg.create_context()
-dpg.create_viewport(title="FFT Trainer", width=800, height=600)
-
-# Menu bar for device selection
-with dpg.viewport_menu_bar():
-    with dpg.menu(label="Options"):
-        dpg.add_combo(
-            items=device_list,
-            label="Device",
-            tag="device_combo",
-            default_value=default_device,
-            callback=device_select_callback,
-            width=300,
-        )  # TODO: ADD A CALLBACK
-
-# FFT Visualization window
-with dpg.window(
-    tag="fft_vis", label="FFT Spectrum", no_move=True, no_resize=True, no_collapse=True
-):
-    dpg.add_text("Real-time FFT Signal", bullet=True)
-    dpg.add_text("Waiting for microphone data...", tag="fft_status")
-    with dpg.plot(label="FFT Plot", height=-1, width=-1):
-        dpg.add_plot_axis(dpg.mvXAxis, tag="x_axis", label="Frequency (Hz)")
-        dpg.add_plot_axis(dpg.mvYAxis, tag="y_axis", label="Amplitude")
-        dpg.set_axis_limits("y_axis", 0, FFT_Y_AXIS_MAX)
-        dpg.add_line_series([], [], label="FFT", parent="y_axis", tag="fft_series")
-
-# Control window with Train/Infer groups
-with dpg.window(
-    tag="ctrl_win", label="Controls", no_move=True, no_resize=True, no_collapse=True
-):
-    # Mode switch combo
-    dpg.add_text("Mode:")
-    dpg.add_combo(
-        items=["Train", "Infer"],
-        default_value="Train",
-        tag="mode",
-        callback=lambda s, a, u: switch_mode(a),
-    )
-    dpg.add_separator()
-
-    # Training UI group
-    with dpg.group(tag="train_group"):
-        dpg.add_text("Model:")
-        dpg.add_combo(
-            items=MODEL_OPTIONS,
-            default_value=metadata["model_type"],
-            tag="model_combo",
-            callback=model_select_callback,
-            width=-1,
-        )
-        dpg.add_separator()
-        with dpg.group(horizontal=True):
-            dpg.add_input_text(tag="class_input")
-            dpg.add_button(label="Add Class", callback=add_class_callback)
-        dpg.add_separator()
-        dpg.add_text("Classes & Data:", bullet=True)
-        dpg.add_child_window(tag="class_list", width=-1, height=200)
-        with dpg.group(horizontal=True):
-            dpg.add_button(label="Clear All", callback=delete_all_classes)
-            dpg.add_button(label="Delete All", callback=clear_all_classes)
-        dpg.add_separator()
-        dpg.add_text(f"Selected: {record_val}", tag="selected_class")
-        dpg.add_button(
-            label="Record Data",
-            tag="record_button",
-            enabled=False,
-            callback=record_button_callback,
-        )
-        dpg.add_text(
-            "Select a class first",
-            tag="recording_status",
-            color=(180, 180, 180),
-            wrap=220,
-        )
-        with dpg.group(horizontal=True):
-            dpg.add_button(
-                label="Train Model", tag="train_button", callback=train_model_callback
-            )
-            dpg.add_text("Training...", tag="training_status_text", show=False)
-
-    # Inference UI group
-    with dpg.group(tag="infer_group", show=False):
-        with dpg.group(horizontal=True):
-            dpg.add_button(
-                label="Save Model", callback=save_model_callback, tag="btn_save"
-            )
-            dpg.add_button(
-                label="Load Model", callback=load_model_callback, tag="btn_load"
-            )
-        dpg.add_text("Classes:", bullet=True)
-        dpg.add_listbox(
-            items=infer_classes,
-            tag="infer_classes_list",
-            num_items=5,
-            default_value="sss",
-        )
-        with dpg.group(horizontal=True):
-            dpg.add_text("Prediction: ")
-            dpg.add_text("---", tag="pred_text")
-
-# File dialogs
-with dpg.file_dialog(
-    tag="load_model_dialog",
-    show=False,
-    callback=load_model_dialog_callback,
-    width=700,
-    height=400,
-    modal=True,
-    default_path=".",
-    label="Choose Model to Load",
-):
-    dpg.add_file_extension(".model")
-
-with dpg.file_dialog(
-    tag="save_model_dialog",
-    show=False,
-    callback=save_model_dialog_callback,
-    label="Choose Save Location",
-    width=700,
-    height=400,
-    modal=True,
-    default_filename="model",
-    file_count=1,
-    default_path=".",
-):
-    dpg.add_file_extension(".model")
-
-# Setup callbacks and start
-dpg.set_viewport_resize_callback(on_vp_resize)
-dpg.set_frame_callback(1, frame_callback)
-on_vp_resize(None, None)  # initial layout
-
-# loading initial dataclasses
-for c in metadata["data_classes"]:
-    add_class(c)
-
-dpg.setup_dearpygui()
-dpg.show_viewport()
-dpg.start_dearpygui()
-dpg.destroy_context()
+if __name__ == '__main__':
+    main()

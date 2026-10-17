@@ -31,7 +31,10 @@ class StreamAnalyzer:
         n_frequency_bins    = 51,
         verbose   = False,
         height    = 450,
-        window_ratio = 24/9):
+        window_ratio = 24/9,
+        channels = 1,
+        input_channel = 0,
+        allow_fallback = True):
 
         self.n_frequency_bins = n_frequency_bins
         self.rate = rate
@@ -45,8 +48,12 @@ class StreamAnalyzer:
                 device  = device,
                 rate    = rate,
                 updates_per_second  = updates_per_second,
-                verbose = verbose)
-        except:
+                verbose = verbose,
+                channels = channels,
+                input_channel = input_channel)
+        except Exception:
+            if not allow_fallback:
+                raise
             from stream_reader import StreamReaderSoundDevice
             self.stream_reader = StreamReaderSoundDevice(
                 device  = device,
@@ -119,13 +126,23 @@ class StreamAnalyzer:
 
     def update_features(self, n_bins = 3):
 
-        latest_data_window = self.stream_reader.data_buffer.get_most_recent(self.FFT_window_size)
+        reader = self.stream_reader
+        if hasattr(reader, 'buffer_lock'):
+            with reader.buffer_lock:
+                latest_data_window = reader.data_buffer.get_most_recent(self.FFT_window_size).copy()
+                reader.new_data = False
+        else:
+            latest_data_window = reader.data_buffer.get_most_recent(self.FFT_window_size).copy()
+            reader.new_data = False
+        self.pcm_rms = float(np.sqrt(np.mean(latest_data_window.astype(np.float64) ** 2)))
+        self.pcm_peak = float(np.max(np.abs(latest_data_window)))
 
         self.fft = getFFT(latest_data_window, self.rate, self.FFT_window_size, log_scale = self.log_features)
         #Equalize pink noise spectrum falloff:
         self.fft = self.fft * self.power_normalization_coefficients
         self.num_ffts += 1
-        self.fft_fps  = self.num_ffts / (time.time() - self.stream_reader.stream_start_time)
+        # Windows wall-clock resolution can give identical times on the first update.
+        self.fft_fps = self.num_ffts / max(1e-9, time.time() - self.stream_reader.stream_start_time)
 
         if self.smoothing_length_ms > 0:
             self.feature_buffer.append_data(self.fft)
@@ -155,7 +172,6 @@ class StreamAnalyzer:
 
             self.update_features()
             self.update_rolling_stats()
-            self.stream_reader.new_data = False
 
             self.frequency_bin_energies = np.nan_to_num(self.frequency_bin_energies, copy=True)
             if self.apply_frequency_smoothing:

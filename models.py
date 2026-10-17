@@ -24,7 +24,11 @@ def get_ear(device: int) -> StreamAnalyzer:
     Returns:
         StreamAnalyzer: Class for capture and FFT processing of audio signals.
     """
-    return StreamAnalyzer(device=device, n_frequency_bins=512, FFT_window_size_ms=50)
+    # Frozen UM2 profile: preserve the established 48 kHz / 50 ms FFT pipeline.
+    # Input 2 is the second column of interleaved stereo int16 samples.
+    # Fail explicitly rather than silently switching backend, channel or scale.
+    return StreamAnalyzer(device=device, rate=48000, channels=2, input_channel=1,
+                          allow_fallback=False, n_frequency_bins=512, FFT_window_size_ms=50)
 
 
 def make_dummy_spectrum(

@@ -1,0 +1,41 @@
+{
+  "device_name": "麥克風 (USB Audio CODEC )",
+  "host_api": "Windows WASAPI",
+  "device_index": 15,
+  "backend": "PyAudio",
+  "physical_input": "UM2 INST 2",
+  "captured_channels": 2,
+  "selected_channel_1_based": 2,
+  "dtype": "int16",
+  "sample_rate": 48000,
+  "frames_per_capture_block": 480,
+  "fft_window_ms": 50,
+  "fft_window_samples": 2400,
+  "feature_count": 1200,
+  "feature_source": "full FFT amplitude; NOT 512 grouped bins",
+  "feature_pipeline": "starter Hamming/rFFT/drop DC/pink weighting/temporal smoothing",
+  "preprocessing": "models.preprocess_data; currently identity",
+  "smoothing_length_ms": 50,
+  "target_feature_updates_per_second": 30,
+  "windows_overlap": true,
+  "windows_are_not_independent_trials": true,
+  "windows_input_level": 100,
+  "audio_enhancements": "OFF (operator must verify)",
+  "library_versions": {
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pyaudio": "0.2.14",
+    "dearpygui": "2.0.0",
+    "scikit-learn": "1.7.1"
+  },
+  "source_sha256": {
+    "models.py": "f228cfcbb39643c5dd5c3baf5fb659f9590e15a96a2f238c938a3e1d8e5c94b3",
+    "src/stream_reader.py": "6ed790adc9a3e8851590d249bad77c467dfaa275415b5df39b974099abce8371",
+    "src/stream_analyzer.py": "307d3d1a5d9111f5b118de50a56531bc5273a9205ab90e9a3a8578f691ea941f",
+    "src/utils.py": "d0342f61dac924a4ec8c125239c585357c7e98f34c5f7f9adca51c9af1fc6535",
+    "visualizer.py": "25e2134e7c423ee4ac8b8db4c9b7176abd9091d27de7c629376ea9388db51cb9"
+  },
+  "hardware_reference": "SETUP.md; photograph exact gain and mounting before final data",
+  "schema_version": 1,
+  "created_utc": "2026-10-17T08:34:29.364354+00:00"
+}

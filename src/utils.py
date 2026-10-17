@@ -111,6 +111,6 @@ def get_smoothing_filter(FFT_window_size_ms, filter_length_ms, verbose = 0):
         print("Smoothing buffer contains %d FFT windows (sigma: %.3f) --> min_contribution: %.3f%%" %(buffer_length, filter_sigma, min_fraction))
         print("Filter weights:")
         for i, w in enumerate(filter_weights):
-            print("%02d: %.3f" %(len(filter_weights)-i, w))
+            print("%02d: %.3f" %(len(filter_weights)-i, w.item()))
 
     return filter_weights

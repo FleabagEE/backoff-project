@@ -25,6 +25,7 @@ https://github.com/aiXander/Realtime_PyAudio_FFT/tree/master
 """
 import time
 import sys
+import threading
 
 import numpy as np
 
@@ -53,10 +54,21 @@ class StreamReaderPyAudio:
         device = None,
         rate = None,
         updates_per_second  = 1000,
-        verbose = False):
+        verbose = False,
+        channels = 1,
+        input_channel = 0):
 
         self.rate = rate
         self.verbose = verbose
+        if not 0 <= input_channel < channels:
+            raise ValueError('input_channel must be a zero-based captured channel')
+        self.channels = channels
+        self.input_channel = input_channel
+        self.buffer_lock = threading.Lock()
+        self.num_data_captures = 0
+        self.status_count = 0
+        self.last_capture_time = None
+        self.last_error = None
         self.pa = pyaudio.PyAudio()
 
         #Temporary variables #hacks!
@@ -78,14 +90,19 @@ class StreamReaderPyAudio:
             self.data_capture_delays = deque(maxlen=20)
             self.num_data_captures = 0
 
-        self.stream = self.pa.open(
-            input_device_index=self.device,
-            format = pyaudio.paInt16,
-            channels = 1,
-            rate = self.rate,
-            input=True,
-            frames_per_buffer = self.update_window_n_frames,
-            stream_callback=self.non_blocking_stream_read)
+        try:
+            self.stream = self.pa.open(
+                input_device_index=self.device,
+                format = pyaudio.paInt16,
+                channels = self.channels,
+                rate = self.rate,
+                input=True,
+                frames_per_buffer = self.update_window_n_frames,
+                stream_callback=self.non_blocking_stream_read,
+                start=False)
+        except Exception:
+            self.pa.terminate()
+            raise
 
         print("\n##################################################################################################")
         print("\nDefaulted to using first working mic, Running on:")
@@ -93,20 +110,30 @@ class StreamReaderPyAudio:
         print("\n##################################################################################################")
         print('Recording from %s at %d Hz\nUsing (non-overlapping) data-windows of %d samples (updating at %.2ffps)'
             %(self.info["name"],self.rate, self.update_window_n_frames, self.updates_per_second))
+        print('Capturing %d channels; selected channel %d (1-based), int16'
+              % (self.channels, self.input_channel + 1), flush=True)
 
     def non_blocking_stream_read(self, in_data, frame_count, time_info, status):
         if self.verbose:
             start = time.time()
 
+        if status:
+            self.status_count += 1
         if self.data_buffer is not None:
-            self.data_buffer.append_data(np.frombuffer(in_data, dtype=np.int16))
-            self.new_data = True
+            samples = np.frombuffer(in_data, dtype=np.int16).reshape(-1, self.channels)
+            if len(samples) != self.update_window_n_frames:
+                self.last_error = 'Unexpected capture block size: %d' % len(samples)
+                return None, pyaudio.paAbort
+            with self.buffer_lock:
+                self.data_buffer.append_data(samples[:, self.input_channel])
+                self.new_data = True
+                self.num_data_captures += 1
+                self.last_capture_time = time.monotonic()
 
         if self.verbose:
-            self.num_data_captures += 1
             self.data_capture_delays.append(time.time() - start)
 
-        return in_data, pyaudio.paContinue
+        return None, pyaudio.paContinue
 
     def stream_start(self, data_windows_to_buffer = None):
         self.data_windows_to_buffer = data_windows_to_buffer
@@ -119,8 +146,8 @@ class StreamReaderPyAudio:
         self.data_buffer = NPDataBuffer(self.data_windows_to_buffer, self.update_window_n_frames)
 
         print("\n-- Starting live audio stream...\n")
-        self.stream.start_stream()
         self.stream_start_time = time.time()
+        self.stream.start_stream()
 
     def terminate(self):
         print("Sending stream termination command...")
@@ -156,7 +183,7 @@ class StreamReaderPyAudio:
 
             stream = self.pa.open(
                 format = pyaudio.paInt16,
-                channels = 1,
+                channels = self.channels,
                 input_device_index=device,
                 frames_per_buffer=self.update_window_n_frames,
                 rate = rate,

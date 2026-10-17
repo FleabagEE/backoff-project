@@ -1,5 +1,10 @@
 # Piezo Vibration Classification Starter
 
+This checkout includes the team's UM2 data-collection repair: fixed 48000 Hz,
+stereo capture selecting input 2, continuous GUI updates, and per-take autosave.
+Start with [SETUP.md](SETUP.md) for collection and [HANDOFF_B.md](HANDOFF_B.md)
+for saved dataset format and model-training handoff. Run `uv run visualizer.py`.
+
 ## Overview
 
 This course starter lets you collect examples of vibrations, train a classifier, and run live inference on a laptop. A piezo sensor connected to the laptop's audio input acts as a contact microphone. A Dear PyGui desktop application calculates and displays FFT features, records labeled examples, trains a scikit-learn model, and shows predictions.
@@ -70,7 +75,9 @@ Or with the virtual environment active:
 python visualizer.py
 ```
 
-Choose the input device connected to the piezo sensor. The application remembers the selected device between sessions.
+Choose the verified USB Audio CODEC / Windows WASAPI entry. The application shows
+device index and host API, and prefers that endpoint on startup. This checkout
+requires stereo int16 input at 48000 Hz and selects the second channel.
 
 ## Use the application
 
@@ -92,12 +99,15 @@ Collect all classes with the same sensor mounting, input gain, and object setup.
 
 1. The laptop audio input captures mono samples from the piezo sensor.
 2. `StreamAnalyzer` divides the stream into windows and calculates FFT amplitudes.
-3. `get_audio_features()` returns 512 frequency bins for visualization and data collection.
+3. `get_audio_features()` returns the full FFT amplitude vector: 1200 features at
+   48000 Hz / 50 ms. The 512 auxiliary grouped bins are not used for model input.
 4. `preprocess_data()` prepares each feature vector; the starter currently returns it unchanged.
 5. The selected scikit-learn classifier learns from the labeled vectors.
 6. The same feature pipeline feeds the model during live laptop inference.
 
-The graph uses a fixed maximum amplitude of `500000` to make signal levels easier to compare. Input devices may have different sample rates, gains, and analog conditioning, so data may not transfer directly between setups.
+The graph auto-scales by default (display only); disabling Auto-scale uses the
+original maximum of `500000`. Capture settings are frozen for the team's UM2;
+gain and mounting changes can still invalidate data collected under another setup.
 
 ## Customize the starter
 
@@ -132,7 +142,11 @@ The export creates model code only. Your ESP32 firmware must separately sample t
 
 ## Test and verify
 
-This starter does not currently include an automated test suite. For a functional check, launch the application, confirm the selected input produces a changing FFT plot, record two classes, train a model, and verify that **Infer** displays predictions.
+Run `uv run python -m unittest -v test_collection` for capture/export regression
+checks. For a hardware check, launch the application and confirm live FFT updates
+and response to board knocks/rubs. Record a short take, stop and export; verify
+the session folder contains `takes.csv`, take archives and `dataset.npz` before
+collecting final data. See SETUP.md for the full collection workflow.
 
 ## Troubleshooting
 
