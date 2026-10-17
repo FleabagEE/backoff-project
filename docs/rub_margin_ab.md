@@ -75,7 +75,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
-| A current | pending | pending | pending | pending | pending | unmeasured |
+| A current | 0.1137944 | pending | pending | pending | pending | quiet valid; other conditions pending |
 | B gain | pending | pending | pending | pending | pending | unmeasured |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
@@ -83,3 +83,16 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 Recommendation and final ranges remain pending. If target is unattainable, document
 the best measured compromise and the residual light-rub false-negative risk for B;
 do not change feature processing or fabricate a passing margin.
+
+### Recorded baseline quiet
+
+Run `3f3a26acbad8`, `A_current_quiet`, 2026-10-17T23:12:44Z:
+WASAPI USB Audio CODEC index 15, 48000 Hz/stereo int16, gain note `current`.
+Measured 10.00 s after 1 s warmup, 200 complete 50 ms RMS windows, zero overflow
+blocks and zero digital clipping. ch2 median RMS **0.1137944% FS**, P10 RMS
+**0.1118998% FS**, overall RMS **0.1141081% FS**, maximum peak **0.6744385% FS**.
+The median is the quiet reference for configuration A, not a mixed-condition take.
+At this quiet level a 15 dB median light-rub contrast corresponds to approximately
+**0.640% FS** light-rub median RMS. Gain position/photo is still unreported; do not
+adjust it before the remaining A runs. Raw interval and run-summary CSVs are in
+`measurements/rub_ab_intervals.csv` and `measurements/rub_ab_summary.csv`.
