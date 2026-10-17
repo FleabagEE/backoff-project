@@ -118,3 +118,12 @@ median contrast is **10.42 dB**, P10 contrast **3.79 dB**. This take's P10 is lo
 than the light-rub take: stronger intended pressure did not consistently improve
 all windows. Do not assume monotonic rub strength or change gain to explain it;
 preserve the observations and finish the hardest-knock reference next.
+
+### Excluded baseline hard-knock attempt (no action)
+
+Run `a1d1fb3d0adf`, `A_current_knock_hard`, 2026-10-17T23:41:53Z: A reported
+forgetting to knock. Capture completed, but the physical condition was not performed.
+**Exclude this run from hard-knock headroom comparisons**, regardless of its
+`complete=True` capture flag. The recorded ch2 peak 0.5798340% FS is background,
+not the hardest-knock level. Preserve the original CSV rows. Retry at unchanged
+gain under label `A_current_knock_hard_retry1`; all earlier valid quiet/rub runs remain valid.

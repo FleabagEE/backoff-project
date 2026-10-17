@@ -1,0 +1,2 @@
+run_id,label,exclude_from,reason
+a1d1fb3d0adf,A_current_knock_hard,hard_knock_comparison,Operator reported forgetting to knock; capture complete but physical condition not performed
