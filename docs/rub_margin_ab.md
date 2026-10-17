@@ -76,7 +76,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
-| B gain | pending | pending | pending | pending | pending | unmeasured |
+| B gain | pending | pending | pending | pending | step 1: 37.7319; step 2: 76.8188 | step 2 exceeds 70%; backoff candidate pending |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
@@ -157,3 +157,18 @@ is another approximately 5 degrees clockwise (`A_plus_15deg` total), label
 `B_gain_step2_knock_hard`, followed by reviewing its strongest peak before any
 further gain increase. If step 1 CLIP flashed, do not advance: report it and back
 off. Quiet/rub at candidate gain remain unmeasured; no margin improvement is assumed.
+
+### Gain candidate B, step 2 hard knocks (over headroom target)
+
+Run `0026f6ee6edf`, `B_gain_step2_knock_hard`, 2026-10-17T23:51:54Z,
+gain note `A_plus_15deg`. Complete 10.00 s, 200 windows, zero overflow and zero
+digital clipping. ch2 maximum peak **76.8188477% FS**, overall RMS **6.7506865% FS**,
+median 50 ms RMS **1.9398860% FS**, P10 **0.3379431% FS**. CLIP LED status remains
+unreported. **This setting exceeds the 70% FS hardest-knock target** and is not
+accepted as the candidate gain despite zero digital clipping.
+
+Next back off approximately 3 degrees counterclockwise from step 2, between its
+position and step 1 (nominal `A_plus_12deg`). Repeat the same hard-knock condition
+as `B_gain_step3_knock_hard`. Operator angles and hand force are approximate:
+measured repeated peaks, not angle interpolation, decide acceptance. Photograph
+the eventual chosen gain and remeasure quiet/rub there before comparing margins.
