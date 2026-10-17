@@ -143,3 +143,17 @@ knock technique/location. Start B step 1 at approximately 10 degrees clockwise f
 a photographed/tape-marked A position, and record it as `B_gain_step1_knock_hard`.
 Angle is an operator reference, not a predicted gain in dB. Do not raise gain again
 until reviewing that run; measure quiet and rub anew at the eventual gain candidate.
+
+### Gain candidate B, step 1 hard knocks
+
+Run `7dbe2e9845d7`, `B_gain_step1_knock_hard`, 2026-10-17T23:48:59Z,
+gain note `A_plus_10deg`. Complete 10.00 s, 200 windows, zero overflow and zero
+digital clipping. ch2 maximum peak **37.7319336% FS**, overall RMS **6.1847492% FS**,
+median 50 ms RMS **1.4063508% FS**, P10 **0.1197435% FS**. CLIP LED status has
+not yet been reported; do not infer it from zero digital endpoint clipping.
+
+This measured peak is below 70% FS. If A confirms no CLIP flash, next candidate
+is another approximately 5 degrees clockwise (`A_plus_15deg` total), label
+`B_gain_step2_knock_hard`, followed by reviewing its strongest peak before any
+further gain increase. If step 1 CLIP flashed, do not advance: report it and back
+off. Quiet/rub at candidate gain remain unmeasured; no margin improvement is assumed.
