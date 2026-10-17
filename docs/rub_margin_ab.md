@@ -75,7 +75,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
-| A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | pending | quiet/light/normal rub valid; hard knock pending |
+| A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain | pending | pending | pending | pending | pending | unmeasured |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
@@ -127,3 +127,19 @@ forgetting to knock. Capture completed, but the physical condition was not perfo
 `complete=True` capture flag. The recorded ch2 peak 0.5798340% FS is background,
 not the hardest-knock level. Preserve the original CSV rows. Retry at unchanged
 gain under label `A_current_knock_hard_retry1`; all earlier valid quiet/rub runs remain valid.
+
+### Valid baseline hardest-knock retry
+
+Run `eda35a192c78`, `A_current_knock_hard_retry1`, 2026-10-17T23:45:37Z:
+complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 maximum
+peak **22.9675293% FS**, overall RMS **1.9215047% FS**, median 50 ms RMS
+**0.5790114% FS**, P10 **0.1598713% FS**. A confirmed CLIP did not flash.
+This supersedes the missed-action attempt for the A hardest-knock comparison.
+
+Configuration A is fully measured. Light-rub median contrast is 10.19 dB (P10
+5.09 dB), below the 15 dB target; strongest reported knock leaves headroom relative
+to 70% FS. Next measure a modest gain increase, one step at a time, using the same
+knock technique/location. Start B step 1 at approximately 10 degrees clockwise from
+a photographed/tape-marked A position, and record it as `B_gain_step1_knock_hard`.
+Angle is an operator reference, not a predicted gain in dB. Do not raise gain again
+until reviewing that run; measure quiet and rub anew at the eventual gain candidate.
