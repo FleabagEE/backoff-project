@@ -5,6 +5,15 @@ model training, energy gate, temporal decisions and trial recorder; C owns slide
 Software collection workflow is ready. Hardware is a **candidate configuration**
 until gain photos, board dimensions, sensor coordinates and pad details are filled.
 
+**Current work:** A will collect ALL data solo. First complete the operator-guided
+rub-margin A/B procedure in [docs/rub_margin_ab.md](docs/rub_margin_ab.md). New targets
+are light-rub median >=15 dB above quiet if achievable and hardest knock <=70% FS.
+The older 10 dB / 80% guidance below is historical and superseded for this comparison.
+`data_sessions/20261017_013429_24eda79c/` is **PILOT ONLY**, not final or holdout data;
+keep it intact and exclude it from final training/validation. The three-person
+collection schedule below will be replaced by a solo variation plan after hardware
+is frozen. Do not collect final takes yet.
+
 ## Start here (Windows cmd)
 
 Close older FFT Trainer windows and diagnostic scripts, then run from this repo:

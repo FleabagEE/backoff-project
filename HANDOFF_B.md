@@ -1,5 +1,12 @@
 # B: train from A's saved FFT sessions
 
+**Session status update:** `data_sessions/20261017_013429_24eda79c/` is **pilot only**
+(four takes, 2133 feature rows). Preserve it for diagnostics; exclude it from final
+training/validation and holdout evaluation. A holds all hardware and will collect
+the final training and held-out takes solo after a rub-margin A/B comparison.
+No final/holdout sessions exist yet. See `docs/rub_margin_ab.md` for the current
+physical comparison; measurements and the final hardware choice are still pending.
+
 ## Capture profile
 
 Run `uv run visualizer.py`. The repaired capture uses UM2 **INST 2**, USB Audio

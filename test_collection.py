@@ -14,6 +14,68 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / 'src'))
 from collection import CollectionSession, atomic_npz, export_session
 from stream_reader import StreamReaderPyAudio
 from stream_analyzer import StreamAnalyzer
+from device_check import RmsWindows, append_summary
+
+
+class DiagnosticLevelTests(unittest.TestCase):
+    def test_rms_windows_span_capture_block_boundaries(self):
+        windows = RmsWindows(rate=1000, channels=2)
+        samples = np.column_stack([np.zeros(100), np.r_[np.full(50, 0.1), np.full(50, 0.3)]])
+        for part in (samples[:17], samples[17:81], samples[81:]):
+            windows.append(part)
+        values = np.asarray(windows.values)
+        np.testing.assert_allclose(values[:, 1], [0.1, 0.3])
+        self.assertAlmostEqual(float(np.median(values[:, 1])), 0.2)
+        self.assertAlmostEqual(float(np.percentile(values[:, 1], 10)), 0.12)
+
+    def test_measurement_discards_warmup_and_saves_complete_summary(self):
+        import argparse
+        import csv
+        import device_check
+
+        class FakeStream:
+            samplerate = 48000
+            def __init__(self, **kwargs):
+                self.cursor = 0
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def read(self, size):
+                index = np.arange(self.cursor, self.cursor + size)
+                self.cursor += size
+                right = np.where(index < 2400, 32767, np.where(index < 4800, 3276, 6553))
+                return np.column_stack([np.full(size, 100), right]).astype(np.int16), False
+
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root)/'summary.csv'
+            args = argparse.Namespace(device=15, channels=2, rate=48000, seconds=0.1,
+                interval=0.05, label='synthetic', gain_note='test', warmup_seconds=0.05,
+                csv=str(Path(root)/'intervals.csv'), summary_csv=str(path))
+            with patch.object(device_check.sd, 'query_hostapis', return_value=[{'name': 'fake API'}]), \
+                 patch.object(device_check.sd, 'query_devices', return_value={'name': 'fake', 'hostapi': 0, 'max_input_channels': 2}), \
+                 patch.object(device_check.sd, 'InputStream', FakeStream), contextlib.redirect_stdout(io.StringIO()):
+                device_check.run(args)
+            with path.open(newline='', encoding='utf-8') as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(len(rows), 2)
+            right = rows[1]
+            self.assertEqual(right['complete'], 'True')
+            self.assertEqual(int(right['rms_window_count']), 2)
+            self.assertAlmostEqual(float(right['captured_s']), 0.1)
+            self.assertAlmostEqual(float(right['median_rms_fs']), (3276+6553)/2/32768)
+            self.assertAlmostEqual(float(right['p10_rms_fs']), (0.9*3276+0.1*6553)/32768)
+            self.assertAlmostEqual(float(right['max_peak_fs']), 6553/32768)
+            self.assertEqual(float(right['clip_pct']), 0)
+
+    def test_incompatible_summary_header_does_not_corrupt_existing_file(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root)/'summary.csv'
+            append_summary(path, [{'label': 'original', 'value': 1}])
+            before = path.read_bytes()
+            with self.assertRaises(ValueError):
+                append_summary(path, [{'different': 2}])
+            self.assertEqual(path.read_bytes(), before)
 
 
 class ChannelTests(unittest.TestCase):

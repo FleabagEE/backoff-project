@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 import sys
 import time
+import uuid
 
 import numpy as np
 import sounddevice as sd
@@ -13,6 +14,44 @@ import sounddevice as sd
 
 def dbfs(value):
     return 20 * math.log10(value) if value > 0 else float('-inf')
+
+
+class RmsWindows:
+    """Non-overlapping 50 ms PCM RMS measurements; no FFT/feature changes."""
+    def __init__(self, rate, channels):
+        self.frames = round(rate * 0.05)
+        self.squares = np.zeros(channels)
+        self.count = 0
+        self.values = []
+
+    def append(self, samples):
+        offset = 0
+        while offset < len(samples):
+            size = min(self.frames - self.count, len(samples) - offset)
+            part = samples[offset:offset + size]
+            self.squares += np.sum(part * part, axis=0)
+            self.count += size
+            offset += size
+            if self.count == self.frames:
+                self.values.append(np.sqrt(self.squares / self.frames))
+                self.squares = np.zeros_like(self.squares)
+                self.count = 0
+
+
+def append_summary(path, rows):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = list(rows[0])
+    exists = path.exists() and path.stat().st_size > 0
+    if exists:
+        with path.open(newline='', encoding='utf-8') as handle:
+            if next(csv.reader(handle)) != fields:
+                raise ValueError(f'Summary CSV schema differs: use a new file, not {path}')
+    with path.open('a', newline='', encoding='utf-8') as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        if not exists:
+            writer.writeheader()
+        writer.writerows(rows)
 
 
 def run(args):
@@ -48,11 +87,21 @@ def run(args):
     total_peak = np.zeros(args.channels)
     interval_rms = []
     overflow_count = 0
+    windows = RmsWindows(rate, args.channels)
+    started_utc = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    run_id = uuid.uuid4().hex[:12]
+    target_frames = round(rate * args.seconds)
     try:
         # Open stream before creating CSV: failed devices leave no misleading log.
         with sd.InputStream(device=args.device, samplerate=rate, channels=args.channels,
                             dtype='int16', blocksize=block) as stream:
             print(f'OPENED actual_rate={stream.samplerate:g} Hz; Ctrl+C stops.', flush=True)
+            print(f'WARMUP {args.warmup_seconds:g}s (discarded), then {args.seconds:g}s measurement.', flush=True)
+            remaining = round(rate * args.warmup_seconds)
+            while remaining > 0:
+                size = min(block, remaining)
+                stream.read(size)
+                remaining -= size
             if args.csv:
                 path = Path(args.csv)
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -65,17 +114,19 @@ def run(args):
                     writer.writeheader()
             started_utc = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
             start = time.monotonic()
-            while time.monotonic() - start < args.seconds:
+            print('MEASURING NOW: perform only the condition named in label.', flush=True)
+            while total_n < target_frames:
                 sq = np.zeros(args.channels)
                 peak = np.zeros(args.channels)
                 clipped = np.zeros(args.channels, dtype=np.int64)
                 n = 0
                 overflows = 0
                 # Aggregate ~0.5 s for readable live output and robust transient peaks.
-                target = min(args.interval, args.seconds - (time.monotonic() - start))
-                while n < max(1, int(rate * target)):
-                    data, overflowed = stream.read(block)
+                target = min(max(1, round(rate * args.interval)), target_frames - total_n)
+                while n < target:
+                    data, overflowed = stream.read(min(block, target - n))
                     x = data.astype(np.float64) / 32768.0
+                    windows.append(x)
                     sq += np.sum(x * x, axis=0)
                     peak = np.maximum(peak, np.max(np.abs(x), axis=0))
                     clipped += np.sum((data == -32768) | (data == 32767), axis=0)
@@ -109,15 +160,33 @@ def run(args):
         if output:
             output.close()
         if total_n:
+            complete = total_n == target_frames
             print(f'SUMMARY label={args.label} captured_s={total_n/rate:.2f} '
-                  f'overflow_blocks={overflow_count}')
+                  f'overflow_blocks={overflow_count} complete={complete} '
+                  f'RMS_window_ms=50 window_count={len(windows.values)}')
+            rows = []
             for c in range(args.channels):
                 rms = math.sqrt(total_sq[c] / total_n)
                 med = float(np.median(np.array(interval_rms)[:, c]))
+                median = float(np.median(np.array(windows.values)[:, c])) if windows.values else float('nan')
+                p10 = float(np.percentile(np.array(windows.values)[:, c], 10)) if windows.values else float('nan')
                 print(f'ch{c+1} overall_RMS={100*rms:.4f}% FS ({dbfs(rms):.1f} dBFS) '
                       f'median_interval_RMS={100*med:.4f}% FS '
+                      f'median_window_RMS={100*median:.4f}% FS '
+                      f'p10_window_RMS={100*p10:.4f}% FS '
                       f'max_peak={100*total_peak[c]:.3f}% FS '
                       f'clip={100*total_clip[c]/total_n:.5f}%')
+                rows.append(dict(run_id=run_id, started_utc=started_utc, label=args.label,
+                    gain_note=args.gain_note, device=args.device, name=d['name'],
+                    host_api=info['host_api'], sample_rate=rate, channels=args.channels,
+                    channel=c+1, requested_s=args.seconds, captured_s=total_n/rate,
+                    warmup_s=args.warmup_seconds, complete=complete, rms_window_ms=50,
+                    rms_window_count=len(windows.values), median_rms_fs=median,
+                    p10_rms_fs=p10, overall_rms_fs=rms, max_peak_fs=total_peak[c],
+                    clip_pct=100*total_clip[c]/total_n, overflow_blocks=overflow_count))
+            if args.summary_csv:
+                append_summary(args.summary_csv, rows)
+                print(f'SUMMARY_CSV {args.summary_csv}', flush=True)
 
 
 def main():
@@ -132,9 +201,14 @@ def main():
     parser.add_argument('--interval', type=float, default=0.5)
     parser.add_argument('--label', default='channel_check')
     parser.add_argument('--csv', help='append per-channel interval measurements to this CSV')
+    parser.add_argument('--summary-csv', help='append one run-summary row per channel, including median/P10 of 50 ms RMS')
+    parser.add_argument('--gain-note', default='', help='operator gain/configuration identifier; no hardware settings are changed')
+    parser.add_argument('--warmup-seconds', type=float, default=1.0, help='discard startup audio before the timed measurement (default 1)')
     args = parser.parse_args()
     if args.channels < 1 or args.seconds <= 0 or args.interval <= 0 or (args.rate is not None and args.rate <= 0):
         parser.error('channels, seconds, interval and rate must be positive')
+    if args.warmup_seconds < 0:
+        parser.error('warmup-seconds must not be negative')
     try:
         run(args)
     except (sd.PortAudioError, ValueError, RuntimeError, OSError) as exc:
