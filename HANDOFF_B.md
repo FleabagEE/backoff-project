@@ -1,5 +1,19 @@
 # B: train from A's saved FFT sessions
 
+**FINAL COLLECTION UPDATE — start here:** 43 original takes are collected in
+`data_sessions/20261017_195725_85cb47b5/`. Intended holdout was accidentally saved
+as train. Use ONLY the explicitly corrected exports and QA in
+`handoff/20261017_195725_85cb47b5_review1/`: 36 training takes (19095 rows),
+7 held-out takes (3732 rows), 1200 features. Corrections preserve raw files.
+See that folder's README for critical leakage and performance notes. The old
+pending/no-final-data statements below are historical and superseded.
+
+QA baseline grouped window accuracy 51.51%, holdout 70.18%; every held-out take
+contains all three predicted labels before gating/smoothing. Not bakeoff-ready.
+Ten rub take medians are at/below quiet P95. B must validate event/neutral,
+energy/temporal handling and real SPACE trials. Avoid high gates that erase rub.
+Holdout has been evaluated once by this fixed QA recipe; do not tune on it.
+
 **CURRENT FREEZE:** A confirmed original gain restored, no CLIP flash, board
 17 x 27 cm directly on table with no pads. Actions ON separate bandages:
 nearer pickup=RUB, farther=KNOCK; sensor restraint untouched. Firm-rub median

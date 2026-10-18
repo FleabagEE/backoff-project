@@ -1,0 +1,8 @@
+take_id,split,reason
+take_b4099ea6b97141b59f378a5709e60800,holdout,Operator recorded planned holdout after training; notes identify holdout but GUI split remained train
+take_b6d9515fb51e4804b72f4020c7145aa7,holdout,Operator recorded planned holdout after training; notes identify holdout but GUI split remained train
+take_8aecbb64d7d84ea9a575ca45e4922e72,holdout,Operator recorded planned holdout after training; notes identify holdout but GUI split remained train
+take_c047469b21a5462e9c0112b7df0d6675,holdout,Operator recorded planned holdout after training; notes identify holdout but GUI split remained train
+take_ca75d71230b84a0988de718078d8c069,holdout,Operator recorded planned holdout after training; notes identify holdout but GUI split remained train
+take_5caaa3a6eef64edd9ff847c5663971c7,holdout,Extra holdout neutral take retained; same planned action and explicit holdout notes
+take_cbfd4a5f97544f84aba0dd4a8456af4d,holdout,Repeated holdout neutral take retained; same planned action and explicit holdout notes

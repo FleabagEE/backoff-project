@@ -1,5 +1,31 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+**AUTHORITATIVE FINAL DATA UPDATE (supersedes pending-collection text below):**
+43 original takes collected, all A, in `data_sessions/20261017_195725_85cb47b5/`.
+Actual live GUI autosave/counters worked. Intended holdout notes were entered but
+Data split stayed train. Seven explicit take-ID corrections are applied ONLY in
+derived exports, preserving raw NPZ/logs. Use
+`handoff/20261017_195725_85cb47b5_review1/README.md` as current B/Claude handoff:
+36 train takes (10 knock/10 rub/16 neutral; 19095 rows), 7 holdout
+(2 knock/2 rub/3 neutral; 3732 rows), all 1200 features. Extra holdout neutral and
+20.297 s neutral drag take retained. Never train from current GUI/raw split tags.
+
+`qa_dataset.py` implemented and run: grouped CV by take, log1p/StandardScaler/
+LinearSVC fitted inside folds; holdout excluded from fitting. Grouped window
+accuracy 51.51%; holdout 70.18%. Every held-out take had all three labels in its
+raw predicted set; these are not formal SPACE trials, and reliable bakeoff
+performance is NOT established. Quiet P95=0.2223%FS; 10/12 rub medians at/below it.
+Two training knock peaks reached 74.115/72.763%FS. No automatic exclusion based
+on those flags. See QA.json/CSV for take IDs (actual JSON filename qa_report.json).
+13 regression tests pass, including raw immutability, split correction and
+holdout/fold isolation. No capture/FFT/features changed.
+
+A's capture and software/data handoff portion is ready with documented risks.
+Remaining physical documentation: setup photos, measured sensor/zone coordinates,
+thickness and cable restraint; no stranger/second-table validation. B owns final
+model, gate/smoothing, SPACE recorder and B/C integration. Fresh independent
+trials are needed after model development; do not iterate on the reviewed holdout.
+
 **FREEZE CONFIRMED:** A restored original gain from mark/photo, hardware CLIP did
 not flash, board directly on table without padding. Solo plan is
 `docs/solo_collection.md`: 36 train + 6 holdout takes, all performer A. GUI
