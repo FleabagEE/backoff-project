@@ -77,7 +77,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C OK bandage candidate | 0.1206081 (retry) | pending | pending | pending | pending | stable quiet retry selected; rub/knock pending |
+| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | pending | pending | light-rub target unmet; normal rub/knock pending |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
@@ -267,3 +267,16 @@ rub contrast requires approximately **0.6782% FS** light-rub median RMS.
 Next measure `C_bandage_rub_light` on the bandage at unchanged gain/mount/position,
 using the same naturally light finger pressure as A/B. Patch dimensions, exact
 rubbing face and placement photo still need documenting before hardware freeze.
+
+### C bandage light rub
+
+Run `6428cf75b4f1`, `C_bandage_rub_light`, 2026-10-18T00:43:05Z
+(October 17, 17:43:05 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 median
+RMS **0.2464201% FS**, P10 **0.1568561% FS**, overall RMS **0.8916925% FS**,
+maximum peak **8.2031250% FS**. Against stable C quiet retry, median contrast
+**6.21 dB**, P10 contrast **2.28 dB**. These are below B's 9.21 / 5.23 dB in the
+single recorded light-rub runs and below the 15 dB median target. Higher overall
+RMS/peak does not establish sustained rub separation when median/P10 remain low.
+Do not conclude causality from one uncontrolled hand-performed comparison; document
+the actual bandage face/placement and finish normal rub before deciding the option.
