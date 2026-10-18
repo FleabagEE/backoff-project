@@ -1,5 +1,7 @@
 # Task 1: operator-guided rub margin comparison
 
+> HISTORICAL INTERACTION: current label rub now means fingernail scratch on paper. Old fingertip rub data is superseded for training; preserve it as history. Follow docs/scratch_v2.md (or ../docs/scratch_v2.md from docs) and HANDOFF_B.md for v2.
+
 ## Authoritative correction and decision (latest user instructions)
 
 This section supersedes the historical recommendations below. **C rubs were on

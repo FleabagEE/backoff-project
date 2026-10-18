@@ -1,5 +1,11 @@
 ﻿# Frozen hardware setup and data collection
 
+**CURRENT INTERACTION 2 (supersedes all fingertip-rub instructions below):**
+`rub` now means fingernail scratch on the four-edge-taped printer-paper pad.
+Keep gain A and all capture/FFT processing unchanged. See
+[scratch v2 setup and pending dimensions/photos](docs/scratch_v2.md).
+Old rub data is superseded, raw files preserved. Knock/neutral remain selected.
+
 **FREEZE CONFIRMED BY A:** original gain A restored; hardware CLIP did not flash;
 board directly on table, no padding. Keep this measured configuration unchanged.
 Follow [solo final collection](docs/solo_collection.md) with `uv run visualizer.py --final`.

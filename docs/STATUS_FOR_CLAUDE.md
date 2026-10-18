@@ -1,5 +1,19 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+**CURRENT v2 (October18):** `rub` label now means scratch_nail_paper. Feasibility
+passed: light/normal scratch98.5%/100% of50ms windows above quietP95, vs old73%;
+P10 contrasts4.79/5.90dB vs old-0.18dB. Main benefit is consistency, not median.
+Hard knock44.296%FS/no clip or overflow; signal feasibility only.
+See docs/scratch_v2.md. A recorded11 scratch train takes; explicit later-duplicate
+exclusion selects10 with only2 light. Original take/config/logs unchanged.
+Holdout confirmation modal and evaluation-only8s trial capture implemented;
+trial_replay.py supports B adapter/policy and SET scoring. Real two scratch
+holdout + twentytrial captures, combined QA/replay and v2 ZIP remain pending.
+Old rubs excluded by current QA selection; old knock/neutral retained and drag
+neutral flagged. Previous51.5%/70.2% results are historical, not v2 results.
+All sampling/FFT/features unchanged. Nineteen tests pass; updated GUI requires
+operator live check. Paper pad size3x5cm confirmed; stock/coordinates pending.
+
 **DELIVERY UPDATE:** large binary upload retries stopped at A's request after
 HTTP 408. Remote history through f655944 is unchanged. Only the unpublished data
 commit was removed, with local files retained. Final-session and handoff NPZs

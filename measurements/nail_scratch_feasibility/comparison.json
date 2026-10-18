@@ -1,0 +1,45 @@
+{
+  "run_set": "nail_scratch_feasibility",
+  "purpose": "diagnostic feasibility only; no training data",
+  "channel": 2,
+  "rms_window_ms": 50,
+  "quiet_median_rms_fs": 0.0011853890067666812,
+  "quiet_p95_rms_fs": 0.001235889893388131,
+  "comparisons": [
+    {
+      "condition": "old_rub_normal",
+      "median_rms_fs": 0.0035078188476118325,
+      "p10_rms_fs": 0.0011607890944546862,
+      "median_contrast_db": 9.423525238805217,
+      "p10_contrast_db": -0.18215152041007104,
+      "windows_above_quiet_p95": 146,
+      "window_count": 200,
+      "fraction_above_quiet_p95": 0.73
+    },
+    {
+      "condition": "nail_light",
+      "median_rms_fs": 0.004268972800330098,
+      "p10_rms_fs": 0.002057389838708206,
+      "median_contrast_db": 11.129249848328755,
+      "p10_contrast_db": 4.789113905165611,
+      "windows_above_quiet_p95": 197,
+      "window_count": 200,
+      "fraction_above_quiet_p95": 0.985
+    },
+    {
+      "condition": "nail_normal",
+      "median_rms_fs": 0.0037367868390829947,
+      "p10_rms_fs": 0.002338630608380363,
+      "median_contrast_db": 9.972748588088203,
+      "p10_contrast_db": 5.902014684035571,
+      "windows_above_quiet_p95": 200,
+      "window_count": 200,
+      "fraction_above_quiet_p95": 1.0
+    }
+  ],
+  "knock_peak_pct_fs": 44.2962646484375,
+  "knock_clip_pct": 0.0,
+  "hardware_clip_flashed": false,
+  "verdict": "FEASIBLE",
+  "interpretation": "Light scratch median improvement is modest; low-window floor and above-quiet coverage improve substantially. Signal feasibility only, not classifier or trial-set validation."
+}

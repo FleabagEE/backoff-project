@@ -1,5 +1,7 @@
 # B: start with these corrected datasets
 
+> HISTORICAL INTERACTION: current label rub now means fingernail scratch on paper. Old fingertip rub data is superseded for training; preserve it as history. Follow docs/scratch_v2.md (or ../docs/scratch_v2.md from docs) and HANDOFF_B.md for v2.
+
 **Delivery:** NPZ files are distributed in the cloud ZIP, not this Git folder.
 See root HANDOFF_B.md for the cloud-link placeholder and docs/cloud_archive.json
 for archive size/hash. Code, metadata and QA remain on GitHub. Extract the ZIP

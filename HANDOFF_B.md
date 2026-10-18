@@ -1,6 +1,15 @@
 # B: train from A's saved FFT sessions
 
-**DATA DELIVERY: CLOUD ARCHIVE.** Cloud link: **PENDING — A will paste the link**.
+**CURRENT v2 UPDATE:** interaction label `rub` now means **fingernail scratch on
+paper**, not fingertip bandage rubbing. Old rub feature takes/calibrations and
+old combined train/holdout exports are superseded for training (raws untouched).
+Use docs/scratch_v2.md as the authoritative setup/capture/QA plan. Ten accepted
+scratch training takes exist (eleven raw; later duplicate light take excluded).
+Two confirmed scratch holdout takes and twenty8s trials remain to record.
+Current v2 QA, replay results, ZIP and cloud link are PENDING real captures.
+Neutral drag-object takes stay neutral but are flagged for B's friction review.
+
+**HISTORICAL DATA DELIVERY: CLOUD ARCHIVE.** Cloud link: **PENDING — A will paste the link**.
 GitHub contains code, tests, take logs, configuration, split corrections and QA
 reports only for this final session. Final-session NPZ files and corrected exports
 remain local and are excluded from Git. Already-pushed pilot history is unchanged.

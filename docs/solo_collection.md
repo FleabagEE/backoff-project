@@ -1,5 +1,7 @@
 # Solo final collection: A
 
+> HISTORICAL INTERACTION: current label rub now means fingernail scratch on paper. Old fingertip rub data is superseded for training; preserve it as history. Follow docs/scratch_v2.md (or ../docs/scratch_v2.md from docs) and HANDOFF_B.md for v2.
+
 Frozen measured setup: 17 x 27 cm board directly on table, gain A restored from
 mark/photo (operator confirmed), no hardware CLIP flash during hard-knock test.
 RUB is ON separate bandage nearest pickup; KNOCK ON farther bandage. Never rub

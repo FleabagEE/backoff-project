@@ -1,5 +1,7 @@
 # Zone-check results
 
+> HISTORICAL INTERACTION: current label rub now means fingernail scratch on paper. Old fingertip rub data is superseded for training; preserve it as history. Follow docs/scratch_v2.md (or ../docs/scratch_v2.md from docs) and HANDOFF_B.md for v2.
+
 Board: 17 x 27 cm. A clarified that actions occur ON two separate bandages:
 nearest pickup=RUB, farther=KNOCK. Keep the pickup's mounting bandage untouched.
 This supersedes the bare-board proposal, without revalidating historical C runs.

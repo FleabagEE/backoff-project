@@ -1,5 +1,7 @@
 # Marked-zone check before immediate hardware freeze
 
+> HISTORICAL INTERACTION: current label rub now means fingernail scratch on paper. Old fingertip rub data is superseded for training; preserve it as history. Follow docs/scratch_v2.md (or ../docs/scratch_v2.md from docs) and HANDOFF_B.md for v2.
+
 **LATEST UPDATE:** four runs complete; see `zone_check_results.md`. Operator
 clarified separate bandages themselves are RUB/KNOCK surfaces, superseding the
 bare-board proposal below. Digital criteria pass; keep measured setup fixed.

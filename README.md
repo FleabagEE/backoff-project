@@ -7,6 +7,11 @@ for saved dataset format and model-training handoff. Run `uv run visualizer.py`.
 
 ## Overview
 
+**Current interaction 2:** the compatibility label `rub` means fingernail scratch
+on a taped-flat paper pad. Old fingertip-rub data is superseded for training.
+See [scratch v2](docs/scratch_v2.md) for current setup, holdout/trial recording,
+selection and pending QA. Historical old-rub instructions are not the v2 protocol.
+
 This course starter lets you collect examples of vibrations, train a classifier, and run live inference on a laptop. A piezo sensor connected to the laptop's audio input acts as a contact microphone. A Dear PyGui desktop application calculates and displays FFT features, records labeled examples, trains a scikit-learn model, and shows predictions.
 
 Unlike the other two audio starters, this project does not require an ESP32-S3 to collect data or run the provided application. A trained Linear SVM can be exported as a C++ header for later use in an ESP32 project.
