@@ -1,2 +1,7 @@
 run_id,label,exclude_from,reason
 a1d1fb3d0adf,A_current_knock_hard,hard_knock_comparison,Operator reported forgetting to knock; capture complete but physical condition not performed
+497d965d085f,C_bandage_quiet,board_rub_comparison,C protocol invalid for board rub: rubs contacted pickup or mounting bandage; preserve quiet observation only
+be9668eb7789,C_bandage_quiet_retry1,board_rub_comparison,C protocol invalid for board rub: rubs contacted pickup or mounting bandage; preserve quiet observation only
+6428cf75b4f1,C_bandage_rub_light,board_rub_comparison,Operator confirmed rubbing red pickup or mounting bandage rather than bare board
+b4f282817f1f,C_bandage_rub_normal,board_rub_comparison,Operator confirmed rubbing red pickup or mounting bandage rather than bare board
+2cd2d668ef87,C_bandage_knock_hard,board_rub_comparison,C protocol invalid for board rub; preserve knock observation without treating C as a board-rub validation

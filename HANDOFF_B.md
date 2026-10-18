@@ -5,24 +5,27 @@
 training/validation and holdout evaluation. A holds all hardware and will collect
 the final training and held-out takes solo after a rub-margin A/B comparison.
 No final/holdout sessions exist yet. See `docs/rub_margin_ab.md` for the current
-physical comparison; measurements and the final hardware choice are still pending.
+physical comparison and the authoritative zone-check plan in `docs/zone_check.md`.
 
-**Available-option comparison update:** A baseline light-rub median/P10 contrasts
-10.19/5.09 dB; B raised-gain bare board 9.21/5.23 dB; C OK bandage 6.21/2.28 dB.
-No option meets the 15 dB light-rub target. No other textured material is available;
-closer-sensor trial is skipped because A reports the sensor already close. Current
-provisional recommendation is restore B bare board, preserve step 3 gain, then
-document/recheck before freezing. B hard-knock peak was 47.09% FS, quiet median
-0.1198% FS, light-rub median/P10 0.3460/0.2187% FS. Operator confirms no CLIP flashes.
-Do not claim gain improved rub (A median contrast was slightly higher), or assume
-an energy gate will preserve all light rub. Final sessions, held-out data and
-silent-window QA are still pending. Capture/FFT/feature processing was not changed.
+**Latest authoritative decisions:** C-labelled rubs were performed on pickup /
+its mounting bandage, NOT bare board; **exclude C from board-rub comparison**.
+Preserve all files and historical labels; see `measurements/rub_ab_exclusions.csv`.
+Keep the bandage securing the pickup. A/B rub locations are also unverified, so
+historical contrasts A 10.19/5.09 dB and B 9.21/5.23 dB are exploratory only.
 
-**Physical-condition clarification pending:** a later photo shows bandage across
-the pickup as mounting restraint; it does not show a separate rub-zone texture.
-Keep the restraint. The prior proposed removal/restoration instruction is withdrawn
-until A identifies the C rubbing location. Preserve all numeric runs, but do not
-treat C as a controlled texture comparison or intended board rub without confirmation.
+Retire the arbitrary 15 dB light-rub goal. User selected **original gain A** for
+lower tested knock peak (~22.97% vs B ~47.09% FS); physical restoration still
+requires operator confirmation. New `zone_check` measurements on explicitly marked
+bare-board zones will establish final ranges. Freeze if firm rub is >=about 10 dB
+above quiet and hard knocks <=about 70% FS with no clipping; otherwise one physical
+fix/retest only. No capture/FFT/feature-processing changes.
+
+Final rub data will mostly use medium-to-firm continuous rubbing; at most two
+light-rub training takes. C (teammate) demonstrates firm fingertip board rub in
+practice. Light windows can approach quiet (historical P10 contrast ~5 dB), so do
+not set a high energy gate solely to remove noise. New quiet/light/firm distributions
+and later dataset QA, not these exploratory numbers, must guide a threshold.
+Final sessions, held-out data and QA remain pending.
 
 ## Capture profile
 

@@ -34,10 +34,11 @@ typing action in the second take was never confirmed. No held-out test takes exi
 
 - `measurements/rub_ab_summary.csv` and `rub_ab_intervals.csv` contain **16 recorded
   calibration runs** (not 16 accepted results). One missed-knock attempt is excluded
-  in `rub_ab_exclusions.csv`; the first C quiet run is preserved as provisional.
+  in `rub_ab_exclusions.csv`; all five C runs are now excluded from board-rub
+  comparison, with original files and labels preserved.
 - Full run IDs, observations and dB calculations: `docs/rub_margin_ab.md`.
 
-## Rub-margin results and unresolved interpretation
+## Exploratory results and corrected interpretation
 
 Contrasts use median or P10 of 50 ms PCM RMS divided by that configuration's quiet
 median, expressed as `20 log10(ratio)`. They are level contrasts, not classifier
@@ -47,26 +48,34 @@ accuracy or a signal-only SNR measurement.
 |---|---:|---:|---:|
 | A original gain | 10.19 dB | 5.09 dB | 22.97% FS |
 | B raised gain, step 3 | 9.21 dB | 5.23 dB | 47.09% FS |
-| C labelled bandage | 6.21 dB | 2.28 dB | 25.09% FS |
+| C pickup/restraint contact: INVALID for board rub | 6.21 dB | 2.28 dB | 25.09% FS |
 
-No option met the requested 15 dB light-rub target. B is not proven better than A
-for rub; trials were manually performed with uncontrolled variation. Do not infer
-gain or bandage causality from single runs. A reports no alternative textured
-material is available and sensor already close, so no purchase/move was required.
+The latest explicit instructions retire the 15 dB target. Original gain A is the
+selected starting configuration, pending identification/restoration from an actual
+mark or photo: B did not improve light-rub contrast and left less knock headroom.
+A/B rubbing locations may also have included the pickup vicinity, so these are
+exploratory observations, not accepted measurements of the final marked zones.
+Do not infer gain or bandage causality from single manually performed runs.
 
-**Important pending clarification:** latest photo shows a white bandage crossing
-the red pickup, acting as its mounting restraint. It does NOT establish a separate
-bandage patch in the board's rub area. The earlier proposed instruction to remove
-the presumed separate patch has been withdrawn. **Keep the pickup restraint.**
-A has not yet answered whether C rub was on adjacent bare board, on the pickup/
-restraint, or on another patch. Preserve all results, but do not treat C as a valid
-controlled texture comparison until answered. If rubbing the pickup itself, it
-does not represent intended board-rub interaction.
+**Corrected operator facts:** C rubbing contacted the red pickup/white restraining
+bandage, rather than the intended bare-board rub area. This latest explicit
+correction supersedes the earlier ambiguous bare-board reply. All C runs are
+invalid for board-rub comparison; companion exclusions record this without
+rewriting raw data. **Keep the pickup's mounting bandage unchanged.**
+
+No new zone-check measurements exist yet. See `docs/zone_check.md`: at original A,
+measure marked bare-board quiet/light rub/firm rub/hard knock. Freeze if firm-rub
+median contrast is approximately >=10 dB, hardest knock <=approximately 70% FS,
+no clipping and no capture loss. Otherwise make one likely physical correction
+and repeat once. Light-rub P10 contrast near 5 dB argues against a high energy
+gate; use clear, practiced firm-fingertip instructions and mostly medium/firm data.
 
 ## Still required, in order
 
-1. Clarify actual rubbing location and unchanged/current physical setup. Do not
-   remove mounting tape, change gain or freeze the setup based on assumptions.
+1. Obtain actual board dimensions, pickup coordinates and an original-A gain
+   reference. Mark separate bare-board KNOCK/RUB zones, away from pickup/bandage,
+   then run the four-condition zone check. Do not guess A's knob position or
+   remove mounting tape. Wait for operator measurements before accepting setup.
 2. Freeze/document board dimensions, sensor coordinates, rub/knock zones, gain mark/
    photos in `docs/setup/`, mounting, cable strain relief and padding. Verify final
    level ranges, after-replug process and two-minute pre-collection/demo checklist.

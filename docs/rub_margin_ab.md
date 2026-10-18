@@ -1,5 +1,28 @@
 # Task 1: operator-guided rub margin comparison
 
+## Authoritative correction and decision (latest user instructions)
+
+This section supersedes the historical recommendations below. **C rubs were on
+the red pickup / white mounting restraint, not the board.** Preserve C files and
+original labels, but mark the entire C run set INVALID for board-rub comparison
+(pickup-contact rubbing). Quiet/hard-knock numbers remain technical observations,
+not validation of a proper C board-rub protocol. Companion exclusions identify runs.
+This latest explicit correction supersedes the earlier ambiguous bare-board reply.
+
+Keep the pickup bandage/mounting unchanged. Do not remove a presumed rub-zone patch.
+The **15 dB light-rub goal is retired**. User selects **original gain A** instead of
+B: B did not improve recorded rub contrast but increased tested knock peak. Physical
+restoration to A must be confirmed against its actual mark/photo; no position is
+invented from approximate prior knob rotations. A/B rub locations may also have
+contacted the pickup: treat all old comparisons as exploratory, not final acceptance.
+
+Next: measure board dimensions/coordinates, define isolated bare-board KNOCK/RUB
+zones, then perform `zone_check` at restored A gain. Firm-rub median contrast
+>=about 10 dB and hardest knock <=about 70% FS, with no clipping, permits immediate
+freeze. Otherwise one physical fix/retest only. Details: `docs/zone_check.md`.
+Medium-to-firm rub instruction and final-data QA will address weak light-rub risk;
+do not change the feature pipeline or present old numeric goals as still binding.
+
 Status: **waiting for physical measurements by A**. One performer (A) holds all
 hardware. Do not start final collection or freeze gain/mounting until this comparison
 is reviewed. No capture/FFT/feature-processing changes are authorized here.
@@ -77,13 +100,12 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | measured; light-rub target unmet; operator confirms no CLIP flashes |
-| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | measured; target unmet; no CLIP flashes; material details pending |
+| C pickup-contact protocol (INVALID for board-rub comparison) | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | preserve only; rubs contacted pickup/restraint |
 | D closer, optional | n/a | n/a | n/a | n/a | n/a | skipped: operator reports pickup already very close to rub area |
 
-Provisional recommendation: restore **B bare board at step 3 gain** (see decision
-below), subject to A confirming physical restoration and documenting the setup.
-No tested candidate met the 15 dB light-rub target; carry that risk into data QA
-and B's model work rather than changing feature processing or claiming a pass.
+Historical comparisons below are retained for audit. Current decision is **restore
+original gain A and run marked-zone checks**, as specified above; B recommendation
+and 15 dB acceptance statements in older chronological notes are superseded.
 
 ### Recorded baseline quiet
 

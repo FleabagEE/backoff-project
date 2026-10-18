@@ -5,29 +5,26 @@ model training, energy gate, temporal decisions and trial recorder; C owns slide
 Software collection workflow is ready. Hardware is a **candidate configuration**
 until gain photos, board dimensions, sensor coordinates and pad details are filled.
 
-**Current work:** A will collect ALL data solo. First complete the operator-guided
-rub-margin A/B procedure in [docs/rub_margin_ab.md](docs/rub_margin_ab.md). New targets
-are light-rub median >=15 dB above quiet if achievable and hardest knock <=70% FS.
-The older 10 dB / 80% guidance below is historical and superseded for this comparison.
-`data_sessions/20261017_013429_24eda79c/` is **PILOT ONLY**, not final or holdout data;
-keep it intact and exclude it from final training/validation. The three-person
-collection schedule below will be replaced by a solo variation plan after hardware
-is frozen. Do not collect final takes yet.
+**Current decision (supersedes historical calibration notes):** A collects ALL data
+solo. The latest written instructions confirm C rubs contacted the red pickup /
+its white mounting bandage, not the board. C is **INVALID for board-rub comparison**;
+all files remain preserved with companion exclusions. KEEP the mounting bandage.
 
-**Task 1 decision (provisional):** A has no sandpaper/textured tape and reports
-sensor already close to rub area. Restore B bare board by removing only the rub-zone
-OK bandage, keeping the current gain and sensor mounting. A has not yet confirmed
-restoration. B reference: quiet median 0.1198% FS; light-rub median/P10 contrast
-9.21/5.23 dB; strongest tested knock peak 47.09% FS, no digital clipping/overflow.
-A confirms CLIP never flashed. **15 dB target was NOT achieved.** This is a measured
-compromise pending physical documentation, restored-level check and later data QA;
-do not mark the hardware frozen or data final yet. Full results: `docs/rub_margin_ab.md`.
+The arbitrary 15 dB light-rub target is **retired**. Select **original gain A**, not
+the raised B gain, subject to A restoring its real photo/tape mark (not yet confirmed).
+Historical A had light-rub median/P10 contrasts 10.19/5.09 dB and hard-knock peak
+22.97% FS; B did not improve the median contrast and raised the tested peak to 47.09%.
+A/B rubbing locations may also have been near/on the pickup, so these are exploratory
+references, not final level ranges. All existing collection data is PILOT ONLY.
 
-**Photo clarification supersedes the removal instruction above:** the supplied
-photo shows a bandage securing the pickup itself, not a confirmed separate rub-zone
-patch. KEEP this restraint in place. Do not remove any bandage or declare B restored
-until A identifies the actual C rubbing location and whether another patch exists.
-The interpretation of C as an added-texture experiment is pending clarification.
+Next define marked RUB and KNOCK zones on **bare board**, separated from pickup and
+bandage, using A's actual board dimensions. Run the short [zone check](docs/zone_check.md)
+at restored A gain: quiet/light rub/firm rub 10 s each and 3 hardest board knocks.
+Freeze if firm-rub median contrast >=about 10 dB and hard peak <=about 70% FS,
+no clipping. Otherwise make ONE likely physical fix and repeat once. Never change
+capture/FFT/feature processing. Final ranges, coordinates, padding and photos remain
+pending; no final/holdout collection yet. Demonstrate firm fingertip board rub to
+testers and retain light-rub risk for B's gate instead of chasing another gain goal.
 
 ## Start here (Windows cmd)
 
