@@ -77,7 +77,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | pending | pending | light-rub target unmet; normal rub/knock pending |
+| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | pending | light-rub target unmet; hard knock and material details pending |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
@@ -280,3 +280,16 @@ single recorded light-rub runs and below the 15 dB median target. Higher overall
 RMS/peak does not establish sustained rub separation when median/P10 remain low.
 Do not conclude causality from one uncontrolled hand-performed comparison; document
 the actual bandage face/placement and finish normal rub before deciding the option.
+
+### C bandage normal rub
+
+Run `b4f282817f1f`, `C_bandage_rub_normal`, 2026-10-18T00:45:54Z
+(October 17, 17:45:54 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 median
+RMS **0.4510998% FS**, P10 **0.1663760% FS**, overall RMS **1.2592917% FS**,
+maximum peak **8.1054688% FS**. Against C quiet retry, median contrast **11.46 dB**,
+P10 contrast **2.79 dB**. Normal-rub median exceeds B's recorded normal-rub median,
+but weaker intervals remain poorly separated and light-rub target remains unmet.
+Finish `C_bandage_knock_hard` at the same gain/location and report CLIP before
+comparing completed configurations. Bandage rubbing face, dimensions and photo
+remain unreported; do not freeze this setup or assume texture has solved rub.
