@@ -76,7 +76,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
-| B gain, step 3 candidate | 0.1198119 | pending | pending | pending | 47.0947266 | quiet valid; rub and hard-knock CLIP report pending |
+| B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | pending | 47.0947266 | light-rub target unmet; normal rub and CLIP report pending |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
@@ -200,3 +200,15 @@ above A's quiet reference. Use this B quiet measurement for subsequent B rub
 contrasts; a 15 dB median contrast corresponds to about **0.6738% FS** rub median.
 No B rub result exists yet, so gain's effect on rub margin remains unknown.
 A has not yet explicitly reported the step 3 hard-knock CLIP LED status.
+
+### Gain candidate B light rub
+
+Run `b1b4608a5621`, `B_gain_rub_light`, 2026-10-18T00:09:56Z
+(October 17, 17:09:56 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 median
+RMS **0.3459591% FS**, P10 **0.2186900% FS**, overall RMS **0.4371521% FS**,
+maximum peak **3.0883789% FS**. Against B quiet, median contrast is **9.21 dB**
+and P10 contrast **5.23 dB**. Median target 15 dB is not met; A's corresponding
+values were 10.19 / 5.09 dB. These single hand-performed runs do not establish a
+causal gain effect or monotonic improvement. Finish B normal rub at unchanged gain,
+then test the textured rub-zone option instead of chasing amplitude with more gain.
