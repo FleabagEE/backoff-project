@@ -13,6 +13,7 @@ import numpy as np
 import pyaudio
 
 from collection import CollectionSession, utc_now, training_eligible
+from recording_policy import TRIAL_TYPES, recording_plan, authorize_plan, trial_phase
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
 
@@ -22,6 +23,8 @@ class App:
         self.session_root = session_root
         self.session_type = 'final' if final else 'pilot'
         self.take_counts = {split: dict(neutral=0, knock=0, rub=0) for split in ('train', 'holdout')}
+        self.trial_counts = dict.fromkeys(TRIAL_TYPES, 0)
+        self.pending_holdout = None
         self.ear = None
         self.session = None
         self.pending_take = None
@@ -104,12 +107,23 @@ class App:
             dpg.add_combo(['Train', 'Infer'], default_value='Train', tag='mode', callback=self.mode_callback)
             with dpg.group(tag='train_group'):
                 dpg.add_text(f'Session: {self.session_type}; new session each launch')
-                dpg.add_combo(['train', 'holdout'], default_value='train', tag='split', label='Data split')
+                dpg.add_text('rub = FINGERNAIL SCRATCH ON PAPER', color=(255, 220, 80), wrap=385)
+                dpg.add_combo(['take', 'trial'], default_value='take', tag='recording_kind',
+                              label='Recording kind', callback=self.split_callback)
+                dpg.add_combo(['train', 'holdout'], default_value='train', tag='split',
+                              label='DATA SPLIT', callback=self.split_callback)
+                dpg.add_text('WILL SAVE AS TRAIN', tag='split_banner', color=(255, 220, 80), wrap=385)
                 dpg.add_text('Training takes: knock 0/10, rub 0/10, neutral 0/16', tag='take_progress', wrap=385)
                 dpg.add_text('Holdout takes: knock 0/2, rub 0/2, neutral 0/2', tag='holdout_progress', wrap=385)
                 dpg.add_input_text(label='Performer', tag='performer', default_value='A', width=210)
                 dpg.add_input_text(label='Variation / notes', tag='variation', width=210,
                                    hint='force, position, action')
+                with dpg.group(tag='trial_options', show=False):
+                    dpg.add_combo(list(TRIAL_TYPES), default_value='knock_pos', tag='trial_type', label='Trial type')
+                    dpg.add_input_text(tag='action_performed', label='Action performed', width=210)
+                    dpg.add_text('8 seconds: still 2s -> act ONCE ~1s -> still', wrap=385)
+                dpg.add_text('Trials: knock_pos 0/5, rub_pos 0/5, knock_neg 0/5, rub_neg 0/5',
+                             tag='trial_progress', wrap=385)
                 dpg.add_input_float(label='Take limit (s)', tag='take_limit', default_value=25.0,
                                     min_value=5.0, max_value=60.0, min_clamped=True, max_clamped=True, width=140)
                 with dpg.group(horizontal=True):
@@ -135,7 +149,40 @@ class App:
             with dpg.file_dialog(tag=f'{action}_model_dialog', show=False, callback=callback,
                                  width=700, height=420, default_path='.', default_filename='model.model'):
                 dpg.add_file_extension('.model')
+        with dpg.window(tag='holdout_dialog', label='CONFIRM HOLDOUT FOR THIS TAKE',
+                        modal=True, show=False, width=520, height=200):
+            dpg.add_text('', tag='holdout_message', wrap=475)
+            dpg.add_button(label='CONFIRM: SAVE THIS TAKE AS HOLDOUT', callback=self.confirm_holdout)
+            dpg.add_button(label='Cancel', callback=self.cancel_holdout)
         dpg.set_viewport_resize_callback(self.resize)
+
+    def split_callback(self, *_):
+        trial = dpg.get_value('recording_kind') == 'trial'
+        dpg.configure_item('trial_options', show=trial)
+        dpg.configure_item('split', enabled=not trial)
+        dpg.configure_item('take_limit', enabled=not trial)
+        dpg.set_value('split_banner', 'EVALUATION TRIAL ONLY - NEVER TRAIN' if trial else
+                      ('WILL SAVE AS HOLDOUT - CONFIRM EACH TAKE' if dpg.get_value('split') == 'holdout'
+                       else 'WILL SAVE AS TRAIN'))
+
+    def request_snapshot(self):
+        return dict(kind=dpg.get_value('recording_kind'), split=dpg.get_value('split'),
+                    class_name=self.record_val, variation=dpg.get_value('variation'),
+                    trial_type=dpg.get_value('trial_type'), action_performed=dpg.get_value('action_performed'),
+                    performer=dpg.get_value('performer').strip())
+
+    def cancel_holdout(self, *_):
+        self.pending_holdout = None
+        dpg.hide_item('holdout_dialog')
+
+    def confirm_holdout(self, *_):
+        pending = self.pending_holdout
+        self.cancel_holdout()
+        if pending is None or pending != self.request_snapshot():
+            self.message('Settings changed. Click Record Data and confirm again.')
+            return
+        performer = pending.pop('performer')
+        self.start_take(recording_plan(**pending, holdout_confirmed=True), performer)
 
     def resize(self, *_):
         width = dpg.get_viewport_client_width()
@@ -217,7 +264,8 @@ class App:
 
     def config(self):
         info = self.devices[self.selected_device]
-        return dict(session_type=self.session_type, setup_id='A_bandage_zones_17x27_direct_table',
+        return dict(session_type=self.session_type, setup_id='A_paper_scratch_17x27_direct_table',
+                    interaction_2='rub means scratch_nail_paper; old fingertip rub superseded',
                     device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
                     backend='PyAudio', physical_input='UM2 INST 2', captured_channels=2,
                     selected_channel_1_based=2, dtype='int16', sample_rate=48000,
@@ -242,40 +290,64 @@ class App:
         elif self.is_recording:
             self.stop_take()
         else:
-            if not self.healthy() or not self.record_val or dpg.get_value('mode') != 'Train':
+            if not self.healthy() or dpg.get_value('mode') != 'Train':
                 self.message('Select a class and wait for healthy live input before recording.')
                 return
-            if not dpg.get_value('performer').strip():
+            snapshot = self.request_snapshot()
+            if not snapshot['performer']:
                 self.message('Enter performer before recording.')
                 return
-            if not dpg.get_value('variation').strip():
-                self.message('Enter variation/action before recording so B can audit each take.')
+            performer = snapshot.pop('performer')
+            plan = recording_plan(**snapshot)
+            if plan['split'] == 'holdout':
+                self.pending_holdout = dict(snapshot, performer=performer)
+                dpg.set_value('holdout_message', f"Class: {plan['class_name']}\n{plan['variation']}\n"
+                              'THIS TAKE WILL BE SAVED AS HOLDOUT. Excluded from training.\n'
+                              'After confirming, begin the action immediately.')
+                dpg.show_item('holdout_dialog')
                 return
-            if self.session is None:
-                self.session = CollectionSession(self.config(), self.session_root)
-                dpg.set_value('session_path', str(self.session.path.resolve()))
-                dpg.disable_item('device_combo')
-            self.frames, self.times, self.rms, self.peaks = [], [], [], []
-            self.take_start = time.monotonic()
-            self.take_notes = dict(performer=dpg.get_value('performer').strip(),
-                                   variation=dpg.get_value('variation'), split=dpg.get_value('split'),
-                                   started_utc=utc_now())
-            self.take_limit = max(5, min(60, dpg.get_value('take_limit')))
-            self.status_start = self.ear.stream_reader.status_count
-            self.is_recording = True
-            dpg.configure_item('record_button', label='Stop Recording')
-            self.message(f'Recording {self.record_val}; auto-stop after {self.take_limit:g}s.')
+            self.start_take(plan, performer)
+
+    def start_take(self, plan, performer):
+        authorize_plan(plan)
+        if not self.healthy() or dpg.get_value('mode') != 'Train':
+            self.message('Wait for fresh healthy audio, then request recording again.')
+            return
+        if self.session is None:
+            self.session = CollectionSession(self.config(), self.session_root)
+            dpg.set_value('session_path', str(self.session.path.resolve()))
+            dpg.disable_item('device_combo')
+        plan = dict(plan)
+        self.take_limit = plan.pop('take_limit', max(5, min(60, dpg.get_value('take_limit'))))
+        self.record_val = plan.pop('class_name')
+        self.frames, self.times, self.rms, self.peaks = [], [], [], []
+        self.take_notes = dict(plan, performer=performer, started_utc=utc_now())
+        self.take_start = time.monotonic()
+        self.status_start = self.ear.stream_reader.status_count
+        self.is_recording = True
+        for tag in ('recording_kind', 'split', 'performer', 'variation', 'trial_type',
+                    'action_performed', 'take_limit', 'class_list', 'mode'):
+            dpg.disable_item(tag)
+        dpg.configure_item('record_button', label='Stop Recording')
+        self.message(f"Recording {self.record_val}; SAVING AS {plan['split'].upper()}; "
+                     f'auto-stop after {self.take_limit:g}s.')
 
     def stop_take(self, valid=True, reason=''):
         if not self.is_recording:
             return
         self.is_recording = False
+        for tag in ('recording_kind', 'split', 'performer', 'variation', 'trial_type',
+                    'action_performed', 'take_limit', 'class_list', 'mode'):
+            dpg.enable_item(tag)
+        self.split_callback()
         dpg.configure_item('record_button', label='Record Data')
         if not self.frames:
             self.message('No fresh FFT frames captured; no take saved.')
             return
         if self.ear.stream_reader.status_count != self.status_start:
             valid, reason = False, 'PortAudio reported capture status during this take'
+        if self.take_notes['recording_kind'] == 'trial' and time.monotonic()-self.take_start < 7.9:
+            valid, reason = False, 'Trial stopped before full 8 seconds'
         self.pending_take = dict(take_id=f'take_{uuid.uuid4().hex}',
                                  class_name=self.record_val, X=np.array(self.frames, dtype=np.float32),
                                  elapsed_s=self.times, rms_fs=self.rms, peak_fs=self.peaks,
@@ -297,7 +369,12 @@ class App:
             name = self.pending_take['class_name']
             self.collected_data[name].extend(self.pending_take['X'])
             dpg.set_value(f'count_{name}', f'{name}: {len(self.collected_data[name])}')
-        if self.pending_take['valid']:
+        if self.pending_take['valid'] and self.pending_take['split'] == 'trial':
+            kind = self.pending_take['trial_type']
+            self.trial_counts[kind] += 1
+            dpg.set_value('trial_progress', 'Trials: ' + ', '.join(
+                f'{key} {count}/5' for key, count in self.trial_counts.items()))
+        elif self.pending_take['valid']:
             split = self.pending_take['split']
             name = self.pending_take['class_name']
             self.take_counts[split][name] = self.take_counts[split].get(name, 0) + 1
@@ -318,6 +395,9 @@ class App:
             self.persist_pending()
         if self.session is None:
             self.message('Record at least one take first.')
+            return
+        if not any(self.take_counts[s].get(c, 0) for s in self.take_counts for c in self.take_counts[s]):
+            self.message('Evaluation trials are autosaved individually; excluded from training exports.')
             return
         path = self.session.export()
         self.message(f'Exported {path.resolve()}')
@@ -379,7 +459,8 @@ class App:
         dpg.set_value('audio_status', f"{'LIVE' if healthy else 'WAIT / NO FRESH AUDIO'} | ch2 RMS {100*rms:.3f}% FS | "
                       f'peak {100*peak:.2f}% FS | FFT updates {self.ear.num_ffts} | capture status {r.status_count}')
         dpg.configure_item('record_button', enabled=self.pending_take is not None or
-                           (healthy and self.record_val is not None and dpg.get_value('mode') == 'Train'))
+                           (healthy and (self.record_val is not None or dpg.get_value('recording_kind') == 'trial')
+                            and dpg.get_value('mode') == 'Train'))
         if self.is_recording:
             if not healthy:
                 self.stop_take(valid=False, reason='Audio stopped or stale')
@@ -393,7 +474,8 @@ class App:
                 self.times.append(elapsed)
                 self.rms.append(rms)
                 self.peaks.append(peak)
-                dpg.set_value('recording_status', f'{self.record_val}: {elapsed:.1f}s / '
+                phase = trial_phase(elapsed) + ' | ' if self.take_notes['recording_kind'] == 'trial' else ''
+                dpg.set_value('recording_status', phase + f'{self.record_val}: {elapsed:.1f}s / '
                               f'{self.take_limit:g}s | {len(self.frames)} new FFT frames')
         if fresh and healthy and dpg.get_value('mode') == 'Infer' and self.model is not None:
             label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])

@@ -37,12 +37,18 @@ def load_takes(folder, overrides=None):
         raise ValueError('Final QA refuses pilot or unspecified sessions')
     overrides = overrides or {}
     takes = []
+    seen_ids = set()
     for path in sorted(folder.glob('take_*.npz')):
         if '.excluded.' in path.name:
             continue
         with np.load(path, allow_pickle=False) as data:
             info = json.loads(str(data['metadata_json']))
             if not info.get('valid', True):
+                continue
+            if info['take_id'] in seen_ids:
+                raise ValueError('Duplicate take IDs')
+            seen_ids.add(info['take_id'])
+            if info.get('recording_kind') == 'trial' or info.get('split') == 'trial':
                 continue
             if json.loads(str(data['config_json'])) != config:
                 raise ValueError(f'Configuration mismatch: {path.name}')
@@ -63,10 +69,15 @@ def load_takes(folder, overrides=None):
             effective.update(split=correction['split'], split_correction_reason=correction['reason'])
         if effective.get('split') not in ('train', 'holdout') or info['class_name'] not in CLASSES:
             raise ValueError(f'Invalid class/split: {path.name}')
+        # Interaction 2 has changed. Historical fingertip rub is never selected
+        # for current training OR current holdout, regardless of its raw split.
+        if info['class_name'] == 'rub' and 'scratch_nail_paper' not in info.get('variation', ''):
+            continue
         takes.append(dict(info=effective, arrays=arrays, file=path.name,
+                          source_session=str(folder), source_config=config,
                           sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
     ids = [t['info']['take_id'] for t in takes]
-    if len(ids) != len(set(ids)) or set(overrides) - set(ids):
+    if len(ids) != len(set(ids)) or set(overrides) - seen_ids:
         raise ValueError('Duplicate take IDs or correction refers to missing/excluded take')
     if not takes:
         raise ValueError('No accepted takes')
@@ -119,8 +130,32 @@ def baseline(takes):
     return result
 
 
-def audit(folder, output, overrides_path=None):
+def audit(folder, output, overrides_path=None, scratch_sessions=(), exclusions_path=None):
     config, takes = load_takes(folder, read_overrides(overrides_path))
+    sources = [dict(session=str(folder), config=config)]
+    signature_keys = ('sample_rate', 'frames_per_capture_block', 'fft_window_ms', 'fft_window_samples',
+                      'feature_count', 'selected_channel_1_based', 'dtype', 'feature_pipeline',
+                      'smoothing_length_ms', 'target_feature_updates_per_second')
+    for source in scratch_sessions:
+        other_config, other = load_takes(source)
+        if any(other_config.get(k) != config.get(k) for k in signature_keys):
+            raise ValueError('Capture/feature profile differs between source sessions')
+        if any(t['info']['class_name'] != 'rub' for t in other):
+            raise ValueError('Scratch sessions must contain only the replacement rub class')
+        takes.extend(other)
+        sources.append(dict(session=str(source), config=other_config))
+    if exclusions_path:
+        with Path(exclusions_path).open(encoding='utf-8-sig', newline='') as handle:
+            exclusions = {r['take_id']: r['reason'] for r in csv.DictReader(handle)}
+        unknown = set(exclusions) - {t['info']['take_id'] for t in takes}
+        if unknown:
+            raise ValueError(f'Unknown explicit exclusion IDs: {unknown}')
+        takes = [t for t in takes if t['info']['take_id'] not in exclusions]
+    if len({t['info']['take_id'] for t in takes}) != len(takes):
+        raise ValueError('Repeated source session or duplicate take ID')
+    if scratch_sessions:
+        config = dict(config, interaction_2='rub means scratch_nail_paper',
+                      source_sessions=sources, setup_id='v2_composite_original_knock_neutral_new_paper_scratch')
     output = Path(output)
     # Never overwrite an earlier review/export: use a fresh output directory.
     output.mkdir(parents=True, exist_ok=False)
@@ -134,6 +169,8 @@ def audit(folder, output, overrides_path=None):
         row = dict(take_id=info['take_id'], class_name=info['class_name'], split=info['split'],
                    original_split=info['original_split'], performer=info.get('performer', ''),
                    variation=info.get('variation', ''), rows=len(rms), duration_s=info.get('duration_s'),
+                   source_session=t['source_session'],
+                   friction_review=bool(info['class_name']=='neutral' and 'drag' in info.get('variation', '').lower()),
                    median_rms_fs=float(np.median(rms)), p10_rms_fs=float(np.percentile(rms, 10)),
                    max_peak_fs=float(np.max(arrays['peak_fs'])),
                    quiet_like_fraction=float(np.mean(rms <= threshold)) if threshold else None,
@@ -157,7 +194,8 @@ def audit(folder, output, overrides_path=None):
                    takes_json=np.array(json.dumps([t['info'] for t in subset])))
     counts = {s: dict(Counter(t['info']['class_name'] for t in takes if t['info']['split'] == s))
               for s in ('train', 'holdout')}
-    report = dict(source_session=str(Path(folder)), counts=counts, total_rows=sum(r['rows'] for r in rows),
+    report = dict(source_session=str(Path(folder)), additional_scratch_sessions=list(map(str,scratch_sessions)),
+                  counts=counts, total_rows=sum(r['rows'] for r in rows),
                   quiet_p95_rms_fs=threshold, threshold_note='Descriptive quiet-like fraction; NOT a production gate',
                   short_takes=[r['take_id'] for r in rows if (r['duration_s'] or 0) < 24],
                   peak_at_or_above_70pct=[r['take_id'] for r in rows if r['max_peak_fs'] >= .7],
@@ -193,5 +231,7 @@ if __name__ == '__main__':
     parser.add_argument('session')
     parser.add_argument('--output', required=True, help='new directory; existing outputs are never overwritten')
     parser.add_argument('--overrides', help='CSV: take_id,split,reason; explicit reviewed corrections only')
+    parser.add_argument('--scratch-session', action='append', default=[], help='additional final scratch-only session; repeat as needed')
+    parser.add_argument('--exclusions', help='CSV: take_id,reason; preserve raw files but omit these takes')
     args = parser.parse_args()
-    audit(args.session, args.output, args.overrides)
+    audit(args.session, args.output, args.overrides, args.scratch_session, args.exclusions)

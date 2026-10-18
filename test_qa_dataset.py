@@ -22,7 +22,7 @@ class QATests(unittest.TestCase):
                     X[:, offset] += 10
                     paths.append(session.save_take(cls, X, [.1,.2,.3,.4,.5], [.001]*5, [.1]*5,
                                                    take_id=f'take_{cls}_{j}', split='train', duration_s=25,
-                                                   variation='quiet' if cls=='neutral' else 'test'))
+                                                   variation='quiet' if cls=='neutral' else 'scratch_nail_paper test'))
             hashes = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
             manifest = Path(tmp)/'splits.csv'
             manifest.write_text('take_id,split,reason\n' + ''.join(
@@ -52,6 +52,19 @@ class QATests(unittest.TestCase):
             session = CollectionSession(dict(feature_count=4), tmp)
             with self.assertRaisesRegex(ValueError, 'pilot'):
                 load_takes(session.path)
+
+    def test_superseded_rub_and_trial_are_omitted_without_changing_raw(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session=CollectionSession(dict(feature_count=4,session_type='final'),tmp)
+            for name,variation,split,kind in [('rub','old fingertip rub','train','take'),
+                                            ('rub','scratch_nail_paper','train','take'),
+                                            ('neutral','one knock','trial','trial')]:
+                session.save_take(name,np.ones((2,4)),[.1,.2],[.01]*2,[.1]*2,
+                                  variation=variation,split=split,recording_kind=kind)
+            _,takes=load_takes(session.path)
+            self.assertEqual(len(takes),1)
+            self.assertEqual(takes[0]['info']['variation'],'scratch_nail_paper')
+            self.assertEqual(len(session.take_paths()),3)
 
 
 if __name__ == '__main__':

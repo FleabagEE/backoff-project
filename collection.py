@@ -15,7 +15,10 @@ def utc_now():
 
 
 def training_eligible(info):
-    return info.get('valid', True) and info.get('split', 'train') == 'train'
+    return (info.get('valid', True) and info.get('split', 'train') == 'train'
+            and info.get('recording_kind', 'take') != 'trial'
+            and (info.get('class_name') != 'rub'
+                 or 'scratch_nail_paper' in info.get('variation', '')))
 
 
 def atomic_npz(path, **arrays):
@@ -67,7 +70,8 @@ class CollectionSession:
         return path
 
     def write_log(self):
-        fields = ['take_id', 'class_name', 'performer', 'variation', 'split', 'started_utc',
+        fields = ['take_id', 'class_name', 'performer', 'variation', 'split', 'recording_kind',
+                  'holdout_confirmed', 'trial_type', 'action_performed', 'started_utc',
                   'duration_s', 'sample_count', 'valid', 'reason', 'saved_utc', 'file']
         path = self.path / 'takes.csv'
         temporary = path.with_suffix('.csv.tmp')
@@ -110,6 +114,8 @@ def export_session(folder):
             info = json.loads(str(data['metadata_json']))
             if not info.get('valid', True):
                 continue
+            if info.get('recording_kind') == 'trial' or info.get('split') == 'trial':
+                continue
             if json.loads(str(data['config_json'])) != config:
                 raise ValueError(f'Capture configuration mismatch: {path}')
             X = data['X']
@@ -125,12 +131,13 @@ def export_session(folder):
             times.append(data['elapsed_s'])
             rms.append(data['rms_fs'])
             peaks.append(data['peak_fs'])
-            notes.append(info)
+            notes.append(dict(info, training_eligible=training_eligible(info)))
     if not features:
         raise ValueError('No valid saved takes to export')
     target = folder / 'dataset.npz'
     atomic_npz(target, X=np.concatenate(features), y=np.asarray(labels, dtype=np.int64),
                class_names=np.asarray(classes), take_ids=np.asarray(ids), split=np.asarray(splits),
+               training_eligible=np.concatenate([np.full(n['sample_count'], training_eligible(n)) for n in notes]),
                elapsed_s=np.concatenate(times), rms_fs=np.concatenate(rms), peak_fs=np.concatenate(peaks),
                config_json=np.array(json.dumps(config, ensure_ascii=False)),
                takes_json=np.array(json.dumps(notes, ensure_ascii=False)))
