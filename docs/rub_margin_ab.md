@@ -77,7 +77,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C texture | pending | pending | pending | pending | pending | unmeasured |
+| C OK bandage candidate | 0.1664591 (provisional) | pending | pending | pending | pending | quiet has transient disturbances; repeat needed |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
@@ -230,3 +230,24 @@ A's material, patch dimensions and placement/photo before starting C measurement
 Texture is the only intended variable. C is a different physical setup; existing
 session data remains pilot. No final hardware choice or classifier performance is
 established by this B result.
+
+### C material preparation and provisional quiet run
+
+A reported attaching an **OK adhesive bandage** at the existing rub location.
+Keep B step 3 gain and the existing sensor mounting. Exact bandage material,
+dimensions, cloth-versus-pad rubbing face and placement photo remain unreported;
+do not equate it with rigid sandpaper or assume its effect before testing.
+
+Run `497d965d085f`, `C_bandage_quiet`, 2026-10-18T00:23:24Z
+(October 17, 17:23:24 America/Los_Angeles), gain note `A_plus_12deg`:
+complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 median
+RMS **0.1664591% FS**, P10 **0.1212363% FS**, overall RMS **0.6377800% FS**,
+max peak **5.2124023% FS**. Median is 2.86 dB above B quiet. The first report has
+RMS 2.2441% FS and later reports fall substantially (last interval ~0.1294% FS).
+
+Capture is technically complete, but the intended quiet condition/stability is
+not yet confirmed. Preserve this run as **provisional**, not the accepted C quiet
+reference or evidence that the bandage causes noise. Repeat unchanged setup as
+`C_bandage_quiet_retry1`, hands off board/cable/interface for the full run, and ask
+A whether there was contact/movement in the original run. If actual environmental
+noise persists, record it rather than selectively discarding difficult quiet data.
