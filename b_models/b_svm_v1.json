@@ -1,0 +1,2992 @@
+{
+ "created_utc": "2026-10-18T22:13:17.775129+00:00",
+ "class_names": [
+  "neutral",
+  "knock",
+  "rub"
+ ],
+ "model_file": "b_svm_v1.model",
+ "model": {
+  "model_type": "B: log1p <=8kHz + scaler + LinearSVC",
+  "max_hz": 8000.0,
+  "C": 0.001
+ },
+ "gate": {
+  "rms_fs": 0.0033350711829112476,
+  "peak_fs": 0.010162353515625,
+  "enabled": true,
+  "scale": 1.5,
+  "percentile": 95.0
+ },
+ "stability": {
+  "k_frames": {
+   "knock": 2,
+   "rub": 6
+  },
+  "release_frames": 3,
+  "default_k": 3
+ },
+ "training": {
+  "data": "handoff\\20261017_195725_85cb47b5_review1\\train.npz",
+  "sha256": "e1a706771422235c2f92c46063247f211759c6cc96d9e3670770157fb6613324",
+  "rows_total": 19095,
+  "rows_fit": 2833,
+  "rows_fit_per_class": {
+   "neutral": 341,
+   "knock": 1566,
+   "rub": 926
+  }
+ },
+ "cv": {
+  "n_splits": 6,
+  "segment_s": 5.0,
+  "selected": {
+   "gate_scale": 1.5,
+   "k_frames": {
+    "knock": 2,
+    "rub": 6
+   },
+   "mean_pass": 0.76,
+   "min_pass": 0.22,
+   "trials": {
+    "knock+": {
+     "passed": 48,
+     "total": 50,
+     "rate": 0.96
+    },
+    "knock-": {
+     "passed": 113,
+     "total": 129,
+     "rate": 0.876
+    },
+    "rub+": {
+     "passed": 11,
+     "total": 50,
+     "rate": 0.22
+    },
+    "rub-": {
+     "passed": 127,
+     "total": 129,
+     "rate": 0.984
+    }
+   },
+   "active_fraction": {
+    "neutral": 0.056,
+    "knock": 0.299,
+    "rub": 0.191
+   },
+   "active_window_acc": 0.7293,
+   "active_recall": [
+    0.305,
+    0.769,
+    0.865
+   ],
+   "active_confusion": [
+    [
+     145,
+     167,
+     164
+    ],
+    [
+     221,
+     1225,
+     146
+    ],
+    [
+     102,
+     36,
+     882
+    ]
+   ]
+  },
+  "all": [
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 2
+    },
+    "mean_pass": 0.0663,
+    "min_pass": 0.047,
+    "trials": {
+     "knock+": {
+      "passed": 4,
+      "total": 50,
+      "rate": 0.08
+     },
+     "knock-": {
+      "passed": 6,
+      "total": 129,
+      "rate": 0.047
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 10,
+      "total": 129,
+      "rate": 0.078
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 4
+    },
+    "mean_pass": 0.251,
+    "min_pass": 0.047,
+    "trials": {
+     "knock+": {
+      "passed": 22,
+      "total": 50,
+      "rate": 0.44
+     },
+     "knock-": {
+      "passed": 6,
+      "total": 129,
+      "rate": 0.047
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 59,
+      "total": 129,
+      "rate": 0.457
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 6
+    },
+    "mean_pass": 0.4068,
+    "min_pass": 0.047,
+    "trials": {
+     "knock+": {
+      "passed": 38,
+      "total": 50,
+      "rate": 0.76
+     },
+     "knock-": {
+      "passed": 6,
+      "total": 129,
+      "rate": 0.047
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 98,
+      "total": 129,
+      "rate": 0.76
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 8
+    },
+    "mean_pass": 0.4517,
+    "min_pass": 0.04,
+    "trials": {
+     "knock+": {
+      "passed": 43,
+      "total": 50,
+      "rate": 0.86
+     },
+     "knock-": {
+      "passed": 6,
+      "total": 129,
+      "rate": 0.047
+     },
+     "rub+": {
+      "passed": 2,
+      "total": 50,
+      "rate": 0.04
+     },
+     "rub-": {
+      "passed": 111,
+      "total": 129,
+      "rate": 0.86
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 2
+    },
+    "mean_pass": 0.1082,
+    "min_pass": 0.078,
+    "trials": {
+     "knock+": {
+      "passed": 4,
+      "total": 50,
+      "rate": 0.08
+     },
+     "knock-": {
+      "passed": 20,
+      "total": 129,
+      "rate": 0.155
+     },
+     "rub+": {
+      "passed": 6,
+      "total": 50,
+      "rate": 0.12
+     },
+     "rub-": {
+      "passed": 10,
+      "total": 129,
+      "rate": 0.078
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 4
+    },
+    "mean_pass": 0.288,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 22,
+      "total": 50,
+      "rate": 0.44
+     },
+     "knock-": {
+      "passed": 20,
+      "total": 129,
+      "rate": 0.155
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 59,
+      "total": 129,
+      "rate": 0.457
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 6
+    },
+    "mean_pass": 0.4438,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 38,
+      "total": 50,
+      "rate": 0.76
+     },
+     "knock-": {
+      "passed": 20,
+      "total": 129,
+      "rate": 0.155
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 98,
+      "total": 129,
+      "rate": 0.76
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 8
+    },
+    "mean_pass": 0.4838,
+    "min_pass": 0.06,
+    "trials": {
+     "knock+": {
+      "passed": 43,
+      "total": 50,
+      "rate": 0.86
+     },
+     "knock-": {
+      "passed": 20,
+      "total": 129,
+      "rate": 0.155
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 111,
+      "total": 129,
+      "rate": 0.86
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 2
+    },
+    "mean_pass": 0.2147,
+    "min_pass": 0.078,
+    "trials": {
+     "knock+": {
+      "passed": 4,
+      "total": 50,
+      "rate": 0.08
+     },
+     "knock-": {
+      "passed": 44,
+      "total": 129,
+      "rate": 0.341
+     },
+     "rub+": {
+      "passed": 18,
+      "total": 50,
+      "rate": 0.36
+     },
+     "rub-": {
+      "passed": 10,
+      "total": 129,
+      "rate": 0.078
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 4
+    },
+    "mean_pass": 0.3945,
+    "min_pass": 0.34,
+    "trials": {
+     "knock+": {
+      "passed": 22,
+      "total": 50,
+      "rate": 0.44
+     },
+     "knock-": {
+      "passed": 44,
+      "total": 129,
+      "rate": 0.341
+     },
+     "rub+": {
+      "passed": 17,
+      "total": 50,
+      "rate": 0.34
+     },
+     "rub-": {
+      "passed": 59,
+      "total": 129,
+      "rate": 0.457
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 6
+    },
+    "mean_pass": 0.5302,
+    "min_pass": 0.26,
+    "trials": {
+     "knock+": {
+      "passed": 38,
+      "total": 50,
+      "rate": 0.76
+     },
+     "knock-": {
+      "passed": 44,
+      "total": 129,
+      "rate": 0.341
+     },
+     "rub+": {
+      "passed": 13,
+      "total": 50,
+      "rate": 0.26
+     },
+     "rub-": {
+      "passed": 98,
+      "total": 129,
+      "rate": 0.76
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 0.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 8
+    },
+    "mean_pass": 0.5603,
+    "min_pass": 0.18,
+    "trials": {
+     "knock+": {
+      "passed": 43,
+      "total": 50,
+      "rate": 0.86
+     },
+     "knock-": {
+      "passed": 44,
+      "total": 129,
+      "rate": 0.341
+     },
+     "rub+": {
+      "passed": 9,
+      "total": 50,
+      "rate": 0.18
+     },
+     "rub-": {
+      "passed": 111,
+      "total": 129,
+      "rate": 0.86
+     }
+    },
+    "active_fraction": {
+     "neutral": 1.0,
+     "knock": 1.0,
+     "rub": 1.0
+    },
+    "active_window_acc": 0.5672,
+    "active_recall": [
+     0.678,
+     0.454,
+     0.505
+    ],
+    "active_confusion": [
+     [
+      5716,
+      1152,
+      1564
+     ],
+     [
+      1852,
+      2420,
+      1059
+     ],
+     [
+      1899,
+      739,
+      2694
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 2
+    },
+    "mean_pass": 0.485,
+    "min_pass": 0.24,
+    "trials": {
+     "knock+": {
+      "passed": 28,
+      "total": 50,
+      "rate": 0.56
+     },
+     "knock-": {
+      "passed": 70,
+      "total": 129,
+      "rate": 0.543
+     },
+     "rub+": {
+      "passed": 12,
+      "total": 50,
+      "rate": 0.24
+     },
+     "rub-": {
+      "passed": 77,
+      "total": 129,
+      "rate": 0.597
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 4
+    },
+    "mean_pass": 0.6302,
+    "min_pass": 0.08,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 70,
+      "total": 129,
+      "rate": 0.543
+     },
+     "rub+": {
+      "passed": 4,
+      "total": 50,
+      "rate": 0.08
+     },
+     "rub-": {
+      "passed": 121,
+      "total": 129,
+      "rate": 0.938
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 6
+    },
+    "mean_pass": 0.633,
+    "min_pass": 0.04,
+    "trials": {
+     "knock+": {
+      "passed": 49,
+      "total": 50,
+      "rate": 0.98
+     },
+     "knock-": {
+      "passed": 70,
+      "total": 129,
+      "rate": 0.543
+     },
+     "rub+": {
+      "passed": 2,
+      "total": 50,
+      "rate": 0.04
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 8
+    },
+    "mean_pass": 0.6368,
+    "min_pass": 0.04,
+    "trials": {
+     "knock+": {
+      "passed": 49,
+      "total": 50,
+      "rate": 0.98
+     },
+     "knock-": {
+      "passed": 70,
+      "total": 129,
+      "rate": 0.543
+     },
+     "rub+": {
+      "passed": 2,
+      "total": 50,
+      "rate": 0.04
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 2
+    },
+    "mean_pass": 0.5797,
+    "min_pass": 0.48,
+    "trials": {
+     "knock+": {
+      "passed": 28,
+      "total": 50,
+      "rate": 0.56
+     },
+     "knock-": {
+      "passed": 88,
+      "total": 129,
+      "rate": 0.682
+     },
+     "rub+": {
+      "passed": 24,
+      "total": 50,
+      "rate": 0.48
+     },
+     "rub-": {
+      "passed": 77,
+      "total": 129,
+      "rate": 0.597
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 4
+    },
+    "mean_pass": 0.7,
+    "min_pass": 0.24,
+    "trials": {
+     "knock+": {
+      "passed": 47,
+      "total": 50,
+      "rate": 0.94
+     },
+     "knock-": {
+      "passed": 88,
+      "total": 129,
+      "rate": 0.682
+     },
+     "rub+": {
+      "passed": 12,
+      "total": 50,
+      "rate": 0.24
+     },
+     "rub-": {
+      "passed": 121,
+      "total": 129,
+      "rate": 0.938
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 6
+    },
+    "mean_pass": 0.6927,
+    "min_pass": 0.16,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 88,
+      "total": 129,
+      "rate": 0.682
+     },
+     "rub+": {
+      "passed": 8,
+      "total": 50,
+      "rate": 0.16
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 8
+    },
+    "mean_pass": 0.6865,
+    "min_pass": 0.12,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 88,
+      "total": 129,
+      "rate": 0.682
+     },
+     "rub+": {
+      "passed": 6,
+      "total": 50,
+      "rate": 0.12
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 2
+    },
+    "mean_pass": 0.6508,
+    "min_pass": 0.56,
+    "trials": {
+     "knock+": {
+      "passed": 28,
+      "total": 50,
+      "rate": 0.56
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 32,
+      "total": 50,
+      "rate": 0.64
+     },
+     "rub-": {
+      "passed": 77,
+      "total": 129,
+      "rate": 0.597
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 4
+    },
+    "mean_pass": 0.751,
+    "min_pass": 0.36,
+    "trials": {
+     "knock+": {
+      "passed": 45,
+      "total": 50,
+      "rate": 0.9
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 18,
+      "total": 50,
+      "rate": 0.36
+     },
+     "rub-": {
+      "passed": 121,
+      "total": 129,
+      "rate": 0.938
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 6
+    },
+    "mean_pass": 0.7388,
+    "min_pass": 0.26,
+    "trials": {
+     "knock+": {
+      "passed": 46,
+      "total": 50,
+      "rate": 0.92
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 13,
+      "total": 50,
+      "rate": 0.26
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 8
+    },
+    "mean_pass": 0.7325,
+    "min_pass": 0.22,
+    "trials": {
+     "knock+": {
+      "passed": 46,
+      "total": 50,
+      "rate": 0.92
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 11,
+      "total": 50,
+      "rate": 0.22
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.133,
+     "knock": 0.406,
+     "rub": 0.323
+    },
+    "active_window_acc": 0.6688,
+    "active_recall": [
+     0.388,
+     0.714,
+     0.794
+    ],
+    "active_confusion": [
+     [
+      434,
+      316,
+      368
+     ],
+     [
+      403,
+      1546,
+      216
+     ],
+     [
+      262,
+      93,
+      1368
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 1,
+     "rub": 2
+    },
+    "mean_pass": 0.5627,
+    "min_pass": 0.2,
+    "trials": {
+     "knock+": {
+      "passed": 32,
+      "total": 50,
+      "rate": 0.64
+     },
+     "knock-": {
+      "passed": 85,
+      "total": 129,
+      "rate": 0.659
+     },
+     "rub+": {
+      "passed": 10,
+      "total": 50,
+      "rate": 0.2
+     },
+     "rub-": {
+      "passed": 97,
+      "total": 129,
+      "rate": 0.752
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 1,
+     "rub": 4
+    },
+    "mean_pass": 0.6713,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 49,
+      "total": 50,
+      "rate": 0.98
+     },
+     "knock-": {
+      "passed": 85,
+      "total": 129,
+      "rate": 0.659
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 1,
+     "rub": 6
+    },
+    "mean_pass": 0.6807,
+    "min_pass": 0.08,
+    "trials": {
+     "knock+": {
+      "passed": 50,
+      "total": 50,
+      "rate": 1.0
+     },
+     "knock-": {
+      "passed": 85,
+      "total": 129,
+      "rate": 0.659
+     },
+     "rub+": {
+      "passed": 4,
+      "total": 50,
+      "rate": 0.08
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 1,
+     "rub": 8
+    },
+    "mean_pass": 0.6798,
+    "min_pass": 0.06,
+    "trials": {
+     "knock+": {
+      "passed": 50,
+      "total": 50,
+      "rate": 1.0
+     },
+     "knock-": {
+      "passed": 85,
+      "total": 129,
+      "rate": 0.659
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 2,
+     "rub": 2
+    },
+    "mean_pass": 0.687,
+    "min_pass": 0.48,
+    "trials": {
+     "knock+": {
+      "passed": 32,
+      "total": 50,
+      "rate": 0.64
+     },
+     "knock-": {
+      "passed": 113,
+      "total": 129,
+      "rate": 0.876
+     },
+     "rub+": {
+      "passed": 24,
+      "total": 50,
+      "rate": 0.48
+     },
+     "rub-": {
+      "passed": 97,
+      "total": 129,
+      "rate": 0.752
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 2,
+     "rub": 4
+    },
+    "mean_pass": 0.7505,
+    "min_pass": 0.24,
+    "trials": {
+     "knock+": {
+      "passed": 47,
+      "total": 50,
+      "rate": 0.94
+     },
+     "knock-": {
+      "passed": 113,
+      "total": 129,
+      "rate": 0.876
+     },
+     "rub+": {
+      "passed": 12,
+      "total": 50,
+      "rate": 0.24
+     },
+     "rub-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 2,
+     "rub": 6
+    },
+    "mean_pass": 0.76,
+    "min_pass": 0.22,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 113,
+      "total": 129,
+      "rate": 0.876
+     },
+     "rub+": {
+      "passed": 11,
+      "total": 50,
+      "rate": 0.22
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 2,
+     "rub": 8
+    },
+    "mean_pass": 0.759,
+    "min_pass": 0.2,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 113,
+      "total": 129,
+      "rate": 0.876
+     },
+     "rub+": {
+      "passed": 10,
+      "total": 50,
+      "rate": 0.2
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 3,
+     "rub": 2
+    },
+    "mean_pass": 0.6935,
+    "min_pass": 0.54,
+    "trials": {
+     "knock+": {
+      "passed": 28,
+      "total": 50,
+      "rate": 0.56
+     },
+     "knock-": {
+      "passed": 119,
+      "total": 129,
+      "rate": 0.922
+     },
+     "rub+": {
+      "passed": 27,
+      "total": 50,
+      "rate": 0.54
+     },
+     "rub-": {
+      "passed": 97,
+      "total": 129,
+      "rate": 0.752
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 3,
+     "rub": 4
+    },
+    "mean_pass": 0.727,
+    "min_pass": 0.26,
+    "trials": {
+     "knock+": {
+      "passed": 39,
+      "total": 50,
+      "rate": 0.78
+     },
+     "knock-": {
+      "passed": 119,
+      "total": 129,
+      "rate": 0.922
+     },
+     "rub+": {
+      "passed": 13,
+      "total": 50,
+      "rate": 0.26
+     },
+     "rub-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 3,
+     "rub": 6
+    },
+    "mean_pass": 0.7365,
+    "min_pass": 0.24,
+    "trials": {
+     "knock+": {
+      "passed": 40,
+      "total": 50,
+      "rate": 0.8
+     },
+     "knock-": {
+      "passed": 119,
+      "total": 129,
+      "rate": 0.922
+     },
+     "rub+": {
+      "passed": 12,
+      "total": 50,
+      "rate": 0.24
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 1.5,
+    "k_frames": {
+     "knock": 3,
+     "rub": 8
+    },
+    "mean_pass": 0.7355,
+    "min_pass": 0.22,
+    "trials": {
+     "knock+": {
+      "passed": 40,
+      "total": 50,
+      "rate": 0.8
+     },
+     "knock-": {
+      "passed": 119,
+      "total": 129,
+      "rate": 0.922
+     },
+     "rub+": {
+      "passed": 11,
+      "total": 50,
+      "rate": 0.22
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.056,
+     "knock": 0.299,
+     "rub": 0.191
+    },
+    "active_window_acc": 0.7293,
+    "active_recall": [
+     0.305,
+     0.769,
+     0.865
+    ],
+    "active_confusion": [
+     [
+      145,
+      167,
+      164
+     ],
+     [
+      221,
+      1225,
+      146
+     ],
+     [
+      102,
+      36,
+      882
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 2
+    },
+    "mean_pass": 0.668,
+    "min_pass": 0.34,
+    "trials": {
+     "knock+": {
+      "passed": 36,
+      "total": 50,
+      "rate": 0.72
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 17,
+      "total": 50,
+      "rate": 0.34
+     },
+     "rub-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 4
+    },
+    "mean_pass": 0.7137,
+    "min_pass": 0.12,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 6,
+      "total": 50,
+      "rate": 0.12
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 6
+    },
+    "mean_pass": 0.7125,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 1,
+     "rub": 8
+    },
+    "mean_pass": 0.7065,
+    "min_pass": 0.06,
+    "trials": {
+     "knock+": {
+      "passed": 48,
+      "total": 50,
+      "rate": 0.96
+     },
+     "knock-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     },
+     "rub+": {
+      "passed": 3,
+      "total": 50,
+      "rate": 0.06
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 2
+    },
+    "mean_pass": 0.7153,
+    "min_pass": 0.44,
+    "trials": {
+     "knock+": {
+      "passed": 35,
+      "total": 50,
+      "rate": 0.7
+     },
+     "knock-": {
+      "passed": 118,
+      "total": 129,
+      "rate": 0.915
+     },
+     "rub+": {
+      "passed": 22,
+      "total": 50,
+      "rate": 0.44
+     },
+     "rub-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 4
+    },
+    "mean_pass": 0.741,
+    "min_pass": 0.16,
+    "trials": {
+     "knock+": {
+      "passed": 46,
+      "total": 50,
+      "rate": 0.92
+     },
+     "knock-": {
+      "passed": 118,
+      "total": 129,
+      "rate": 0.915
+     },
+     "rub+": {
+      "passed": 8,
+      "total": 50,
+      "rate": 0.16
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 6
+    },
+    "mean_pass": 0.7398,
+    "min_pass": 0.14,
+    "trials": {
+     "knock+": {
+      "passed": 46,
+      "total": 50,
+      "rate": 0.92
+     },
+     "knock-": {
+      "passed": 118,
+      "total": 129,
+      "rate": 0.915
+     },
+     "rub+": {
+      "passed": 7,
+      "total": 50,
+      "rate": 0.14
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 2,
+     "rub": 8
+    },
+    "mean_pass": 0.7338,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 46,
+      "total": 50,
+      "rate": 0.92
+     },
+     "knock-": {
+      "passed": 118,
+      "total": 129,
+      "rate": 0.915
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 2
+    },
+    "mean_pass": 0.683,
+    "min_pass": 0.46,
+    "trials": {
+     "knock+": {
+      "passed": 26,
+      "total": 50,
+      "rate": 0.52
+     },
+     "knock-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     },
+     "rub+": {
+      "passed": 23,
+      "total": 50,
+      "rate": 0.46
+     },
+     "rub-": {
+      "passed": 104,
+      "total": 129,
+      "rate": 0.806
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 4
+    },
+    "mean_pass": 0.6687,
+    "min_pass": 0.16,
+    "trials": {
+     "knock+": {
+      "passed": 30,
+      "total": 50,
+      "rate": 0.6
+     },
+     "knock-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     },
+     "rub+": {
+      "passed": 8,
+      "total": 50,
+      "rate": 0.16
+     },
+     "rub-": {
+      "passed": 125,
+      "total": 129,
+      "rate": 0.969
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 6
+    },
+    "mean_pass": 0.6675,
+    "min_pass": 0.14,
+    "trials": {
+     "knock+": {
+      "passed": 30,
+      "total": 50,
+      "rate": 0.6
+     },
+     "knock-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     },
+     "rub+": {
+      "passed": 7,
+      "total": 50,
+      "rate": 0.14
+     },
+     "rub-": {
+      "passed": 127,
+      "total": 129,
+      "rate": 0.984
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   },
+   {
+    "gate_scale": 2.0,
+    "k_frames": {
+     "knock": 3,
+     "rub": 8
+    },
+    "mean_pass": 0.6615,
+    "min_pass": 0.1,
+    "trials": {
+     "knock+": {
+      "passed": 30,
+      "total": 50,
+      "rate": 0.6
+     },
+     "knock-": {
+      "passed": 122,
+      "total": 129,
+      "rate": 0.946
+     },
+     "rub+": {
+      "passed": 5,
+      "total": 50,
+      "rate": 0.1
+     },
+     "rub-": {
+      "passed": 129,
+      "total": 129,
+      "rate": 1.0
+     }
+    },
+    "active_fraction": {
+     "neutral": 0.033,
+     "knock": 0.242,
+     "rub": 0.109
+    },
+    "active_window_acc": 0.7566,
+    "active_recall": [
+     0.233,
+     0.807,
+     0.893
+    ],
+    "active_confusion": [
+     [
+      64,
+      110,
+      101
+     ],
+     [
+      129,
+      1042,
+      120
+     ],
+     [
+      48,
+      14,
+      517
+     ]
+    ]
+   }
+  ]
+ },
+ "holdout": {
+  "evaluated_utc": "2026-10-18T22:23:48.231961+00:00",
+  "data": "handoff\\20261017_195725_85cb47b5_review1\\holdout.npz",
+  "sha256": "58817dce4afc5b0f05193f5a8793b0e068c1be100453e8c1de302a2a29cafe77",
+  "trials": {
+   "knock+": {
+    "passed": 10,
+    "total": 10,
+    "rate": 1.0
+   },
+   "knock-": {
+    "passed": 23,
+    "total": 25,
+    "rate": 0.92
+   },
+   "rub+": {
+    "passed": 0,
+    "total": 10,
+    "rate": 0.0
+   },
+   "rub-": {
+    "passed": 25,
+    "total": 25,
+    "rate": 1.0
+   }
+  },
+  "active_fraction": {
+   "neutral": 0.008,
+   "knock": 0.366,
+   "rub": 0.024
+  },
+  "active_window_acc": 0.9138,
+  "active_recall": [
+   0.692,
+   0.928,
+   0.808
+  ],
+  "active_confusion": [
+   [
+    9,
+    0,
+    4
+   ],
+   [
+    8,
+    362,
+    20
+   ],
+   [
+    0,
+    5,
+    21
+   ]
+  ]
+ }
+}
