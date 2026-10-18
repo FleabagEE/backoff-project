@@ -77,7 +77,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C OK bandage candidate | 0.1664591 (provisional) | pending | pending | pending | pending | quiet has transient disturbances; repeat needed |
+| C OK bandage candidate | 0.1206081 (retry) | pending | pending | pending | pending | stable quiet retry selected; rub/knock pending |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
@@ -251,3 +251,19 @@ reference or evidence that the bandage causes noise. Repeat unchanged setup as
 `C_bandage_quiet_retry1`, hands off board/cable/interface for the full run, and ask
 A whether there was contact/movement in the original run. If actual environmental
 noise persists, record it rather than selectively discarding difficult quiet data.
+
+### C bandage quiet stability retry
+
+Run `be9668eb7789`, `C_bandage_quiet_retry1`, 2026-10-18T00:38:30Z
+(October 17, 17:38:30 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 50 ms windows, zero overflow and zero digital clipping.
+ch2 median RMS **0.1206081% FS**, P10 RMS **0.1144196% FS**, overall RMS
+**0.1223143% FS**, maximum peak **0.5798340% FS**. This is close to B quiet
+(median difference **0.06 dB**) and is selected as the C comparison quiet reference.
+The first C quiet run remains preserved/provisional; A has not identified its
+transient cause, so no attribution is made. At this reference, a 15 dB median
+rub contrast requires approximately **0.6782% FS** light-rub median RMS.
+
+Next measure `C_bandage_rub_light` on the bandage at unchanged gain/mount/position,
+using the same naturally light finger pressure as A/B. Patch dimensions, exact
+rubbing face and placement photo still need documenting before hardware freeze.
