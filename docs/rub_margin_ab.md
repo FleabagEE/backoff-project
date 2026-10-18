@@ -76,7 +76,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
-| B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | pending | 47.0947266 | light-rub target unmet; normal rub and CLIP report pending |
+| B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
@@ -212,3 +212,21 @@ and P10 contrast **5.23 dB**. Median target 15 dB is not met; A's corresponding
 values were 10.19 / 5.09 dB. These single hand-performed runs do not establish a
 causal gain effect or monotonic improvement. Finish B normal rub at unchanged gain,
 then test the textured rub-zone option instead of chasing amplitude with more gain.
+
+### Gain candidate B normal rub
+
+Run `89ed8d26fbb2`, `B_gain_rub_normal`, 2026-10-18T00:13:28Z
+(October 17, 17:13:28 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 median
+RMS **0.4104691% FS**, P10 **0.2140613% FS**, overall RMS **0.4614996% FS**,
+maximum peak **2.2186279% FS**. Against B quiet, median contrast **10.70 dB**,
+P10 contrast **5.04 dB**. B quiet/light/normal/hard-knock runs are now measured,
+though the hard-knock CLIP LED report remains pending. The light-rub target is unmet.
+
+Next C preparation: keep the B step 3 gain, sensor position/mount, padding and
+rub location fixed. Add a small firmly attached sandpaper/textured-tape patch on
+the EXISTING rub area (not over the pickup), without a soft foam backing. Obtain
+A's material, patch dimensions and placement/photo before starting C measurements.
+Texture is the only intended variable. C is a different physical setup; existing
+session data remains pilot. No final hardware choice or classifier performance is
+established by this B result.
