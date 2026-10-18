@@ -18,6 +18,12 @@ Do not claim gain improved rub (A median contrast was slightly higher), or assum
 an energy gate will preserve all light rub. Final sessions, held-out data and
 silent-window QA are still pending. Capture/FFT/feature processing was not changed.
 
+**Physical-condition clarification pending:** a later photo shows bandage across
+the pickup as mounting restraint; it does not show a separate rub-zone texture.
+Keep the restraint. The prior proposed removal/restoration instruction is withdrawn
+until A identifies the C rubbing location. Preserve all numeric runs, but do not
+treat C as a controlled texture comparison or intended board rub without confirmation.
+
 ## Capture profile
 
 Run `uv run visualizer.py`. The repaired capture uses UM2 **INST 2**, USB Audio

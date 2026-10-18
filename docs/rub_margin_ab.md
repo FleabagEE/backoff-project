@@ -356,3 +356,19 @@ Task 1 measurements/available-option comparison are complete with target unmet.
 Task 2 is pending: A must confirm restoration, supply board/sensor/rub/knock/padding
 dimensions and gain/mount photos, then perform a short restored-setup level check
 before the configuration can be marked frozen. No final/holdout collection yet.
+
+### Photo clarification required: do not remove the pickup restraint
+
+A supplied a photo showing one white adhesive bandage crossing the red pickup
+housing and attaching to the board. This is visibly a **pickup restraint**; the
+photo does NOT establish a separate textured patch in the board's rub zone.
+The earlier instruction to remove a presumed separate rub-zone bandage is therefore
+**withdrawn pending clarification**. Do not remove the photographed pickup restraint,
+move the sensor, or declare B restored. No physical removal is confirmed.
+
+Ask A to identify where the C rub tests were performed: adjacent bare board,
+the bandage/pickup housing, or a separate patch not shown. Until confirmed, A/B/C
+numeric results remain preserved but the physical interpretation of C is pending;
+do not claim a controlled added-texture comparison. If C involved rubbing the
+pickup itself, it is not the intended board-rub condition and must not be used as
+evidence for board-rub performance. Never silently relabel or delete those runs.

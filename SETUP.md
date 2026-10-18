@@ -23,6 +23,12 @@ A confirms CLIP never flashed. **15 dB target was NOT achieved.** This is a meas
 compromise pending physical documentation, restored-level check and later data QA;
 do not mark the hardware frozen or data final yet. Full results: `docs/rub_margin_ab.md`.
 
+**Photo clarification supersedes the removal instruction above:** the supplied
+photo shows a bandage securing the pickup itself, not a confirmed separate rub-zone
+patch. KEEP this restraint in place. Do not remove any bandage or declare B restored
+until A identifies the actual C rubbing location and whether another patch exists.
+The interpretation of C as an added-texture experiment is pending clarification.
+
 ## Start here (Windows cmd)
 
 Close older FFT Trainer windows and diagnostic scripts, then run from this repo:
