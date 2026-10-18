@@ -76,7 +76,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
-| B gain | pending | pending | pending | pending | step 1: 37.7319; step 2: 76.8188 | step 2 exceeds 70%; backoff candidate pending |
+| B gain, step 3 candidate | pending | pending | pending | pending | 47.0947266 | highest tested gain under cap; quiet/rub and CLIP report pending |
 | C texture | pending | pending | pending | pending | pending | unmeasured |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
@@ -172,3 +172,19 @@ position and step 1 (nominal `A_plus_12deg`). Repeat the same hard-knock conditi
 as `B_gain_step3_knock_hard`. Operator angles and hand force are approximate:
 measured repeated peaks, not angle interpolation, decide acceptance. Photograph
 the eventual chosen gain and remeasure quiet/rub there before comparing margins.
+
+### Gain candidate B, step 3 hard knocks (backoff)
+
+Run `7e748ed04fbe`, `B_gain_step3_knock_hard`, 2026-10-18T00:00:35Z
+(October 17, 17:00:35 America/Los_Angeles), nominal gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2
+maximum peak **47.0947266% FS**, overall RMS **4.7991718% FS**, median 50 ms RMS
+**0.2683129% FS**, P10 **0.1318893% FS**. CLIP LED status is still unreported.
+
+This is the highest tested gain-position candidate below the 70% peak target,
+not a calibrated proof of the absolute maximum safe gain. Keep this position for
+B quiet/light/normal-rub measurements if A confirms no CLIP flash; do not increase
+again just to approach 70%. It leaves margin for uncontrolled performer force.
+Use `B_gain_quiet`, `B_gain_rub_light` and `B_gain_rub_normal` with the same
+`A_plus_12deg` gain note. Compare rub against B's newly measured quiet, not A's
+reference. Final gain acceptance and hardware freeze remain pending that comparison.
