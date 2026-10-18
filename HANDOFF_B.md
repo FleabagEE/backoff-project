@@ -1,5 +1,15 @@
 # B: train from A's saved FFT sessions
 
+**DATA DELIVERY: CLOUD ARCHIVE.** Cloud link: **PENDING — A will paste the link**.
+GitHub contains code, tests, take logs, configuration, split corrections and QA
+reports only for this final session. Final-session NPZ files and corrected exports
+remain local and are excluded from Git. Already-pushed pilot history is unchanged.
+Archive: `packages/A_final_20261017_195725_85cb47b5.zip`. Download/extract it into
+a local folder; use its `handoff/20261017_195725_85cb47b5_review1/train.npz` and
+`holdout.npz`. The archive also contains all original captures, configuration,
+logs and `docs/final_split_corrections.csv`. Archive size/SHA256 are recorded in
+`docs/cloud_archive.json`. No cloud upload or sharing link has been created yet.
+
 **FINAL COLLECTION UPDATE — start here:** 43 original takes are collected in
 `data_sessions/20261017_195725_85cb47b5/`. Intended holdout was accidentally saved
 as train. Use ONLY the explicitly corrected exports and QA in

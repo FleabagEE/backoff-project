@@ -1,4 +1,9 @@
 metadata/
+# Local capture datasets and corrected exports are shared through a cloud archive.
+data_sessions/**/*.npz
+handoff/**/*.npz
+# Transfer archives remain local, never part of a Git push.
+packages/*.zip
 .DS_Store
 # Python-generated files
 __pycache__/

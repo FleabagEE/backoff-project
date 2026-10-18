@@ -1,5 +1,12 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+**DELIVERY UPDATE:** large binary upload retries stopped at A's request after
+HTTP 408. Remote history through f655944 is unchanged. Only the unpublished data
+commit was removed, with local files retained. Final-session and handoff NPZs
+are ignored by Git; small logs/config/QA/code/docs remain tracked. Data is packaged
+as `packages/A_final_20261017_195725_85cb47b5.zip`, to be shared by A's cloud link
+(pending). See HANDOFF_B.md and docs/cloud_archive.json. No cloud upload performed.
+
 **AUTHORITATIVE FINAL DATA UPDATE (supersedes pending-collection text below):**
 43 original takes collected, all A, in `data_sessions/20261017_195725_85cb47b5/`.
 Actual live GUI autosave/counters worked. Intended holdout notes were entered but
