@@ -77,7 +77,7 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
 | B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | pending | light-rub target unmet; hard knock and material details pending |
+| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | measured; light-rub target unmet; material details/CLIP report pending |
 | D closer, optional | pending | pending | pending | pending | pending | optional |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
@@ -293,3 +293,23 @@ but weaker intervals remain poorly separated and light-rub target remains unmet.
 Finish `C_bandage_knock_hard` at the same gain/location and report CLIP before
 comparing completed configurations. Bandage rubbing face, dimensions and photo
 remain unreported; do not freeze this setup or assume texture has solved rub.
+
+### C bandage hardest knock and comparison status
+
+Run `2cd2d668ef87`, `C_bandage_knock_hard`, 2026-10-18T00:49:02Z
+(October 17, 17:49:02 America/Los_Angeles), gain note `A_plus_12deg`.
+Complete 10.00 s, 200 windows, zero overflow and zero digital clipping. ch2 maximum
+peak **25.0915527% FS**, overall RMS **4.4819807% FS**, median 50 ms RMS
+**0.5335157% FS**, P10 **0.1191134% FS**. A did not report CLIP LED status.
+
+A/B/C numeric comparisons are complete. Light-rub median/P10 contrasts are
+**A 10.19/5.09 dB, B 9.21/5.23 dB, C bandage 6.21/2.28 dB**: no option reaches
+15 dB. C's tested hard knock is below 70%, but its lower peak than B at nominally
+unchanged gain may reflect uncontrolled force/position or setup differences, not
+proof of a bandage effect. No causal conclusion or final freeze is justified.
+
+Next obtain a full-board photo showing pickup, bandage/rub area and knock area,
+with their separation/dimensions, before deciding whether an optional closer-sensor
+test is useful. Do not blindly move the pickup or increase gain. Confirm the actual
+bandage rubbing face and outstanding CLIP report during this setup inspection.
+Original data/measurements remain intact, all old collection sessions remain pilot.
