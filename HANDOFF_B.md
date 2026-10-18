@@ -7,6 +7,17 @@ the final training and held-out takes solo after a rub-margin A/B comparison.
 No final/holdout sessions exist yet. See `docs/rub_margin_ab.md` for the current
 physical comparison; measurements and the final hardware choice are still pending.
 
+**Available-option comparison update:** A baseline light-rub median/P10 contrasts
+10.19/5.09 dB; B raised-gain bare board 9.21/5.23 dB; C OK bandage 6.21/2.28 dB.
+No option meets the 15 dB light-rub target. No other textured material is available;
+closer-sensor trial is skipped because A reports the sensor already close. Current
+provisional recommendation is restore B bare board, preserve step 3 gain, then
+document/recheck before freezing. B hard-knock peak was 47.09% FS, quiet median
+0.1198% FS, light-rub median/P10 0.3460/0.2187% FS. Operator confirms no CLIP flashes.
+Do not claim gain improved rub (A median contrast was slightly higher), or assume
+an energy gate will preserve all light rub. Final sessions, held-out data and
+silent-window QA are still pending. Capture/FFT/feature processing was not changed.
+
 ## Capture profile
 
 Run `uv run visualizer.py`. The repaired capture uses UM2 **INST 2**, USB Audio

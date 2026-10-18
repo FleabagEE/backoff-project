@@ -14,6 +14,15 @@ keep it intact and exclude it from final training/validation. The three-person
 collection schedule below will be replaced by a solo variation plan after hardware
 is frozen. Do not collect final takes yet.
 
+**Task 1 decision (provisional):** A has no sandpaper/textured tape and reports
+sensor already close to rub area. Restore B bare board by removing only the rub-zone
+OK bandage, keeping the current gain and sensor mounting. A has not yet confirmed
+restoration. B reference: quiet median 0.1198% FS; light-rub median/P10 contrast
+9.21/5.23 dB; strongest tested knock peak 47.09% FS, no digital clipping/overflow.
+A confirms CLIP never flashed. **15 dB target was NOT achieved.** This is a measured
+compromise pending physical documentation, restored-level check and later data QA;
+do not mark the hardware frozen or data final yet. Full results: `docs/rub_margin_ab.md`.
+
 ## Start here (Windows cmd)
 
 Close older FFT Trainer windows and diagnostic scripts, then run from this repo:

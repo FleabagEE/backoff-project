@@ -80,9 +80,10 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | measured; target unmet; no CLIP flashes; material details pending |
 | D closer, optional | n/a | n/a | n/a | n/a | n/a | skipped: operator reports pickup already very close to rub area |
 
-Recommendation and final ranges remain pending. If target is unattainable, document
-the best measured compromise and the residual light-rub false-negative risk for B;
-do not change feature processing or fabricate a passing margin.
+Provisional recommendation: restore **B bare board at step 3 gain** (see decision
+below), subject to A confirming physical restoration and documenting the setup.
+No tested candidate met the 15 dB light-rub target; carry that risk into data QA
+and B's model work rather than changing feature processing or claiming a pass.
 
 ### Recorded baseline quiet
 
@@ -328,3 +329,30 @@ tape patch is available: the tested OK bandage is a distinct candidate, with
 rubbing face/padding still unspecified, and cannot stand in for a measured
 sandpaper/textured-tape result. If unavailable, document the unmet 15 dB target
 and choose a reproducible measured compromise; never claim the target was met.
+
+### Available-material decision and next hardware documentation
+
+A reports **no sandpaper, anti-slip tape or other thin textured tape is available**.
+Do not require a purchase or repeat gain-only experiments. Optional closer-sensor
+test is already skipped because A reports the pickup is close to the rub zone.
+
+Recommend restoring **B bare-board configuration at the current step 3 gain**:
+remove only the newly added OK bandage from the rub area, preserving pickup mounting
+tape, cable strain relief, gain and all Windows/capture settings. This is a
+provisional instruction; restoration has NOT yet been confirmed by A.
+
+Rationale: B's tested hard-knock peak 47.09% FS leaves headroom and its light-rub
+median/P10 contrasts 9.21/5.23 dB exceed the bandage run's 6.21/2.28 dB. A's median
+contrast was slightly higher (10.19 dB), so B is NOT proven superior to A for rub;
+the higher tested gain/current reproducibility is a practical compromise. Force,
+position and single-run variability limit causal comparisons. None meets 15 dB.
+
+Remaining risk: weak/variable light rub may be gated as neutral; an energy threshold
+alone may not separate all neutral adversaries from rub. Preserve original features
+and measure silent-window fractions/grouped QA before treating this as usable final
+training data. No claim of bakeoff trial reliability is warranted yet.
+
+Task 1 measurements/available-option comparison are complete with target unmet.
+Task 2 is pending: A must confirm restoration, supply board/sensor/rub/knock/padding
+dimensions and gain/mount photos, then perform a short restored-setup level check
+before the configuration can be marked frozen. No final/holdout collection yet.
