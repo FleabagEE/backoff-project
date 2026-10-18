@@ -76,9 +76,9 @@ inspect light-rub P10 as well, with strongest knocks <=70% FS and no clipping.
 | Configuration | Quiet median %FS | Light-rub median / P10 %FS | Median / P10 margin dB | Normal-rub median %FS | Hard-knock max peak %FS | Result |
 |---|---|---|---|---|---|---|
 | A current | 0.1137944 | 0.3679327 / 0.2043900 | 10.19 / 5.09 | 0.3778285 | 22.9675293 | baseline complete; light rub below 15 dB target |
-| B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | B measurements complete; light-rub target unmet; CLIP report pending |
-| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | measured; light-rub target unmet; material details/CLIP report pending |
-| D closer, optional | pending | pending | pending | pending | pending | optional |
+| B gain, step 3 candidate | 0.1198119 | 0.3459591 / 0.2186900 | 9.21 / 5.23 | 0.4104691 | 47.0947266 | measured; light-rub target unmet; operator confirms no CLIP flashes |
+| C OK bandage candidate | 0.1206081 (retry) | 0.2464201 / 0.1568561 | 6.21 / 2.28 | 0.4510998 | 25.0915527 | measured; target unmet; no CLIP flashes; material details pending |
+| D closer, optional | n/a | n/a | n/a | n/a | n/a | skipped: operator reports pickup already very close to rub area |
 
 Recommendation and final ranges remain pending. If target is unattainable, document
 the best measured compromise and the residual light-rub false-negative risk for B;
@@ -313,3 +313,18 @@ with their separation/dimensions, before deciding whether an optional closer-sen
 test is useful. Do not blindly move the pickup or increase gain. Confirm the actual
 bandage rubbing face and outstanding CLIP report during this setup inspection.
 Original data/measurements remain intact, all old collection sessions remain pilot.
+
+### Operator follow-up: proximity and CLIP status
+
+A reports the pickup is already very close to the rub zone, and **CLIP never
+flashed during the reported tests**. This resolves the earlier pending CLIP reports
+for the gain/bandage comparisons; historical notes above describe what was known
+when each measurement arrived. Exact sensor/rub coordinates and dimensions remain
+unmeasured, so do not invent a numeric distance.
+
+Skip optional D (moving closer) rather than disturb an already close mounting.
+Gain and sensor stay unchanged for now. Confirm whether sandpaper or a textured
+tape patch is available: the tested OK bandage is a distinct candidate, with
+rubbing face/padding still unspecified, and cannot stand in for a measured
+sandpaper/textured-tape result. If unavailable, document the unmet 15 dB target
+and choose a reproducible measured compromise; never claim the target was met.
