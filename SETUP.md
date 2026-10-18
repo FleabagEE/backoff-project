@@ -1,5 +1,16 @@
 ﻿# Frozen hardware setup and data collection
 
+**FREEZE CONFIRMED BY A:** original gain A restored; hardware CLIP did not flash;
+board directly on table, no padding. Keep this measured configuration unchanged.
+Follow [solo final collection](docs/solo_collection.md) with `uv run visualizer.py --final`.
+Photos, pickup/zone coordinates and cable restraint details remain to document.
+
+**LATEST UPDATE:** board 17 x 27 cm; RUB is ON the separate bandage nearest the
+pickup, KNOCK ON the farther bandage, superseding the bare-board proposal below.
+Keep the pickup restraint untouched. Zone checks pass digital criteria: firm-rub
+median contrast 16.67 dB, hard peak 58.868% FS, zero digital clipping/overflow.
+Keep measured gain/mounting fixed. See `docs/zone_check_results.md`.
+
 Bakeoff: **Thursday, October 22, 2026**. A owns hardware/data collection; B owns
 model training, energy gate, temporal decisions and trial recorder; C owns slides.
 Software collection workflow is ready. Hardware is a **candidate configuration**

@@ -1,6 +1,10 @@
 # Marked-zone check before immediate hardware freeze
 
-Status: **awaiting A's board dimensions and original gain-A mark/photo**.
+**LATEST UPDATE:** four runs complete; see `zone_check_results.md`. Operator
+clarified separate bandages themselves are RUB/KNOCK surfaces, superseding the
+bare-board proposal below. Digital criteria pass; keep measured setup fixed.
+
+Historical status: **awaiting A's board dimensions and original gain-A mark/photo**.
 No new measurement has been performed or accepted under this protocol.
 
 ## Current decisions

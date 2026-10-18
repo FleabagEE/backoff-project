@@ -12,14 +12,16 @@ import dearpygui.dearpygui as dpg
 import numpy as np
 import pyaudio
 
-from collection import CollectionSession, utc_now
+from collection import CollectionSession, utc_now, training_eligible
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
 
 
 class App:
-    def __init__(self, session_root='data_sessions', device=None):
+    def __init__(self, session_root='data_sessions', device=None, final=False):
         self.session_root = session_root
+        self.session_type = 'final' if final else 'pilot'
+        self.take_counts = {split: dict(neutral=0, knock=0, rub=0) for split in ('train', 'holdout')}
         self.ear = None
         self.session = None
         self.pending_take = None
@@ -101,6 +103,10 @@ class App:
             dpg.add_text('No session yet', tag='session_path', wrap=385)
             dpg.add_combo(['Train', 'Infer'], default_value='Train', tag='mode', callback=self.mode_callback)
             with dpg.group(tag='train_group'):
+                dpg.add_text(f'Session: {self.session_type}; new session each launch')
+                dpg.add_combo(['train', 'holdout'], default_value='train', tag='split', label='Data split')
+                dpg.add_text('Training takes: knock 0/10, rub 0/10, neutral 0/16', tag='take_progress', wrap=385)
+                dpg.add_text('Holdout takes: knock 0/2, rub 0/2, neutral 0/2', tag='holdout_progress', wrap=385)
                 dpg.add_input_text(label='Performer', tag='performer', default_value='A', width=210)
                 dpg.add_input_text(label='Variation / notes', tag='variation', width=210,
                                    hint='force, position, action')
@@ -196,6 +202,8 @@ class App:
         if self.session:
             self.session.exclude_class(name)
         self.collected_data[name] = []
+        for counts in self.take_counts.values():
+            counts[name] = 0
         dpg.set_value(f'count_{name}', f'{name}: 0')
         self.message(f'{name} cleared; saved originals are retained as excluded takes.')
 
@@ -209,7 +217,8 @@ class App:
 
     def config(self):
         info = self.devices[self.selected_device]
-        return dict(device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
+        return dict(session_type=self.session_type, setup_id='A_bandage_zones_17x27_direct_table',
+                    device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
                     backend='PyAudio', physical_input='UM2 INST 2', captured_channels=2,
                     selected_channel_1_based=2, dtype='int16', sample_rate=48000,
                     frames_per_capture_block=self.ear.stream_reader.update_window_n_frames,
@@ -239,6 +248,9 @@ class App:
             if not dpg.get_value('performer').strip():
                 self.message('Enter performer before recording.')
                 return
+            if not dpg.get_value('variation').strip():
+                self.message('Enter variation/action before recording so B can audit each take.')
+                return
             if self.session is None:
                 self.session = CollectionSession(self.config(), self.session_root)
                 dpg.set_value('session_path', str(self.session.path.resolve()))
@@ -246,7 +258,8 @@ class App:
             self.frames, self.times, self.rms, self.peaks = [], [], [], []
             self.take_start = time.monotonic()
             self.take_notes = dict(performer=dpg.get_value('performer').strip(),
-                                   variation=dpg.get_value('variation'), started_utc=utc_now())
+                                   variation=dpg.get_value('variation'), split=dpg.get_value('split'),
+                                   started_utc=utc_now())
             self.take_limit = max(5, min(60, dpg.get_value('take_limit')))
             self.status_start = self.ear.stream_reader.status_count
             self.is_recording = True
@@ -280,10 +293,19 @@ class App:
             dpg.configure_item('record_button', label='Retry Save', enabled=True)
             self.message('SAVE FAILED: take retained in memory. Check disk; click Retry Save before closing.')
             raise
-        if self.pending_take['valid']:
+        if training_eligible(self.pending_take):
             name = self.pending_take['class_name']
             self.collected_data[name].extend(self.pending_take['X'])
             dpg.set_value(f'count_{name}', f'{name}: {len(self.collected_data[name])}')
+        if self.pending_take['valid']:
+            split = self.pending_take['split']
+            name = self.pending_take['class_name']
+            self.take_counts[split][name] = self.take_counts[split].get(name, 0) + 1
+            for split_name, tag, targets in [('train', 'take_progress', dict(knock=10, rub=10, neutral=16)),
+                                            ('holdout', 'holdout_progress', dict(knock=2, rub=2, neutral=2))]:
+                counts = self.take_counts[split_name]
+                dpg.set_value(tag, split_name + ' takes: ' + ', '.join(
+                    f'{key} {counts[key]}/{target}' for key, target in targets.items()))
         self.pending_take = None
         self.unsaved = False
         self.frames, self.times, self.rms, self.peaks = [], [], [], []
@@ -426,9 +448,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--device', type=int, help='explicit PyAudio input index (normally auto-select WASAPI USB Audio CODEC)')
     parser.add_argument('--session-root', default='data_sessions')
+    parser.add_argument('--final', action='store_true', help='mark a NEW session as final; holdout selected per take')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
-    App(args.session_root, args.device).run(args.smoke_seconds)
+    App(args.session_root, args.device, final=args.final).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':

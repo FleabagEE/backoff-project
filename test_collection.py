@@ -158,6 +158,7 @@ class SessionTests(unittest.TestCase):
         self.assertFalse(first.exists())
         self.assertTrue(first.with_name(first.stem+'.excluded.npz').exists())
         self.assertFalse((self.session.path/'dataset.npz').exists())
+        self.assertEqual(len(list(self.session.path.glob('dataset_before_clear_*.npz'))), 1)
         with np.load(self.session.export(), allow_pickle=False) as data:
             self.assertEqual(data['class_names'].tolist(), ['rub'])
             self.assertEqual(len(data['X']), 4)
@@ -169,6 +170,17 @@ class SessionTests(unittest.TestCase):
         with np.load(self.session.export(), allow_pickle=False) as data:
             self.assertEqual(len(data['X']), 4)
             self.assertEqual(data['class_names'].tolist(), ['neutral'])
+
+    def test_holdout_split_survives_export_and_is_not_training_eligible(self):
+        from collection import training_eligible
+        self.save('knock', split='train')
+        self.save('rub', split='holdout')
+        with np.load(self.session.export(), allow_pickle=False) as data:
+            self.assertEqual(int(np.sum(data['split'] == 'holdout')), 4)
+            notes = json.loads(str(data['takes_json']))
+            eligible = [n['class_name'] for n in notes if training_eligible(n)]
+            self.assertEqual(eligible, ['knock'])
+        self.assertIn('holdout', (self.session.path/'takes.csv').read_text(encoding='utf-8'))
 
     def test_failed_atomic_write_does_not_replace_saved_data(self):
         target = self.session.path / 'existing.npz'

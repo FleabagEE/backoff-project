@@ -1,5 +1,20 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+**FREEZE CONFIRMED:** A restored original gain from mark/photo, hardware CLIP did
+not flash, board directly on table without padding. Solo plan is
+`docs/solo_collection.md`: 36 train + 6 holdout takes, all performer A. GUI
+`--final` marks new final sessions, saves split per take/exported row and displays
+per-class take counts; holdout never enters GUI fitting. Existing data is pilot.
+Eleven regression tests pass; controls build and split toggles in an audio-free
+check, but automatic native GUI setup/teardown did not complete successfully.
+Full live GUI confirmation is pending operator launch. No FFT changes.
+
+**LATEST UPDATE:** four zone checks pass digital criteria. Board 17 x 27 cm;
+actions ON separate bandages (nearest pickup=RUB, farther=KNOCK), not bare board.
+Firm median contrast 16.67 dB; hard peak 58.868% FS; zero digital clipping/overflow.
+See `docs/zone_check_results.md` for values and pending physical confirmations.
+This supersedes older pending-zone statements below. Final/holdout and QA remain.
+
 **A's complete assignment is NOT finished.** Capture tools and pilot upload are
 complete; final hardware freeze, solo final/holdout collection and dataset QA remain.
 Do not describe the existing data as final or bakeoff-validated.

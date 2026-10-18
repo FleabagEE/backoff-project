@@ -14,6 +14,10 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
+def training_eligible(info):
+    return info.get('valid', True) and info.get('split', 'train') == 'train'
+
+
 def atomic_npz(path, **arrays):
     path = Path(path)
     temporary = path.with_name(path.name + '.tmp')
@@ -63,7 +67,7 @@ class CollectionSession:
         return path
 
     def write_log(self):
-        fields = ['take_id', 'class_name', 'performer', 'variation', 'started_utc',
+        fields = ['take_id', 'class_name', 'performer', 'variation', 'split', 'started_utc',
                   'duration_s', 'sample_count', 'valid', 'reason', 'saved_utc', 'file']
         path = self.path / 'takes.csv'
         temporary = path.with_suffix('.csv.tmp')
@@ -85,7 +89,9 @@ class CollectionSession:
                 path.rename(path.with_name(path.stem + '.excluded.npz'))
         self.write_log()
         # An older aggregate must never silently survive a Clear operation.
-        (self.path / 'dataset.npz').unlink(missing_ok=True)
+        aggregate = self.path / 'dataset.npz'
+        if aggregate.exists():
+            aggregate.rename(self.path / f'dataset_before_clear_{uuid.uuid4().hex[:8]}.npz')
 
     def export(self):
         return export_session(self.path)
@@ -95,7 +101,7 @@ def export_session(folder):
     """Rebuild dataset.npz from saved valid takes, including after restarting Python."""
     folder = Path(folder)
     config = json.loads((folder / 'config.json').read_text(encoding='utf-8'))
-    features, labels, ids, times, rms, peaks, notes = [], [], [], [], [], [], []
+    features, labels, ids, times, rms, peaks, notes, splits = [], [], [], [], [], [], [], []
     classes = []
     for path in sorted(folder.glob('take_*.npz')):
         if '.excluded.' in path.name:
@@ -115,6 +121,7 @@ def export_session(folder):
             features.append(X)
             labels.extend([classes.index(name)] * len(X))
             ids.extend([info['take_id']] * len(X))
+            splits.extend([info.get('split', 'train')] * len(X))
             times.append(data['elapsed_s'])
             rms.append(data['rms_fs'])
             peaks.append(data['peak_fs'])
@@ -123,7 +130,7 @@ def export_session(folder):
         raise ValueError('No valid saved takes to export')
     target = folder / 'dataset.npz'
     atomic_npz(target, X=np.concatenate(features), y=np.asarray(labels, dtype=np.int64),
-               class_names=np.asarray(classes), take_ids=np.asarray(ids),
+               class_names=np.asarray(classes), take_ids=np.asarray(ids), split=np.asarray(splits),
                elapsed_s=np.concatenate(times), rms_fs=np.concatenate(rms), peak_fs=np.concatenate(peaks),
                config_json=np.array(json.dumps(config, ensure_ascii=False)),
                takes_json=np.array(json.dumps(notes, ensure_ascii=False)))

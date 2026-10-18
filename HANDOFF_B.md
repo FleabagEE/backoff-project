@@ -1,5 +1,14 @@
 # B: train from A's saved FFT sessions
 
+**CURRENT FREEZE:** A confirmed original gain restored, no CLIP flash, board
+17 x 27 cm directly on table with no pads. Actions ON separate bandages:
+nearer pickup=RUB, farther=KNOCK; sensor restraint untouched. Firm-rub median
+contrast 16.67 dB, hard peak 58.868% FS; zero digital clipping/overflow.
+See docs/zone_check_results.md and docs/solo_collection.md. New GUI --final
+sessions store train/holdout per take and exported row (`split`); exclude holdout
+from fitting/tuning. Historical bare-board proposals below are superseded.
+No final take has yet been verified. Direct table contact is a portability risk.
+
 **Session status update:** `data_sessions/20261017_013429_24eda79c/` is **pilot only**
 (four takes, 2133 feature rows). Preserve it for diagnostics; exclude it from final
 training/validation and holdout evaluation. A holds all hardware and will collect
