@@ -16,7 +16,7 @@ def utc_now():
 
 def training_eligible(info):
     return (info.get('valid', True) and info.get('split', 'train') == 'train'
-            and info.get('recording_kind', 'take') != 'trial'
+            and info.get('recording_kind', 'take') not in ('trial', 'diagnostic')
             and (info.get('class_name') != 'rub'
                  or 'scratch_nail_paper' in info.get('variation', '')))
 
@@ -114,7 +114,7 @@ def export_session(folder):
             info = json.loads(str(data['metadata_json']))
             if not info.get('valid', True):
                 continue
-            if info.get('recording_kind') == 'trial' or info.get('split') == 'trial':
+            if info.get('recording_kind') in ('trial', 'diagnostic') or info.get('split') in ('trial', 'diagnostic'):
                 continue
             if json.loads(str(data['config_json'])) != config:
                 raise ValueError(f'Capture configuration mismatch: {path}')

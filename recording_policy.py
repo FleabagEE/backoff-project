@@ -4,6 +4,11 @@ TRIAL_TYPES = ('knock_pos', 'rub_pos', 'knock_neg', 'rub_neg')
 
 def recording_plan(kind, split, class_name, variation, trial_type='', action_performed='',
                    holdout_confirmed=False):
+    if kind == 'diagnostic':
+        if not class_name or not variation.strip():
+            raise ValueError('Select a diagnostic class and descriptive variation.')
+        return dict(recording_kind='diagnostic', split='diagnostic', class_name=class_name,
+                    variation=variation.strip(), holdout_confirmed=False)
     if kind == 'trial':
         if trial_type not in TRIAL_TYPES or not action_performed.strip():
             raise ValueError('Select a trial type and describe action_performed.')

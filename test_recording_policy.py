@@ -11,6 +11,39 @@ from trial_replay import score_trial, replay
 
 
 class RecordingTests(unittest.TestCase):
+    def test_real_gui_diagnostic_start_stop_saves_without_container_enable(self):
+        import dearpygui.dearpygui as dpg
+        from visualizer import App
+        from types import SimpleNamespace
+        dpg.create_context()
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                app=App.__new__(App)
+                app.devices={}; app.selected_device=None; app.session_type='final'
+                app.collected_data={}; app.pending_take=None; app.unsaved=False
+                app.ear=SimpleNamespace(stream_reader=SimpleNamespace(status_count=0))
+                app.healthy=lambda: True
+                app.session=CollectionSession(dict(feature_count=4),tmp)
+                app.build_ui(); app.add_class('neutral')
+                dpg.set_value('recording_kind','diagnostic')
+                dpg.set_value('take_limit',10)
+                app.start_take(recording_plan('diagnostic','train','neutral','gui_level_check_quiet'),'A')
+                self.assertTrue(app.is_recording)
+                self.assertFalse(dpg.get_item_configuration('select_neutral')['enabled'])
+                app.frames=[np.ones(4),np.ones(4)]
+                app.times=[.1,9.9]; app.rms=[.001,.001]; app.peaks=[.005,.005]
+                app.stop_take()
+                self.assertFalse(app.is_recording)
+                self.assertTrue(dpg.get_item_configuration('select_neutral')['enabled'])
+                self.assertEqual(len(app.session.take_paths()),1)
+                with np.load(app.session.take_paths()[0],allow_pickle=False) as data:
+                    info=json.loads(str(data['metadata_json']))
+                    self.assertEqual(info['split'],'diagnostic')
+                    self.assertTrue(info['valid'])
+                self.assertEqual(app.collected_data['neutral'],[])
+        finally:
+            dpg.destroy_context()
+
     def test_holdout_needs_fresh_explicit_confirmation_and_snapshot(self):
         from visualizer import App
         app=App.__new__(App)
@@ -33,6 +66,20 @@ class RecordingTests(unittest.TestCase):
             values['variation']='scratch_nail_paper changed settings'
             app.confirm_holdout()
             app.start_take.assert_not_called()
+
+    def test_diagnostic_never_enters_training_or_aggregate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session=CollectionSession(dict(feature_count=4),tmp)
+            session.save_take('neutral',np.ones((2,4)),[.1,.2],[.001]*2,[.1]*2,split='train')
+            plan=recording_plan('diagnostic','train','neutral','gui_level_check_quiet')
+            self.assertEqual(plan['split'],'diagnostic')
+            name=plan.pop('class_name')
+            self.assertFalse(training_eligible(dict(plan,class_name=name)))
+            self.assertFalse(training_eligible(dict(plan,class_name=name,split='train')))
+            session.save_take(name,np.ones((2,4)),[.1,9.9],[.001]*2,[.1]*2,**plan)
+            with np.load(session.export(),allow_pickle=False) as data:
+                self.assertEqual(len(data['X']),2)
+                self.assertNotIn('diagnostic',data['split'])
 
     def test_guard_wrong_split_and_old_rub(self):
         with self.assertRaises(ValueError):

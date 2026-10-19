@@ -108,7 +108,7 @@ class App:
             with dpg.group(tag='train_group'):
                 dpg.add_text(f'Session: {self.session_type}; new session each launch')
                 dpg.add_text('rub = FINGERNAIL SCRATCH ON PAPER', color=(255, 220, 80), wrap=385)
-                dpg.add_combo(['take', 'trial'], default_value='take', tag='recording_kind',
+                dpg.add_combo(['take', 'trial', 'diagnostic'], default_value='take', tag='recording_kind',
                               label='Recording kind', callback=self.split_callback)
                 dpg.add_combo(['train', 'holdout'], default_value='train', tag='split',
                               label='DATA SPLIT', callback=self.split_callback)
@@ -158,10 +158,12 @@ class App:
 
     def split_callback(self, *_):
         trial = dpg.get_value('recording_kind') == 'trial'
+        diagnostic = dpg.get_value('recording_kind') == 'diagnostic'
         dpg.configure_item('trial_options', show=trial)
-        dpg.configure_item('split', enabled=not trial)
+        dpg.configure_item('split', enabled=not (trial or diagnostic))
         dpg.configure_item('take_limit', enabled=not trial)
-        dpg.set_value('split_banner', 'EVALUATION TRIAL ONLY - NEVER TRAIN' if trial else
+        dpg.set_value('split_banner', 'DIAGNOSTIC ONLY - NEVER TRAIN OR HOLDOUT' if diagnostic else
+                      'EVALUATION TRIAL ONLY - NEVER TRAIN' if trial else
                       ('WILL SAVE AS HOLDOUT - CONFIRM EACH TAKE' if dpg.get_value('split') == 'holdout'
                        else 'WILL SAVE AS TRAIN'))
 
@@ -233,8 +235,8 @@ class App:
         with dpg.group(parent='class_list', tag=f'class_group_{name}'):
             dpg.add_text(f'{name}: 0', tag=f'count_{name}')
             with dpg.group(horizontal=True):
-                dpg.add_button(label='Select', callback=lambda s, a, u: self.select_class(u), user_data=name)
-                dpg.add_button(label='Clear data', callback=lambda s, a, u: self.clear_class(u), user_data=name)
+                dpg.add_button(label='Select', tag=f'select_{name}', callback=lambda s, a, u: self.select_class(u), user_data=name)
+                dpg.add_button(label='Clear data', tag=f'clear_{name}', callback=lambda s, a, u: self.clear_class(u), user_data=name)
             dpg.add_separator()
 
     def select_class(self, name):
@@ -326,8 +328,11 @@ class App:
         self.status_start = self.ear.stream_reader.status_count
         self.is_recording = True
         for tag in ('recording_kind', 'split', 'performer', 'variation', 'trial_type',
-                    'action_performed', 'take_limit', 'class_list', 'mode'):
+                    'action_performed', 'take_limit', 'mode'):
             dpg.disable_item(tag)
+        for name in self.collected_data:
+            dpg.disable_item(f'select_{name}')
+            dpg.disable_item(f'clear_{name}')
         dpg.configure_item('record_button', label='Stop Recording')
         self.message(f"Recording {self.record_val}; SAVING AS {plan['split'].upper()}; "
                      f'auto-stop after {self.take_limit:g}s.')
@@ -337,8 +342,11 @@ class App:
             return
         self.is_recording = False
         for tag in ('recording_kind', 'split', 'performer', 'variation', 'trial_type',
-                    'action_performed', 'take_limit', 'class_list', 'mode'):
+                    'action_performed', 'take_limit', 'mode'):
             dpg.enable_item(tag)
+        for name in self.collected_data:
+            dpg.enable_item(f'select_{name}')
+            dpg.enable_item(f'clear_{name}')
         self.split_callback()
         dpg.configure_item('record_button', label='Record Data')
         if not self.frames:
@@ -374,7 +382,7 @@ class App:
             self.trial_counts[kind] += 1
             dpg.set_value('trial_progress', 'Trials: ' + ', '.join(
                 f'{key} {count}/5' for key, count in self.trial_counts.items()))
-        elif self.pending_take['valid']:
+        elif self.pending_take['valid'] and self.pending_take['split'] in ('train', 'holdout'):
             split = self.pending_take['split']
             name = self.pending_take['class_name']
             self.take_counts[split][name] = self.take_counts[split].get(name, 0) + 1

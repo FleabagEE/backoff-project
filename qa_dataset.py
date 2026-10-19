@@ -48,7 +48,7 @@ def load_takes(folder, overrides=None):
             if info['take_id'] in seen_ids:
                 raise ValueError('Duplicate take IDs')
             seen_ids.add(info['take_id'])
-            if info.get('recording_kind') == 'trial' or info.get('split') == 'trial':
+            if info.get('recording_kind') in ('trial', 'diagnostic') or info.get('split') in ('trial', 'diagnostic'):
                 continue
             if json.loads(str(data['config_json'])) != config:
                 raise ValueError(f'Configuration mismatch: {path.name}')
