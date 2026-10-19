@@ -1,5 +1,16 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+**October19 model ownership / pre-grid update:** A now owns retraining/tuning on
+`a-tuning`, based on B's `model-training` branch. B's v1 used OLD fingertip rub.
+See `docs/PREGRID_FINDINGS.md`: train-only five-fold grouped comparison slightly
+favors 8 kHz (macro F1 73.86%; 12 kHz 73.85%). B's OR energy gate rejects 90.74%
+of accepted scratch training windows, including 92.21% of light windows. No
+actual trials exist to check cutoff performance or single-knock runs yet.
+Lower gate thresholds and knock K=1 must be included in subsequent tuning.
+No new holdout scoring or full parameter grid has run. Latest recording plan:
+two scratch holdouts, twenty development trials, then eight fresh final trials.
+This supersedes the earlier eight-development-trial reduction and B ownership.
+
 **CURRENT v2 (October18):** `rub` label now means scratch_nail_paper. Feasibility
 passed: light/normal scratch98.5%/100% of50ms windows above quietP95, vs old73%;
 P10 contrasts4.79/5.90dB vs old-0.18dB. Main benefit is consistency, not median.
