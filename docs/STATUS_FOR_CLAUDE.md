@@ -1,6 +1,47 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
-## Latest: October 19 night coupling check and October 20 restart plan
+## Latest: October 19 integrity check — stopped after five runs
+
+Run set `measurements/integrity_check_20261019/` is diagnostic only, never for
+training. Five 10-second runs completed; each has 200 non-overlapping 50 ms ch2
+windows at 48 kHz via device_check/WASAPI USB Audio CODEC. No code, gate, gain,
+mounting or paper changes were made. No training, holdout or trial collection.
+A asked to stop before run 6 (normal unpressed scratch), so reproducibility of
+that condition was NOT measured in this run set. All originals remain local.
+
+Fixed diagnostic thresholds: spike RMS >5x this quiet median = 0.620398% FS;
+dropout RMS <half this quiet P10 = 0.060483% FS. These are window flags, not
+model-gate changes or proof of an electrical fault. All five runs complete,
+zero digital clipping and zero overflow. Hardware CLIP-lamp status not reported.
+
+| Condition | Median RMS %FS | P10 RMS %FS | Max RMS %FS | Peak %FS | Spike windows | Dropout windows |
+|---|---:|---:|---:|---:|---:|---:|
+| Quiet | 0.1241 | 0.1210 | 0.2033 | 0.8698 | 0 | 0 |
+| Cable gently wiggled 5 cm from pickup | 0.3836 | 0.1397 | 6.1443 | 26.4435 | 58 | 0 |
+| Pickup-end plug gently rotated/wiggled | 0.3747 | 0.1218 | 3.9304 | 10.7147 | 55 | 0 |
+| UM2 INST 2 plug gently rotated/wiggled | 0.9017 | 0.3284 | 4.5487 | 22.0032 | 140 | 0 |
+| Pickup housing lightly squeezed from sides | 0.3432 | 0.1634 | 1.9320 | 3.5706 | 46 | 0 |
+
+Verdict: **UNCLEAR**, not proof that the piezo is faulty and not a clean bill
+of health for the cable/connectors. All manipulations generated threshold
+crossings, with UM2-end manipulation showing the most. But cable/plug movement
+can transmit mechanical vibration and housing squeezing directly stresses a
+piezo. Recorded RMS/peak CSVs alone cannot distinguish that response from
+electrical crackle; raw waveform/audio was not saved. Zero low-floor dropout
+flags also cannot exclude an intermittent signal connection hidden by the
+interface noise floor. No audible crackle observation was supplied.
+
+Single next diagnostic, only when A is ready: substitute a known-good compatible
+1/4-inch TS cable and repeat the same gentle UM2-end plug manipulation at the
+same gain/mounting. Compare with this result, keeping cable handling as similar
+as possible. This is a proposed cable A/B test, not performed or authorized to
+execute automatically now. Improvement would implicate the original cable/plug
+assembly; persistence would still require separating UM2 jack/contact effects
+from transmitted vibration. Do not replace the pickup based on these five runs.
+The earlier pressure-response conclusion below remains evidence for a
+pressure-sensitive mechanical/contact state, not exclusion of electrical faults.
+
+## Previous: October 19 night coupling check and October 20 restart plan
 
 This section supersedes the older plan to reuse old knock/neutral and merely
 finish two scratch holdouts. Stop collection and tuning tonight. No gain, gate,
