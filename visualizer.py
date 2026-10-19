@@ -17,12 +17,15 @@ from recording_policy import (TRIAL_TYPES, recording_plan, authorize_plan, trial
                               rhythm_phase, fast_take_warnings, single_action_phase)
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
+from slide_udp import DEFAULT_TARGET, LabelSender, parse_target
 
 
 class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
                  setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
-                 fast_takes=False,trained_model=None,decision_params=None):
+                 fast_takes=False,trained_model=None,decision_params=None,slide_udp=DEFAULT_TARGET):
+        # C's slide app: forwards the same final label shown as Prediction (no extra decisions).
+        self.slide_sender = LabelSender(parse_target(slide_udp))
         self.session_root = session_root
         self.setup_id = setup_id
         self.scratch_surface = scratch_surface
@@ -532,6 +535,8 @@ class App:
         self.stop_take()
         dpg.configure_item('train_group', show=value == 'Train')
         dpg.configure_item('infer_group', show=value == 'Infer')
+        if getattr(self, 'slide_sender', None) is not None:
+            self.slide_sender.reset()
 
     def train_callback(self):
         if getattr(self, 'event_rhythm', False) or getattr(self,'fast_takes',False):
@@ -563,6 +568,8 @@ class App:
         if getattr(self.model, 'n_features_in_', 1200) != 1200:
             self.model = None
             raise ValueError('Model feature count does not match this 1200-feature profile')
+        if getattr(self, 'slide_sender', None) is not None:
+            self.slide_sender.reset()
         self.message('Model loaded; use only models trained with this exact capture profile.')
 
     def update(self):
@@ -614,6 +621,8 @@ class App:
             else:
                 label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
             dpg.set_value('prediction', 'Prediction: ' + self.infer_classes[label])
+            if getattr(self, 'slide_sender', None) is not None:
+                self.slide_sender.update(self.infer_classes[label])
 
     def run(self, seconds=None):
         dpg.setup_dearpygui()
@@ -671,16 +680,22 @@ def main():
     parser.add_argument('--fast-takes',action='store_true',help='2s takes, silent action cue, R shortcut and strict preflight checks')
     parser.add_argument('--trained-model',help='joblib model to load at startup (requires matching decision parameters)')
     parser.add_argument('--decision-params',help='matching decision_params.json for startup inference')
+    parser.add_argument('--slide-udp', default=DEFAULT_TARGET, help="send live Infer labels to C's slide app at HOST:PORT on change, or 'off'")
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
     if args.fast_takes and args.event_rhythm:
         parser.error('--fast-takes and --event-rhythm are different protocols; select only one')
     if bool(args.trained_model)!=bool(args.decision_params):
         parser.error('--trained-model and --decision-params must be supplied together')
+    try:
+        parse_target(args.slide_udp)
+    except ValueError as exc:
+        parser.error(f'--slide-udp: {exc}')
     App(args.session_root, args.device, final=args.final,
         setup_id=args.setup_id, scratch_surface=args.scratch_surface,
         event_rhythm=args.event_rhythm,fast_takes=args.fast_takes,
-        trained_model=args.trained_model,decision_params=args.decision_params).run(args.smoke_seconds)
+        trained_model=args.trained_model,decision_params=args.decision_params,
+        slide_udp=args.slide_udp).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':

@@ -1,44 +1,84 @@
 # C: slide demo (knock = next, rub = previous)
 
-A small desktop window that turns pages from the **finalized labels** produced by
-B's live classifier. Labels arrive over UDP on `127.0.0.1:5005`.
+A small desktop window that turns pages from the **final live label** shown by
+`visualizer.py` (`Prediction: ...`). Labels arrive over UDP on `127.0.0.1:5005`.
 
-| Label | Physical action (current v2 definition) | Slide effect |
+| Label | Physical action (current wood v3 definition) | Slide effect |
 |---|---|---|
-| `knock` | knuckle knock on the KNOCK pad | next page |
-| `rub` | **fingernail scratch back and forth on the paper pad** (not fingertip rubbing) | previous page |
+| `knock` | one knuckle knock on the wooden board | next page |
+| `rub` | **fingernail edge scratched back and forth on the bare wood** | previous page |
 | `neutral` | anything else / quiet | nothing |
 
-The app only needs the Python standard library (tkinter, socket, threading). It does
-not import the capture/model code and does not need `uv`, PyAudio, sounddevice,
-numpy or scikit-learn. Pillow is optional; install it only if you want JPG slides.
+Setup and model: `A_wood30x30x6_v3_candidate2` (30 x 30 cm, 6 mm board, bare
+wood), `a_models/wood_v3_20261019_135608_v1/`. See `docs/HANDOFF_C.md` and
+`MODEL_NOTES.md`.
 
-## Run it (Windows PowerShell)
+The slide app only needs the Python standard library (tkinter, socket, threading).
+It does not import the capture/model code. Pillow is optional; install it only if
+you want JPG slides.
 
-Open **two** PowerShell windows. In each one, change to the repository root:
+## Run with the live model (on A's computer, with A's hardware)
+
+Do this from the repository root with the `c-integration` branch checked out. The
+branch has to be pushed first for A to get it. Use two PowerShell windows.
+
+**Window 1: slide app.** Start it first, so the first label is not missed.
+
+```powershell
+uv run python c_app\slide_demo.py --log c_app\live_log.csv
+```
+
+**Window 2: live inference.** This is the command from `docs/HANDOFF_C.md`, unchanged:
+
+```powershell
+uv run visualizer.py --setup-id A_wood30x30x6_v3_candidate2 --scratch-surface wood --trained-model a_models/wood_v3_20261019_135608_v1/model.joblib --decision-params a_models/wood_v3_20261019_135608_v1/decision_params.json
+```
+
+The GUI starts in Infer mode. It sends the first label it computes to UDP, then a
+new message every time the label changes, including back to neutral. The default
+target is `127.0.0.1:5005`. Add `--slide-udp 127.0.0.1:5006` to use another port,
+or `--slide-udp off` to send nothing. If the slide app is not running, nothing
+breaks; the datagrams are simply lost.
+
+Check that it works: the bottom line of the slide window shows `received`
+increasing when the GUI's Prediction changes.
+
+## How the integration works (and what it does not do)
+
+- The only change to `visualizer.py` is in `update()`, on the line that sets
+  `Prediction:`. That same label is passed to `slide_udp.LabelSender`. Nothing
+  about the model, features, sampling or band-energy gate changed. log1p and the
+  scaler run once, inside the model pipeline.
+- Message format: `{"label": "knock", "t": 1792450715.095}`, where `t` is Unix
+  time in seconds. A message is sent for the first label after Infer starts or a
+  model loads, and then on every label change.
+- **The slide app's one-turn-per-action rule and its 0.8 s cooldown are a slide
+  trigger rule only.** They do not smooth or change the label stream that the GUI
+  shows, sends, or that trials are scored on. They make no claim of better
+  recognition results in formal trials.
+- The GUI currently has **no live SPACE trial recorder**. Its Train-mode "trial"
+  recording saves FFT frames for offline replay with `trial_replay.py`; it does
+  not keep a live label set. If B adds a live recorder, it must read the same
+  `self.infer_classes[label]` value that is sent here.
+
+## Run without hardware (mock)
 
 ```powershell
 cd C:\Users\admin\Desktop\coding\236\backoff-project
-```
-
-Window 1 starts the slide app:
-
-```powershell
 python c_app\slide_demo.py
 ```
 
-Window 2 sends a mock label stream (neutral, then knock, knock, rub, knock, each followed by neutral):
+In a second window:
 
 ```powershell
 python c_app\mock_sender.py
 ```
 
-You should see page 1 -> 2 -> 3 -> 2 -> 3. The page counter is at the top left,
-the last action at the top right, and the gate state, counters and recent events
-at the bottom.
-
-If `python` opens the Microsoft Store or is not found, replace `python` with `py`.
-Python 3.10 or newer with tkinter is required (the standard python.org installer includes it).
+This sends neutral, then knock, knock, rub, knock, each followed by neutral. You
+should see page 1 -> 2 -> 3 -> 2 -> 3. The page counter is at the top left, the
+last action at the top right, and the gate state, counters and recent events at
+the bottom. If `python` is not found, use `py`, or `uv run python` once
+`uv sync` has been run.
 
 ### Options
 
@@ -71,12 +111,11 @@ python c_app\mock_sender.py --interactive                # type k / r / n then E
 python c_app\mock_sender.py --port 5006 knock            # match the app's --port
 ```
 
-The sender imitates the real stream. It sends one label per frame at 21 frames/s,
-so a knock lasts about 6 identical frames and a scratch about 21. Each action is
-wrapped as neutral -> action -> neutral. For `--stress`, first press Home in the
-slide window. The expected result is printed when the run finishes.
+The mock sender sends every frame at 21 frames/s. The real GUI sends only when
+the label changes. The slide app handles both. For `--stress`, first press Home
+in the slide window. The expected result is printed when the run finishes.
 
-## Message format
+## Message format accepted by the slide app
 
 One UDP datagram per label (UTF-8, case and surrounding whitespace ignored):
 
@@ -89,78 +128,67 @@ knock                              plain text
 Any other payload, such as an unknown label, malformed JSON, binary data or more
 than 1 KB, is counted as `invalid` and ignored. The app keeps running.
 
-## Page-turn rules
+## Page-turn rules (slide app only)
 
 1. `knock` turns to the next page, `rub` to the previous page. Pages stop at the
    first and last page; a blocked turn shows "already on first/last page".
 2. **One action, one page.** Any knock or rub disarms the app until a `neutral`
-   label arrives. A stream like `knock knock knock ...` turns one page. So does a
-   knock that becomes rub without neutral in between.
+   label arrives. A knock that becomes rub without neutral in between turns one page.
 3. **Cooldown (default 0.8 s, `--cooldown`).** Once re-armed, a knock or rub within
    the cooldown of the previous turn is suppressed. It also disarms, so it cannot
-   fire later on its own.
-4. Timing uses the arrival time on this computer (`time.monotonic()`), not the `t` field.
+   fire later on its own. The model's own `decision_params.json` says
+   `cooldown_s: 0`. This slide cooldown is separate from it and does not change it.
+4. Timing uses the arrival time on this computer, not the `t` field.
 
 The window does not take focus after it starts, does not stay on top, does not
 inject keystrokes and does not register global hotkeys. Networking runs in a
-background thread and passes messages to the UI through a queue, so a burst of
-packets cannot freeze the window. If the port is already in use, the bottom line
-turns red with the reason. The app still opens so you can rehearse with the arrow
-keys. Run it again with a different `--port`, or close the other copy.
-
-## For B: sending labels from the live pipeline
-
-Send the **same finalized label** (after your energy gate and smoothing) that goes
-into the SPACE trial set, one per frame. Repeats are fine; the app removes them.
-B's code (not this folder) would add something like:
-
-```python
-import json, socket, time
-_slide_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-def send_slide_label(label):          # label in {"neutral", "knock", "rub"}
-    try:
-        _slide_sock.sendto(json.dumps({"label": label, "t": time.monotonic()}).encode(),
-                           ("127.0.0.1", 5005))
-    except OSError:
-        pass                          # the slide app may not be running
-```
+background thread and passes messages to the UI through a queue. If the port is
+already in use, the bottom line turns red with the reason and the app still opens.
 
 ## Tests and what was verified
 
 ```powershell
-python -m unittest discover -s c_app -v
+python -m unittest discover -s c_app -v          # 16 slide-app tests, stdlib only
+uv run python -m unittest -v test_slide_udp      # 7 GUI -> UDP -> slide chain tests
+uv run python -m unittest discover               # whole repo (48 tests)
 ```
 
-There are 16 standard-library tests. They cover:
+`test_slide_udp` covers two areas:
 
-- **Message parsing:** the three accepted formats, plus garbage, unknown labels, bad bytes and oversize payloads.
-- **Repeat suppression:** 63 identical knock frames give one turn; knock -> rub needs a neutral in between.
-- **Cooldown:** a second action inside 0.8 s is suppressed; exactly 0.8 s is allowed; the cooldown is configurable.
-- **Page edges:** first page, last page and a one-slide deck.
-- **Real UDP socket:** messages are received and invalid ones are reported.
-- **Port in use:** a clear error is raised.
-- **Slide folder:** files are read and sorted; missing or empty folders fall back to the built-in pages.
-- **Window:** the Tk window handles messages, including invalid ones.
+- **The sender alone:**
+  - The first label is sent, then only changes, including neutral.
+  - It resends after re-entering Infer.
+  - Invalid labels are not sent.
+  - A missing receiver does not raise an error.
+  - `--slide-udp` parsing works.
+- **The chain:**
+  - The real `App.update()` inference branch runs on fake FFT frames with a
+    **simulated prediction sequence**.
+  - The UDP labels are exactly the change points of the GUI `Prediction` text.
+  - They go through C's real UDP listener and trigger rule, giving the expected
+    pages: next, previous, knock -> rub (one turn), and a second knock
+    suppressed by the cooldown.
+  - A further check loads the real wood v3 model and parameter pair, sends
+    all-zero frames, and gets `neutral`.
 
-An end-to-end check on Windows 11 with Python 3.14 ran the real window with
-`mock_sender.py --stress` and `--format mixed knock rub`, and logged results with
-`--log`. The CSV showed the expected decisions: 5 invalid messages ignored, 4
-turns, the cooldown suppression, both edge blocks, and every format parsed. A
-second app copy on the same port showed the "already in use" warning.
+A process-level run with the real slide window and `LabelSender` at a real
+21 frames/s produced the same decisions in the `--log` CSV.
 
-**Not verified:** the app has not run with the real sensor or B's live classifier.
-B's live UDP sender does not exist yet. See `TEST_PROTOCOL.md` for the hardware trials.
+**Not verified:** nothing has run with A's sensor, audio interface or real FFT
+frames, and nothing has been measured about latency or recognition accuracy.
+See `TEST_PROTOCOL.md`.
 
 ## Files
 
 | File | Purpose |
 |---|---|
 | `slide_demo.py` | Tk window, slide rendering, logging, CLI |
-| `gesture.py` | neutral re-arm + cooldown gate, page bounds (no UI) |
+| `gesture.py` | neutral re-arm + cooldown trigger rule, page bounds (no UI) |
 | `protocol.py` | UDP payload parsing |
 | `udp_listener.py` | background receiver thread, port-in-use detection |
 | `mock_sender.py` | sensor-free label stream generator |
 | `test_c_app.py` | unit + socket + Tk tests |
 | `TEST_PROTOCOL.md` | 20-trial protocol, score sheet, failure log |
 | `PITCH.md` | one-minute pitch (English + Chinese) |
+| `../slide_udp.py` | sender used by `visualizer.py` (repo root) |
+| `../test_slide_udp.py` | GUI -> UDP -> slide chain tests (repo root) |

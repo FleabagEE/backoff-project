@@ -17,7 +17,7 @@ import socket
 import sys
 import time
 
-DURATIONS = dict(neutral=1.0, knock=0.3, rub=1.0)   # rub = ~1 s fingernail scratch
+DURATIONS = dict(neutral=1.0, knock=0.3, rub=1.0)   # rub = ~1 s fingernail-edge scratch on wood
 ALIASES = dict(k='knock', r='rub', n='neutral', s='rub', scratch='rub')
 FORMATS = ('text', 'json', 'object')
 

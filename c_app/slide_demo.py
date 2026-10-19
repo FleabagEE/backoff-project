@@ -2,7 +2,7 @@
 
     python c_app\\slide_demo.py [--slides DIR] [--port 5005] [--cooldown 0.8] [--log FILE.csv]
 
-knock -> next page, rub (fingernail scratch on paper) -> previous page, neutral -> nothing.
+knock -> next page, rub (fingernail-edge scratch on bare wood) -> previous page, neutral -> nothing.
 Only standard library is required. Pillow is optional (JPG support, smoother scaling).
 The window never grabs focus, stays on top, injects keys or hooks global keys.
 """
@@ -29,10 +29,10 @@ FONT = 'Segoe UI' if sys.platform == 'win32' else 'Helvetica'
 
 BUILTIN_SLIDES = [
     dict(title='Knock to go forward',
-         body='Knuckle knock on the KNOCK pad  ->  next slide',
+         body='One knuckle knock on the wooden board  ->  next slide',
          color='#1f4e79'),
     dict(title='Scratch to go back',
-         body='Fingernail scratch back and forth on the paper pad  ->  previous slide',
+         body='Scratch the bare wood back and forth with a fingernail edge  ->  previous slide',
          color='#7a3b12'),
     dict(title='One action, one page',
          body='Return to neutral before the next action.\nRepeated labels never turn extra pages.',

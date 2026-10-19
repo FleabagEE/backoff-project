@@ -1,7 +1,9 @@
 """One action -> at most one page turn.
 
 Rules:
-  * knock -> next page, rub (fingernail scratch on paper) -> previous page.
+  * knock -> next page, rub (fingernail-edge scratch on bare wood) -> previous page.
+  * This is a slide-app trigger rule, not model smoothing: it does not change the
+    label stream that the GUI shows or that trials are scored on.
   * After any knock/rub the controller is DISARMED until a neutral label arrives.
     A continuous stream such as knock, knock, knock ... or a knock -> rub switch
     without neutral in between therefore turns at most one page.
