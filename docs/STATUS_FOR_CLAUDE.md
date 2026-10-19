@@ -1,6 +1,121 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
-## Latest: October 19 integrity check — stopped after five runs
+## Latest v3 restart: new wooden board, acceptance pending (October 19)
+
+AUTHORITATIVE latest steering: A canceled the separate mini pilot and explicitly
+requests full final_v3 collection now, with a checkpoint after TWO interleaved
+K/R/N rounds (six takes). See `docs/FINAL_V3_EVENT_PROTOCOL.md` for rhythm,
+selection, gate calibration, segmentation/label policy and checkpoint scoring.
+This supersedes the six-take pilot plan below; no pilot model has been fitted.
+Incomplete pilot has five takes, all class/notes match; first K take/train versus
+other four diagnostic is a type inconsistency only. All five excluded from new
+training/evaluation via source selection, companion pilot_wood_exclusions.csv;
+raws retained. Do NOT finish or reuse pilot_wood.
+
+New positives: ONE action every2s, visual cues at1,3,...23s, expected12 events
+per25s take. GUI --event-rhythm changes cue/metadata only; FFT/features unchanged.
+Offline 0.5–8kHz energy segmentation with context[-.2,+1.5]s; outside-event and
+quiet-like positive fit windows DROPPED. Neutral retained. Gate calibration uses
+reserved first5s of NEW quiet take, excluded from checkpoint fitting/scoring.
+Compare round1/round2 both directions with fixed B8kHz/C=.001, no gate vs band
+gate; report confusion/accuracy/scratch->neutral and detected event counts.
+Approximate cue-based evaluation includes quiet gaps as neutral and all expected
+scratch intervals, so missing detections cannot disappear from scoring. Failure:
+stop, diagnose, propose ONE fix, wait for A. Six takes count if continuing. Later
+compare window decisions vs event-aggregated decisions on development trials.
+No final_v3 captures or actual checkpoint/event counts exist yet. All previous
+candidate2 level FAIL results remain factual; A now authorizes this checkpoint
+path, not a fabricated level PASS or completed durability result.
+
+Latest steering: A requests zero-recording band analysis, then a six-take
+`pilot_wood` classifier feasibility test BEFORE any formal collection. Analysis
+is complete; see `docs/CANDIDATE2_BAND_FEASIBILITY.md` and derived JSON/CSV in
+`handoff/candidate2_band_analysis_20261019/`. No new captures/models yet.
+Deweighted smoothed FFT proxy shows scratch contrast strongest <1 kHz, not
+above 8 kHz. Best light coverage over quiet P95 is 87.32%, P10 margin -0.40 dB;
+candidate2 still FAILS proposed 90% contrast acceptance. Gain-noise dependence
+cannot be inferred from a single-gain spectrum. Knock headroom to 70% is
+13.46 dB; gain remains unchanged. Latest explicit authorization permits this
+isolated pilot despite failed level acceptance; it does NOT authorize formal
+collection or a hidden relaxation of spectral thresholds. Pilot data must be
+excluded from final training/evaluation. Predeclared pipeline, fold plan,
+independent quiet gate calibration and <=5% scratch->neutral definition are in
+the report. After real pilot results, decide whether to proceed or compare a
+fully adhered paper surface; no further hardware change has occurred.
+
+Candidate2: A confirms thin double-sided tape under the pickup plus retaining
+tape over the top. The ONE permitted initial acceptance re-test is now complete
+and **FAILS the original criteria**. No further automatic hardware changes or
+re-test loops. No formal data collection, training, or durability test started.
+Session `data_sessions/diagnostics/final_v3_acceptance/20261019_125214_3db18f7f`,
+setup `A_wood30x30x6_v3_candidate2`; all four valid diagnostic takes retained.
+
+| Condition | Median RMS %FS | P10 RMS %FS | Peak %FS |
+|---|---:|---:|---:|
+| Quiet | 0.12974 | 0.12059 | 0.58289 |
+| Normal nail scratch | 0.22467 | 0.15766 | 4.15039 |
+| Light nail scratch | 0.22651 | 0.13705 | 2.02332 |
+| Three hardest knocks | 0.13244 | 0.12303 | 14.86206 |
+
+Quiet P95=0.146804% FS. Normal median improved 4.52 dB over candidate1, but
+remains below ~0.3% FS. Light P10 is 0.60 dB BELOW quiet P95; 84.98% of light
+windows exceed it, so the requested low-window margin is not met. Knock peak
+is below 70%; no full-scale peak was captured, but raw PCM clipping counts are
+not stored in GUI takes. Candidate2 hardware CLIP-lamp observation not supplied.
+Do not carry forward candidate1's lamp observation as candidate2 evidence.
+Normal and light medians are nearly identical in these manual runs; do not infer
+a reliable force-to-level relationship. Material, mounting and operator effects
+have not been isolated. Original targets remain unchanged: no PASS claim and no
+formal collection without an explicit revised plan from A.
+
+Candidate1 GUI acceptance has now FAILED (diagnostics only; no formal data).
+Session `data_sessions/diagnostics/final_v3_acceptance/20261019_124115_b213e5cc`.
+Use the latest 10s quiet `take_b16315a9adba44d2a2de9d28773a4ad1` as reference;
+the earlier 14.532s quiet is retained but not used for this comparison.
+
+| Condition | Median RMS %FS | P10 RMS %FS | Peak %FS |
+|---|---:|---:|---:|
+| Quiet (10s) | 0.11477 | 0.11252 | 0.57983 |
+| Normal nail scratch on wood | 0.13355 | 0.11877 | 1.15662 |
+| Light nail scratch on wood | 0.12498 | 0.11655 | 0.86670 |
+| Three hardest knocks (notes saved as `knock`) | 0.11496 | 0.11206 | 8.30383 |
+
+Quiet P95=0.117888% FS. Normal median below ~0.3% target; light P10 below
+quiet P95. Hardware CLIP lamp did NOT flash during hardest knocks (A confirmed).
+Knock headroom passes but does not compensate for failed scratch acceptance.
+All takes valid and diagnostic; no durability check or formal data collected.
+New-board normal scratch did not clearly improve on old-board GUI normal
+(median/P10 0.14575/0.12178% FS). Cross-board comparisons are not controlled
+material tests because mounting and action also differ.
+
+Single proposed correction for the one permitted re-test: improve pickup-to-wood
+contact with thin double-sided adhesive beneath the sensing/contact face plus
+top restraint, retaining board, bare-wood scratch zone, gain and processing.
+This is a coupling hypothesis supported by the previous pressure response,
+not proof of a defective pickup or of the current mechanical cause. Correction
+has NOT yet been performed/confirmed. If A performs it, document actual adhesive
+and use new candidate setup ID `A_wood30x30x6_v3_candidate2`; repeat GUI acceptance
+once, then durability only if initial levels pass. Do not mix candidate1/2 data.
+
+A switched to a 30x30 cm, 6 mm board (wood construction unknown), ordinary tape
+at pickup bottom AND top with reported full contact, no separate cable restraint,
+directly on table/no padding. No paper pad. A confirmed fingernail EDGE scratching
+bare wood, not skin rubbing; label stays rub. Both zones approximately 5 cm from
+pickup. Exact pickup coordinates remain hand-span descriptions pending cm/photos.
+See SETUP.md, candidate `A_wood30x30x6_v3_candidate1`. ALL previous sessions are
+different setups, excluded from v3 training AND evaluation, originals retained.
+
+First GUI diagnostic quiet 10s, normal wood scratch 10s, light scratch 10s,
+three hardest knocks, then the 10-minute/lift/set-down/20-knock durability check
+and repeat quiet/normal. Acceptance PENDING real captures; no formal data before
+PASS. Same gain/audio/FFT/features. A requests model/parameters delivered to B
+about 5 pm today; do not claim deadline or acceptance achieved. Work on a-tuning,
+preserve model-training. After PASS: one final_v3 session, interleaved 10 knock/
+10 rub/16 neutral training, six confirmed holdouts, twenty development trials,
+grouped training-only model selection and trial tuning, then eight untouched
+test trials and one holdout evaluation. Follow A's latest detailed request.
+
+## Previous: October 19 integrity check — stopped after five runs
 
 Run set `measurements/integrity_check_20261019/` is diagnostic only, never for
 training. Five 10-second runs completed; each has 200 non-overlapping 50 ms ch2

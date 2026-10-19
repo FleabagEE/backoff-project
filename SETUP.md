@@ -1,5 +1,62 @@
 ﻿# Frozen hardware setup and data collection
 
+## Current v3 candidate: new wooden board (October 19)
+
+This section supersedes ALL historical setup/data-selection text below.
+Current re-test setup ID: `A_wood30x30x6_v3_candidate2`. A confirms thin
+double-sided tape underneath the pickup and retaining tape over the top. This is the
+single permitted acceptance re-test, followed by durability if levels pass.
+LATEST OPERATOR COLLECTION DECISION: A now explicitly starts full final_v3 with
+an early checkpoint after six event-style takes, despite the level-only FAIL
+below. Keep this candidate2 hardware unchanged. Do not finish/reuse pilot_wood.
+Only the new final_v3 source folder is eligible. Use --event-rhythm: actions at
+1,3,...23s (12/25s), not continuous positive actions. See FINAL_V3_EVENT_PROTOCOL
+in docs for gate/segmentation and pause/decision rules. Durability is not measured.
+
+Candidate2 initial acceptance re-test is now FAIL: normal median 0.22467% FS
+(target about >=0.3%); light P10 0.13705% FS below quiet P95 0.14680% FS;
+hard-knock peak 14.86206% FS (headroom passes). Durability was not started.
+The single mounting correction/re-test allowance is exhausted. The revised
+operator plan above authorizes collection with an early checkpoint; it does
+not change these measured results or establish final bakeoff readiness.
+Candidate1 mounting details below remain historical; candidate2 uses the
+thin double-sided bottom adhesive and top restraint confirmed above.
+
+Candidate1 initial GUI acceptance FAILED: normal scratch median 0.13355% FS,
+light P10 0.11655% FS below quiet P95 0.11789% FS. Hard-knock peak 8.30383% FS;
+hardware CLIP lamp did not flash. See STATUS_FOR_CLAUDE.md for actual take IDs.
+One contact/mounting correction is proposed, not yet performed. If confirmed,
+record it as candidate2 and re-test once. Candidate1 is not an accepted setup.
+
+- Board: 30 x 30 cm, 6 mm thick; wood construction/species unknown.
+- Pickup: ordinary tape at bottom AND top, operator reports full contact.
+  Tape product/thickness unknown; do not assume the previously proposed adhesive.
+- Pickup center: left/top distances each described as opened-hand thumb-to-middle-
+  finger span. Exact cm coordinates remain pending; never guess. Photos to be
+  added by A in `docs/setup/`.
+- No separate cable strain relief. Board directly on table, no padding.
+- Knock and scratch zones each approximately 5 cm from pickup; exact centers and
+  boundaries pending. Do not contact pickup, mounting tape or cable during actions.
+- No paper pad. A explicitly confirms fingernail EDGE back-and-forth scratching
+  on bare wood, NOT fingertip-skin rubbing. Label remains `rub`, notes tag
+  `scratch_nail_wood`. Knock = knuckle knock in knock zone.
+- Unchanged: gain A, Windows input100/enhancements OFF/+48V OFF; WASAPI USB Audio
+  CODEC stereo ch2, 48 kHz, 480-frame capture block, 2400-sample/50 ms FFT and
+  original 1200-feature processing.
+- ALL previous pilot/final/final_v2/diagnostic sessions are different setups:
+  preserve originals but exclude ALL from v3 training AND evaluation. Acceptance
+  diagnostics also never enter formal training or evaluation.
+
+Acceptance: GUI diagnostic quiet 10s, normal wood scratch 10s, light scratch 10s,
+three hardest knocks. Paper comparison omitted because A chose bare wood/no pad.
+Target normal scratch median about >=0.3% FS, light P10 clearly above quiet P95,
+knock peak about <70% FS, no clipping. Then leave board for 10 minutes, lift/set
+down once, knock 20 times; repeat quiet/normal scratch. Scratch median must not
+drop more than about 2 dB. If failed, one most-likely fix and one re-test, with
+changed configuration documented as a new candidate ID. No results exist yet.
+
+## Historical setups below: excluded from v3 training and evaluation
+
 **CURRENT INTERACTION 2 (supersedes all fingertip-rub instructions below):**
 `rub` now means fingernail scratch on the four-edge-taped printer-paper pad.
 Keep gain A and all capture/FFT processing unchanged. See
