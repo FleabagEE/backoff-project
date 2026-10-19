@@ -1,5 +1,79 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
+## Latest: October 19 night coupling check and October 20 restart plan
+
+This section supersedes the older plan to reuse old knock/neutral and merely
+finish two scratch holdouts. Stop collection and tuning tonight. No gain, gate,
+mounting, paper pad, audio or FFT settings were changed during this check;
+the third condition alone applied temporary light finger pressure to the pickup.
+No training, holdout or trial data were collected. All earlier data are preserved.
+
+Diagnostic run set: `measurements/coupling_check_20261019/`, never for training.
+Three device_check runs, each 10 s, 200 non-overlapping 50 ms windows, WASAPI
+USB Audio CODEC index 15, stereo ch2 at 48 kHz, gain A. Every run complete,
+zero overflow blocks and zero measured clipping. Hardware CLIP-lamp observation
+was not supplied for these runs; do not invent it.
+
+| Condition | Median RMS % FS | P10 RMS % FS | Peak % FS |
+|---|---:|---:|---:|
+| Three hardest knocks, knock zone | 0.1176 | 0.1152 | 44.293 |
+| Normal center-paper scratch, pickup untouched | 0.1181 | 0.1153 | 16.214 |
+| Same scratch, other hand lightly pressing pickup down | 0.6491 | 0.3728 | 3.766 |
+
+Verdict under A's specified rule: **COUPLING LOOSENED**. Pressing raises median
+scratch RMS 5.49x (14.80 dB) and P10 3.24x (10.20 dB), despite the maximum
+transient peak being lower. Knock peak matches the prior 44.3% FS result and
+is below another earlier 58.9% FS reference; the knock comparison alone does
+not show attenuation. The strong pressure response supports a coupling/contact
+problem. It does not prove historical loosening or rule out a simultaneous pad
+issue: finger pressure can change mechanical loading, and actions were manual.
+Do not train with the finger-pressed diagnostic or require finger pressure in use.
+
+Earlier same-setup path check: GUI quiet median/P10 0.11794/0.11435% FS versus
+device_check 0.11829/0.11493% FS. Both paths recorded weak scratch; no fixed
+background-level scaling error was found. Device_check normal median 0.12553%
+FS despite overall RMS 0.34653% FS, showing transient-dominated energy.
+GUI diagnostics are under `data_sessions/diagnostics/gui_level_check_20261019/`;
+sounddevice comparison is `measurements/paired_path_check_20261019/`.
+All are diagnostic only and excluded from training/holdout/trial evaluation.
+
+### Tomorrow: Tuesday October 20 (America/Los_Angeles)
+
+1. **Re-mount and freeze a NEW setup.** Put double-sided tape under the pickup's
+   sensing face and tape over its top. Replace the paper pad with a fresh sheet
+   fully adhered to the board, not taped only at the edges. Then record the actual
+   new mounting, paper, locations and photographs as a new frozen setup in
+   `SETUP.md`, using a new setup ID/session root. These physical changes and
+   SETUP update are planned, NOT performed tonight. Keep gain A and all frozen
+   Windows/audio/capture/FFT/feature settings unchanged.
+2. **Acceptance through the GUI recording path.** Record diagnostic quiet,
+   light scratch, normal scratch and hard knock. Aim for scratch median at least
+   about 0.3% FS and hardest-knock peak below about 70% FS, with no clipping.
+   Confirm actual levels before starting formal collection. Do not substitute
+   device_check acceptance for the training/live GUI path.
+3. **Re-record ALL data under the new setup in one session.** Collect training:
+   10 knock, 10 scratch (label remains `rub`), 16 neutral; then explicitly confirmed
+   holdout: 2 per class; then 20 development trials. Give exact actions and wait
+   for actual results one recording at a time. Mark EVERY previous session as a
+   different setup in selection metadata/documentation and exclude it from new
+   training, including previously reusable knock/neutral. Never delete or rewrite
+   old raw captures. Do not pool pressed diagnostics or earlier setup data into
+   new training. Keep holdout and development trials outside training exports.
+4. **Retrain and deliver.** Use only the new setup's training data; derive gate
+   thresholds again from new data, compare/tune using grouped training validation
+   and development trials, and tune smoothing on those trials. Keep holdout out
+   of selection. Freeze parameters, record 8 fresh test trials for final evaluation,
+   then hand the model file and matching decision-parameter file to B. Report
+   actual final results and limitations. NPZ/ZIP delivery remains via cloud, not Git.
+
+Pending GUI diagnostic support and the Dear PyGui class-list enable/disable fix
+were verified with 23 tests, including real GUI widget start/stop and diagnostic
+NPZ saving (synthetic test input, not a physical measurement). Diagnostic labels
+are excluded from training/default export/QA selection. No signal processing or
+gate changes are part of that fix. Work remains on `a-tuning`; preserve B's branch.
+
+## Historical progress below (superseded where it conflicts with the restart plan)
+
 **October19 model ownership / pre-grid update:** A now owns retraining/tuning on
 `a-tuning`, based on B's `model-training` branch. B's v1 used OLD fingertip rub.
 See `docs/PREGRID_FINDINGS.md`: train-only five-fold grouped comparison slightly
