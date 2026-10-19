@@ -1,0 +1,22 @@
+{
+  "file": "data_sessions\\wood_v3_neutral_test\\20261019_143751_ca9cb6af\\take_66bb9965eab849969ddfb424565f832b.npz",
+  "expected_class": "neutral",
+  "operator_action": "palm slap once",
+  "recorded_split": "train",
+  "evaluation_only_override": "isolated neutral-test root; never include in training; raw unchanged",
+  "window_counts": {
+    "neutral": 42
+  },
+  "window_label_set": [
+    "neutral"
+  ],
+  "event_result": {
+    "predicted_class": "neutral",
+    "predicted_set": [
+      "neutral"
+    ],
+    "events": []
+  },
+  "neutral_window_pass": true,
+  "neutral_event_pass": true
+}

@@ -1,5 +1,13 @@
 # Piezo Vibration Classification Starter
 
+**Current team handoff (October 19):** wooden-board v3 model and matching
+parameters are on branch **a-tuning**, in
+`a_models/wood_v3_20261019_135608_v1/`. B/C should start with
+[C integration instructions](docs/HANDOFF_C.md), [model notes](MODEL_NOTES.md)
+and [preliminary live checks](docs/WOOD_V3_REALTIME_CHECK.md).
+`rub` currently means fingernail-edge scratch on bare wood; older paper-pad
+instructions below are historical and excluded from this model.
+
 This checkout includes the team's UM2 data-collection repair: fixed 48000 Hz,
 stereo capture selecting input 2, continuous GUI updates, and per-take autosave.
 Start with [SETUP.md](SETUP.md) for collection and [HANDOFF_B.md](HANDOFF_B.md)
@@ -7,7 +15,7 @@ for saved dataset format and model-training handoff. Run `uv run visualizer.py`.
 
 ## Overview
 
-**Current interaction 2:** the compatibility label `rub` means fingernail scratch
+**Historical v2 interaction 2:** the compatibility label `rub` means fingernail scratch
 on a taped-flat paper pad. Old fingertip-rub data is superseded for training.
 See [scratch v2](docs/scratch_v2.md) for current setup, holdout/trial recording,
 selection and pending QA. Historical old-rub instructions are not the v2 protocol.

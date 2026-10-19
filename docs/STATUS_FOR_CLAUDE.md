@@ -2,6 +2,15 @@
 
 ## CURRENT: 75 wooden-board takes trained (October 19)
 
+Latest delivery: origin/a-tuning contains code, docs, compact model.joblib and
+paired decision_params.json. C's entry point is docs/HANDOFF_C.md. See
+docs/WOOD_V3_REALTIME_CHECK.md for preliminary live observations and one saved
+palm-slap neutral replay (42/42 windows neutral). A reports basic live checks
+successful; no logged trial series/latency measurement exists. The saved palm
+take's raw split is accidentally train, but its isolated evaluation session is
+excluded from all fitting; raw files/metadata remain untouched. No fingertip
+test capture has been confirmed. Model and parameters remain unchanged.
+
 This entry supersedes the historical collection plans and pending statements
 below. A collected 25 two-second takes per class in
 `data_sessions/final_v3/20261019_135608_9c907587` and explicitly confirmed ALL

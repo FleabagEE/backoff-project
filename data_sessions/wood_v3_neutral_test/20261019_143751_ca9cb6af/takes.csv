@@ -1,0 +1,2 @@
+take_id,class_name,performer,variation,split,recording_kind,holdout_confirmed,trial_type,action_performed,started_utc,duration_s,sample_count,valid,reason,saved_utc,file
+take_66bb9965eab849969ddfb424565f832b,neutral,A,neutral_test_palm_slap_01,train,take,False,,,2026-10-19T21:38:40.231135+00:00,2.01500000001397,42,True,,2026-10-19T21:38:42.244072+00:00,take_66bb9965eab849969ddfb424565f832b.npz

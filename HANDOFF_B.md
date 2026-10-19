@@ -1,5 +1,8 @@
 # B: train from A's saved FFT sessions
 
+C's integration entry point: [`docs/HANDOFF_C.md`](docs/HANDOFF_C.md).
+Latest preliminary live observations: `docs/WOOD_V3_REALTIME_CHECK.md`.
+
 **CURRENT WOOD v3 MODEL (October 19):** see `MODEL_NOTES.md`.
 Only source: `data_sessions/final_v3/20261019_135608_9c907587`, 25 two-second
 takes per class; all neutral takes are QUIET. `rub` means fingernail-edge

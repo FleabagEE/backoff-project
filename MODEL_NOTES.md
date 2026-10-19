@@ -1,5 +1,10 @@
 # Wooden-board v3 provisional model — October 19, 2026
 
+Latest preliminary live GUI and saved neutral interference results are in
+[`docs/WOOD_V3_REALTIME_CHECK.md`](docs/WOOD_V3_REALTIME_CHECK.md).
+A reports basic live knock/scratch/palm checks successful; this is not a
+logged formal trial evaluation and does not replace the limitations below.
+
 Trained from exactly 75 two-second takes: 25 knock, 25 rub, 25 neutral.
 A confirmed that ALL neutral takes are quiet. This model has no adversarial
 neutral, untouched holdout, development-trial or fresh-test validation yet.
