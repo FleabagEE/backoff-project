@@ -2,6 +2,23 @@
 
 ## Latest v3 restart: new wooden board, acceptance pending (October 19)
 
+CURRENT RECORDING REQUEST supersedes all25s plans below: a CLEAN final_v3
+session,2-second TRAIN/HOLDOUT takes, exactly ONE action per take (scratch ~1s),
+or one neutral action/stillness. New --fast-takes launch defaults to take/train/
+2s/performer A; R shortcut, silent0.3s cue, persistent notes, large per-class
+counters and preflight checks. See docs/FINAL_V3_TWO_SECOND_WORKFLOW.md.
+No audio/FFT/feature processing changes, no old-data modifications. final_v3 root
+was absent and is now created/verified empty (0entries,0NPZ); each launch makes a unique child session,
+zero recordings, no data import/resume. New take counts/quota (~130total) need
+explicit batch planning; do not carry forward25s quotas or5s calibration prefix.
+The prior event segmentation/checkpoint is retained as historical code, not
+silently applied unchanged to2s takes. Current source metadata uses
+single_action_2s / offline_single_action_segmentation_required. Formal recording
+has NOT started in this session-setup turn; tests are synthetic/temp only.
+All37 discovered tests pass, including7 new fast-take cases for real widgets,
+R-key handling/typing protection, auto-stop/save, persistent notes, preflight
+warnings, per-take holdout confirmation and excluded early stops.
+
 AUTHORITATIVE latest steering: A canceled the separate mini pilot and explicitly
 requests full final_v3 collection now, with a checkpoint after TWO interleaved
 K/R/N rounds (six takes). See `docs/FINAL_V3_EVENT_PROTOCOL.md` for rhythm,

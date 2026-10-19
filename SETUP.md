@@ -2,6 +2,11 @@
 
 ## Current v3 candidate: new wooden board (October 19)
 
+LATEST COLLECTION PROTOCOL: two-second single-action takes via --fast-takes;
+see docs/FINAL_V3_TWO_SECOND_WORKFLOW.md. This supersedes the25s rhythm instructions
+below without changing candidate2 physical hardware. A clean final_v3 child
+session starts empty; all prior data remain separate and excluded.
+
 This section supersedes ALL historical setup/data-selection text below.
 Current re-test setup ID: `A_wood30x30x6_v3_candidate2`. A confirms thin
 double-sided tape underneath the pickup and retaining tape over the top. This is the
