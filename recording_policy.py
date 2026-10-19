@@ -1,7 +1,31 @@
 """Recording labels and trial protocol only; no audio/feature processing."""
 import math
+import re
 
 TRIAL_TYPES = ('knock_pos', 'rub_pos', 'knock_neg', 'rub_neg')
+
+
+def fast_take_warnings(kind, class_name, notes, seconds):
+    warnings=[]
+    if kind != 'take':
+        warnings.append(f'Recording kind is {kind}; select take for the 2s collection.')
+    if not math.isclose(float(seconds), 2.0, abs_tol=1e-6):
+        warnings.append(f'Take length is {seconds:g}s; set 2s.')
+    words=re.split(r'[^a-z0-9]+', notes.lower())
+    if not class_name:
+        warnings.append('Select a class.')
+    elif class_name.lower() not in words:
+        warnings.append(f'Notes must mention selected class: {class_name}.')
+    return warnings
+
+
+def single_action_phase(elapsed, class_name):
+    if elapsed < .3:
+        return f'READY ... {max(0,.3-elapsed):.1f}s'
+    if elapsed < 1.4:
+        return 'QUIET / ONE NEUTRAL ACTION NOW' if class_name=='neutral' else (
+            'SCRATCH ONCE NOW (~1s)' if class_name=='rub' else 'KNOCK ONCE NOW')
+    return 'STAY STILL UNTIL SAVED'
 
 
 def recording_plan(kind, split, class_name, variation, trial_type='', action_performed='',

@@ -13,18 +13,22 @@ import numpy as np
 import pyaudio
 
 from collection import CollectionSession, utc_now, training_eligible
-from recording_policy import TRIAL_TYPES, recording_plan, authorize_plan, trial_phase, rhythm_phase
+from recording_policy import (TRIAL_TYPES, recording_plan, authorize_plan, trial_phase,
+                              rhythm_phase, fast_take_warnings, single_action_phase)
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
 
 
 class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
-                 setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False):
+                 setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
+                 fast_takes=False):
         self.session_root = session_root
         self.setup_id = setup_id
         self.scratch_surface = scratch_surface
         self.event_rhythm = event_rhythm
+        self.fast_takes = fast_takes
+        self.record_key_held = False
         self.session_type = 'final' if final else 'pilot'
         self.take_counts = {split: dict(neutral=0, knock=0, rub=0) for split in ('train', 'holdout')}
         self.trial_counts = dict.fromkeys(TRIAL_TYPES, 0)
@@ -84,6 +88,10 @@ class App:
         # Default classes are ready for collection; no prior samples are assumed.
         for name in ('neutral', 'knock', 'rub'):
             self.add_class(name)
+        if self.fast_takes:
+            if self.ear is not None:
+                self.ensure_session()
+            self.refresh_fast_panel()
 
     def message(self, text):
         print(text, flush=True)
@@ -108,6 +116,12 @@ class App:
                         no_close=True, pos=(740, 0), width=425, height=840):
             dpg.add_text('Ready', tag='status', wrap=385)
             dpg.add_text('No session yet', tag='session_path', wrap=385)
+            dpg.add_text('', tag='preflight_summary', wrap=385, show=getattr(self,'fast_takes',False))
+            dpg.add_text('', tag='preflight_warning', wrap=385, color=(255,100,80), show=getattr(self,'fast_takes',False))
+            with dpg.group(show=getattr(self,'fast_takes',False)):
+                for name in ('knock','rub','neutral'):
+                    dpg.add_text(f'{name.upper()}: train 0 | holdout 0',tag=f'fast_count_{name}')
+                dpg.add_text('R = next take. After editing notes, click the plot once.',wrap=385)
             dpg.add_combo(['Train', 'Infer'], default_value='Train', tag='mode', callback=self.mode_callback)
             with dpg.group(tag='train_group'):
                 dpg.add_text(f'Session: {self.session_type}; new session each launch')
@@ -118,8 +132,10 @@ class App:
                               label='DATA SPLIT', callback=self.split_callback)
                 dpg.add_text('WILL SAVE AS TRAIN', tag='split_banner', color=(255, 220, 80), wrap=385)
                 dpg.add_text('', tag='rhythm_status', color=(80, 230, 255), wrap=385)
-                dpg.add_text('Training takes: knock 0/10, rub 0/10, neutral 0/16', tag='take_progress', wrap=385)
-                dpg.add_text('Holdout takes: knock 0/2, rub 0/2, neutral 0/2', tag='holdout_progress', wrap=385)
+                dpg.add_text('Training takes: knock 0/10, rub 0/10, neutral 0/16', tag='take_progress', wrap=385,
+                             show=not getattr(self,'fast_takes',False))
+                dpg.add_text('Holdout takes: knock 0/2, rub 0/2, neutral 0/2', tag='holdout_progress', wrap=385,
+                             show=not getattr(self,'fast_takes',False))
                 dpg.add_input_text(label='Performer', tag='performer', default_value='A', width=210)
                 dpg.add_input_text(label='Variation / notes', tag='variation', width=210,
                                    hint='force, position, action')
@@ -129,8 +145,8 @@ class App:
                     dpg.add_text('8 seconds: still 2s -> act ONCE ~1s -> still', wrap=385)
                 dpg.add_text('Trials: knock_pos 0/5, rub_pos 0/5, knock_neg 0/5, rub_neg 0/5',
                              tag='trial_progress', wrap=385)
-                dpg.add_input_float(label='Take limit (s)', tag='take_limit', default_value=25.0,
-                                    min_value=5.0, max_value=60.0, min_clamped=True, max_clamped=True, width=140)
+                dpg.add_input_float(label='Take limit (s)', tag='take_limit', default_value=2.0 if getattr(self,'fast_takes',False) else 25.0,
+                                    min_value=2.0, max_value=60.0, min_clamped=True, max_clamped=True, width=140)
                 with dpg.group(horizontal=True):
                     dpg.add_input_text(tag='class_input', width=185, hint='new class')
                     dpg.add_button(label='Add Class', callback=self.add_class_callback)
@@ -144,7 +160,7 @@ class App:
                 dpg.add_text('Optional model training (B can do this later)')
                 dpg.add_combo(MODEL_OPTIONS, tag='model_type', default_value=DEFAULT_MODEL_TYPE, width=220)
                 dpg.add_button(label='Train Model', tag='train_button', callback=self.train_callback,
-                               enabled=not getattr(self, 'event_rhythm', False))
+                               enabled=not (getattr(self, 'event_rhythm', False) or getattr(self,'fast_takes',False)))
             with dpg.group(tag='infer_group', show=False):
                 dpg.add_text('Prediction: ---', tag='prediction')
                 dpg.add_button(label='Save Model', callback=lambda: dpg.show_item('save_model_dialog'))
@@ -161,6 +177,17 @@ class App:
             dpg.add_button(label='CONFIRM: SAVE THIS TAKE AS HOLDOUT', callback=self.confirm_holdout)
             dpg.add_button(label='Cancel', callback=self.cancel_holdout)
         dpg.set_viewport_resize_callback(self.resize)
+        if getattr(self,'fast_takes',False):
+            font_path=Path('C:/Windows/Fonts/consola.ttf')
+            if font_path.exists():
+                with dpg.font_registry():
+                    counter_font=dpg.add_font(str(font_path),24)
+                for name in ('knock','rub','neutral'):
+                    dpg.bind_item_font(f'fast_count_{name}',counter_font)
+                dpg.bind_item_font('rhythm_status',counter_font)
+            with dpg.handler_registry():
+                dpg.add_key_press_handler(key=dpg.mvKey_R,callback=self.record_shortcut)
+                dpg.add_key_release_handler(key=dpg.mvKey_R,callback=self.release_record_key)
 
     def split_callback(self, *_):
         trial = dpg.get_value('recording_kind') == 'trial'
@@ -178,6 +205,54 @@ class App:
                     class_name=self.record_val, variation=dpg.get_value('variation'),
                     trial_type=dpg.get_value('trial_type'), action_performed=dpg.get_value('action_performed'),
                     performer=dpg.get_value('performer').strip())
+
+    def ensure_session(self):
+        if self.session is None:
+            self.session=CollectionSession(self.config(),self.session_root)
+            dpg.disable_item('device_combo')
+        dpg.set_value('session_path',str(self.session.path.resolve()))
+
+    def refresh_fast_panel(self):
+        if not getattr(self,'fast_takes',False):
+            return []
+        snapshot=self.request_snapshot()
+        seconds=dpg.get_value('take_limit')
+        path=str(self.session.path.resolve()) if self.session else str(Path(self.session_root).resolve())+' (new session pending input)'
+        dpg.set_value('preflight_summary',
+                      f"SESSION: {path}\nClass: {snapshot['class_name'] or '(none)'} | Kind: {snapshot['kind']}\n"
+                      f"Split: {snapshot['split']} | Length: {seconds:g}s | Performer: {snapshot['performer']}\n"
+                      f"Notes: {snapshot['variation']}")
+        warnings=fast_take_warnings(snapshot['kind'],snapshot['class_name'],snapshot['variation'],seconds)
+        if not snapshot['performer']:
+            warnings.append('Enter performer.')
+        dpg.set_value('preflight_warning','WARNING: '+' '.join(warnings) if warnings else 'READY: 2s single-action take')
+        for name in ('knock','rub','neutral'):
+            dpg.set_value(f'fast_count_{name}',f"{name.upper()}: train {self.take_counts['train'][name]} | holdout {self.take_counts['holdout'][name]}")
+        return warnings
+
+    def release_record_key(self,*_):
+        self.record_key_held=False
+
+    def record_shortcut(self,*_):
+        if getattr(self,'record_key_held',False):
+            return
+        self.record_key_held=True
+        if self.is_recording or self.pending_holdout is not None:
+            return
+        for tag in ('variation','performer','class_input','take_limit'):
+            if dpg.is_item_focused(tag) or dpg.is_item_active(tag):
+                return  # Never record while typing an R in a field.
+        self.record_callback()
+
+    def recording_tick(self,elapsed):
+        if self.take_notes.get('event_protocol')=='single_action_2s':
+            dpg.set_value('rhythm_status',single_action_phase(elapsed,self.record_val))
+        elif self.take_notes.get('event_protocol')=='one_action_every_2s':
+            dpg.set_value('rhythm_status',rhythm_phase(elapsed,self.record_val,self.take_limit))
+        if elapsed>=self.take_limit:
+            self.stop_take()
+            return True
+        return False
 
     def cancel_holdout(self, *_):
         self.pending_holdout = None
@@ -225,6 +300,9 @@ class App:
 
     def device_callback(self, sender, value):
         self.open_device(value)
+        if getattr(self,'fast_takes',False) and self.ear is not None:
+            self.ensure_session()
+            self.refresh_fast_panel()
 
     def add_class_callback(self):
         name = dpg.get_value('class_input').strip()
@@ -249,6 +327,7 @@ class App:
         self.stop_take()
         self.record_val = name
         dpg.set_value('selected_class', f'Selected: {name}')
+        self.refresh_fast_panel()
 
     def clear_class(self, name):
         self.stop_take()
@@ -274,7 +353,9 @@ class App:
         info = self.devices[self.selected_device]
         return dict(session_type=self.session_type, setup_id=self.setup_id,
                     interaction_2=f'rub means scratch_nail_{self.scratch_surface}; old setup data excluded',
-                    training_window_policy='offline_event_segmentation_required' if getattr(self, 'event_rhythm', False) else 'take_level_labels',
+                    training_window_policy=('offline_single_action_segmentation_required' if getattr(self,'fast_takes',False) else
+                                            'offline_event_segmentation_required' if getattr(self, 'event_rhythm', False) else 'take_level_labels'),
+                    collection_protocol='single_action_2s' if getattr(self,'fast_takes',False) else 'standard_take',
                     device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
                     backend='PyAudio', physical_input='UM2 INST 2', captured_channels=2,
                     selected_channel_1_based=2, dtype='int16', sample_rate=48000,
@@ -302,6 +383,10 @@ class App:
             if not self.healthy() or dpg.get_value('mode') != 'Train':
                 self.message('Select a class and wait for healthy live input before recording.')
                 return
+            warnings=self.refresh_fast_panel()
+            if warnings:
+                self.message('TAKE NOT STARTED: '+' '.join(warnings))
+                return
             snapshot = self.request_snapshot()
             if not snapshot['performer']:
                 self.message('Enter performer before recording.')
@@ -311,8 +396,9 @@ class App:
             if plan['split'] == 'holdout':
                 self.pending_holdout = dict(snapshot, performer=performer)
                 dpg.set_value('holdout_message', f"Class: {plan['class_name']}\n{plan['variation']}\n"
-                              'THIS TAKE WILL BE SAVED AS HOLDOUT. Excluded from training.\n'
-                              'After confirming, begin the action immediately.')
+                              'THIS TAKE WILL BE SAVED AS HOLDOUT. Excluded from training.\n' +
+                              ('After confirming, wait for ACTION NOW (~0.3s).' if getattr(self,'fast_takes',False)
+                               else 'After confirming, begin the action immediately.'))
                 dpg.show_item('holdout_dialog')
                 return
             self.start_take(plan, performer)
@@ -322,14 +408,17 @@ class App:
         if not self.healthy() or dpg.get_value('mode') != 'Train':
             self.message('Wait for fresh healthy audio, then request recording again.')
             return
-        if self.session is None:
-            self.session = CollectionSession(self.config(), self.session_root)
-            dpg.set_value('session_path', str(self.session.path.resolve()))
-            dpg.disable_item('device_combo')
+        self.ensure_session()
         plan = dict(plan)
-        self.take_limit = plan.pop('take_limit', max(5, min(60, dpg.get_value('take_limit'))))
+        self.take_limit = plan.pop('take_limit', max(2 if getattr(self,'fast_takes',False) else 5,
+                                                   min(60,dpg.get_value('take_limit'))))
         self.record_val = plan.pop('class_name')
-        if (getattr(self, 'event_rhythm', False) and plan['recording_kind'] == 'take'
+        if getattr(self,'fast_takes',False) and plan['recording_kind']=='take':
+            plan.update(event_protocol='single_action_2s',first_action_s=.3,
+                        expected_events=0 if self.record_val=='neutral' and any(word in plan['variation'].lower() for word in ('quiet','still')) else 1,
+                        requested_action_s=1.0 if self.record_val=='rub' else .35,
+                        requested_take_s=2.0)
+        elif (getattr(self, 'event_rhythm', False) and plan['recording_kind'] == 'take'
                 and self.record_val in ('knock', 'rub')):
             plan.update(event_protocol='one_action_every_2s', event_period_s=2.0,
                         first_action_s=1.0, expected_events=max(0, int(np.ceil((self.take_limit-1)/2))),
@@ -346,6 +435,8 @@ class App:
             dpg.disable_item(f'select_{name}')
             dpg.disable_item(f'clear_{name}')
         dpg.configure_item('record_button', label='Stop Recording')
+        if self.take_notes.get('event_protocol')=='single_action_2s':
+            dpg.set_value('rhythm_status',single_action_phase(0,self.record_val))
         self.message(f"Recording {self.record_val}; SAVING AS {plan['split'].upper()}; "
                      f'auto-stop after {self.take_limit:g}s.')
 
@@ -369,6 +460,8 @@ class App:
             valid, reason = False, 'PortAudio reported capture status during this take'
         if self.take_notes['recording_kind'] == 'trial' and time.monotonic()-self.take_start < 7.9:
             valid, reason = False, 'Trial stopped before full 8 seconds'
+        if self.take_notes.get('event_protocol')=='single_action_2s' and time.monotonic()-self.take_start < 1.9:
+            valid,reason=False,'Single-action take stopped before full 2 seconds'
         self.pending_take = dict(take_id=f'take_{uuid.uuid4().hex}',
                                  class_name=self.record_val, X=np.array(self.frames, dtype=np.float32),
                                  elapsed_s=self.times, rms_fs=self.rms, peak_fs=self.peaks,
@@ -409,6 +502,7 @@ class App:
         self.frames, self.times, self.rms, self.peaks = [], [], [], []
         dpg.configure_item('record_button', label='Record Data')
         self.message(f'Saved {path.name}' + (' (excluded: capture problem)' if '.excluded.' in path.name else ''))
+        self.refresh_fast_panel()
 
     def export_callback(self):
         self.stop_take()
@@ -429,7 +523,7 @@ class App:
         dpg.configure_item('infer_group', show=value == 'Infer')
 
     def train_callback(self):
-        if getattr(self, 'event_rhythm', False):
+        if getattr(self, 'event_rhythm', False) or getattr(self,'fast_takes',False):
             self.message('Event takes require offline segmentation before training; use the checkpoint trainer.')
             return
         self.stop_take()
@@ -460,6 +554,7 @@ class App:
         self.message('Model loaded; use only models trained with this exact capture profile.')
 
     def update(self):
+        self.refresh_fast_panel()
         if self.ear is None or self.fault:
             return
         r = self.ear.stream_reader
@@ -490,10 +585,8 @@ class App:
                 self.stop_take(valid=False, reason='Audio stopped or stale')
                 return
             elapsed = time.monotonic()-self.take_start
-            if self.take_notes.get('event_protocol') == 'one_action_every_2s':
-                dpg.set_value('rhythm_status', rhythm_phase(elapsed, self.record_val, self.take_limit))
-            if elapsed >= self.take_limit:
-                self.stop_take()
+            if self.recording_tick(elapsed):
+                pass
             elif fresh:
                 # Copy immutable snapshots; never record cached FFT or dummy spectra.
                 self.frames.append(np.array(amps, dtype=np.float32, copy=True))
@@ -560,11 +653,14 @@ def main():
     parser.add_argument('--setup-id', default='A_paper_scratch_17x27_direct_table', help='hardware setup identifier saved with every take')
     parser.add_argument('--scratch-surface', choices=['paper', 'wood'], default='paper', help='interaction metadata only; does not change audio or features')
     parser.add_argument('--event-rhythm', action='store_true', help='silent two-second action cues for positive take recordings')
+    parser.add_argument('--fast-takes',action='store_true',help='2s takes, silent action cue, R shortcut and strict preflight checks')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
+    if args.fast_takes and args.event_rhythm:
+        parser.error('--fast-takes and --event-rhythm are different protocols; select only one')
     App(args.session_root, args.device, final=args.final,
         setup_id=args.setup_id, scratch_surface=args.scratch_surface,
-        event_rhythm=args.event_rhythm).run(args.smoke_seconds)
+        event_rhythm=args.event_rhythm,fast_takes=args.fast_takes).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':
