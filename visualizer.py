@@ -22,7 +22,7 @@ from models import (get_ear, get_audio_features, preprocess_data, train_model,
 class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
                  setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
-                 fast_takes=False):
+                 fast_takes=False,trained_model=None,decision_params=None):
         self.session_root = session_root
         self.setup_id = setup_id
         self.scratch_surface = scratch_surface
@@ -44,6 +44,7 @@ class App:
         self.is_recording = False
         self.collected_data = {}
         self.model = None
+        self.wood_predictor = None
         self.infer_classes = []
         self.fault = None
         self.last_fft_time = None
@@ -92,6 +93,16 @@ class App:
             if self.ear is not None:
                 self.ensure_session()
             self.refresh_fast_panel()
+        if trained_model is not None:
+            from wood_v3_model import WoodV3Model
+            self.wood_predictor=WoodV3Model(trained_model,decision_params)
+            if self.wood_predictor.params['setup_id']!=self.setup_id:
+                raise ValueError('Model setup does not match the selected hardware setup ID')
+            self.model=self.wood_predictor.model
+            self.infer_classes=self.wood_predictor.params['class_names']
+            dpg.set_value('mode','Infer')
+            self.mode_callback(None,'Infer')
+            self.message('Wood v3 model + band gate loaded. PROVISIONAL: adversarial trials not validated.')
 
     def message(self, text):
         print(text, flush=True)
@@ -548,6 +559,7 @@ class App:
 
     def load_model_callback(self, sender, data):
         self.model, self.infer_classes = load_model(Path(data['file_path_name']))
+        self.wood_predictor=None
         if getattr(self.model, 'n_features_in_', 1200) != 1200:
             self.model = None
             raise ValueError('Model feature count does not match this 1200-feature profile')
@@ -597,7 +609,10 @@ class App:
                 dpg.set_value('recording_status', phase + f'{self.record_val}: {elapsed:.1f}s / '
                               f'{self.take_limit:g}s | {len(self.frames)} new FFT frames')
         if fresh and healthy and dpg.get_value('mode') == 'Infer' and self.model is not None:
-            label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
+            if getattr(self,'wood_predictor',None) is not None:
+                label=int(self.wood_predictor.predict_windows(np.asarray([amps]))[0])
+            else:
+                label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
             dpg.set_value('prediction', 'Prediction: ' + self.infer_classes[label])
 
     def run(self, seconds=None):
@@ -654,13 +669,18 @@ def main():
     parser.add_argument('--scratch-surface', choices=['paper', 'wood'], default='paper', help='interaction metadata only; does not change audio or features')
     parser.add_argument('--event-rhythm', action='store_true', help='silent two-second action cues for positive take recordings')
     parser.add_argument('--fast-takes',action='store_true',help='2s takes, silent action cue, R shortcut and strict preflight checks')
+    parser.add_argument('--trained-model',help='joblib model to load at startup (requires matching decision parameters)')
+    parser.add_argument('--decision-params',help='matching decision_params.json for startup inference')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
     if args.fast_takes and args.event_rhythm:
         parser.error('--fast-takes and --event-rhythm are different protocols; select only one')
+    if bool(args.trained_model)!=bool(args.decision_params):
+        parser.error('--trained-model and --decision-params must be supplied together')
     App(args.session_root, args.device, final=args.final,
         setup_id=args.setup_id, scratch_surface=args.scratch_surface,
-        event_rhythm=args.event_rhythm,fast_takes=args.fast_takes).run(args.smoke_seconds)
+        event_rhythm=args.event_rhythm,fast_takes=args.fast_takes,
+        trained_model=args.trained_model,decision_params=args.decision_params).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':
