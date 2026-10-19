@@ -1,0 +1,41 @@
+{
+  "format_version": 1,
+  "setup_id": "A_wood30x30x6_v3_candidate2",
+  "source_session": "C:\\Users\\VivoBook\\Desktop\\backoff\\data_sessions\\final_v3\\20261019_135608_9c907587",
+  "class_names": [
+    "neutral",
+    "knock",
+    "rub"
+  ],
+  "model_file": "model.joblib",
+  "model_sha256": "605e7a3c0dd04029783c6f5997d1872e94483786dd9bd9a74249f6bff90cc6ac",
+  "sample_rate": 48000,
+  "fft_samples": 2400,
+  "input_features": 1200,
+  "cutoff_hz": 8000,
+  "C": 0.0003,
+  "gate": {
+    "type": "0.5-8 kHz deweighted smoothed FFT energy proxy",
+    "enabled": true,
+    "threshold": 469941572.43828094,
+    "calibration": "P95 of all NEW neutral (operator-confirmed quiet) training windows"
+  },
+  "event_detector": {
+    "gate_energy": 469941572.43828094,
+    "onset_energy": 704912358.6574214,
+    "release_energy": 469941572.43828094,
+    "refractory_s": 1.7,
+    "rearm_quiet_s": 0.15,
+    "pre_s": 0.2,
+    "post_s": 1.5
+  },
+  "smoothing": {
+    "N": 1,
+    "K_knock": 1,
+    "K_rub": 1,
+    "neutral_release": 1
+  },
+  "cooldown_s": 0,
+  "decision_status": "PROVISIONAL: window gate and event-mean outputs available; no development-trial temporal tuning",
+  "limitation": "Only quiet neutral, one performer/session, no adversarial validation or untouched holdout/test yet."
+}

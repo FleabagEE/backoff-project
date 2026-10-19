@@ -1,5 +1,18 @@
 # B: train from A's saved FFT sessions
 
+**CURRENT WOOD v3 MODEL (October 19):** see `MODEL_NOTES.md`.
+Only source: `data_sessions/final_v3/20261019_135608_9c907587`, 25 two-second
+takes per class; all neutral takes are QUIET. `rub` means fingernail-edge
+scratch on BARE WOOD. All earlier setups below are excluded from this model.
+Paired artifacts: `a_models/wood_v3_20261019_135608_v1/model.joblib` and
+`decision_params.json`. <=8kHz/log1p/scaler/LinearSVC C=.0003; take-grouped
+selection CV 72/75 (96%), scratch 25/25; no untouched final evaluation or
+adversarial-neutral validation. Gate/smoothing parameters are PROVISIONAL.
+The GUI loads this pair with the command in MODEL_NOTES and uses window
+gating; the 96% result is event-mean take classification, not GUI accuracy.
+Local delivery archive: `packages/A_wood_final_v3_20261019_135608_v1.zip`.
+No cloud upload/link has been created. Historical handoffs below are superseded.
+
 **CURRENT v2 UPDATE:** interaction label `rub` now means **fingernail scratch on
 paper**, not fingertip bandage rubbing. Old rub feature takes/calibrations and
 old combined train/holdout exports are superseded for training (raws untouched).

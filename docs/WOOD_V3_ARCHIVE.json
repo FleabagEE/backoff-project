@@ -1,0 +1,9 @@
+{
+  "archive": "packages\\A_wood_final_v3_20261019_135608_v1.zip",
+  "bytes": 14171352,
+  "sha256": "2abc7d14597dfc8bae23be2ed4ea744a47e0641300bf9500d58560780522fac6",
+  "source_session": "data_sessions\\final_v3\\20261019_135608_9c907587",
+  "source_takes_verified_unchanged": 75,
+  "model_sha256": "605e7a3c0dd04029783c6f5997d1872e94483786dd9bd9a74249f6bff90cc6ac",
+  "scope": "75 training takes plus provisional model/parameters/reports and supporting source; no holdout/trials; no cloud upload"
+}

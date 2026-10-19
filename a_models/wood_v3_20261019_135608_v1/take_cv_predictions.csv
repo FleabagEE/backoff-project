@@ -1,0 +1,76 @@
+take_id,fold,class_name,predicted_class,windows,detected_events,expected_events,event_active_windows,event_set
+take_0794074cfcbd438dae8e1b9b43eb2527,0,neutral,neutral,43,0,1,0,['neutral']
+take_1809a0966a47405b9595fd381de0015e,0,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_20f882be3b2e43bcb372d53d2f84c87c,0,neutral,neutral,42,0,1,0,['neutral']
+take_2f9e6cba3e96452face1c20e8b1fdc14,0,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_3f7dccfba7ac4377be2bd89c37963a05,0,neutral,neutral,43,0,1,0,['neutral']
+take_4de88a6c1a28479a8cafdefe012d8394,0,neutral,neutral,43,0,1,0,['neutral']
+take_64f7989098494d27a45b6bbda201aae6,0,knock,knock,43,1,1,7,"['knock', 'neutral']"
+take_7a3483582f67430aa5eecf64f987b88b,0,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_9fb95316e64746eca10096b0a1ddf08c,0,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_ad4392a1cf0d4471aee799da32517ef1,0,neutral,neutral,42,0,1,0,['neutral']
+take_b328e4cc422645a99dd08dc7ef476892,0,neutral,neutral,42,0,1,0,['neutral']
+take_c086978ccc1b42e4bb0471f0405f6bd8,0,neutral,neutral,43,0,1,0,['neutral']
+take_da8159d45a8844cbbc488630a7522515,0,neutral,neutral,43,0,1,0,['neutral']
+take_e20b654d2f4a45c88d1e2a33f0442b94,0,knock,knock,42,1,1,9,"['knock', 'neutral']"
+take_f41f5f588a7840d49c212981f1450d03,0,neutral,neutral,42,0,1,0,['neutral']
+take_0bedaabf412d42a4a22c443e9cb186bc,1,neutral,neutral,43,0,1,0,['neutral']
+take_20d1ae86f12a41519889644a79eb878e,1,rub,rub,42,1,1,25,"['neutral', 'rub']"
+take_255b2fd41e694536a4438a170a390038,1,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_2f4a68c7d74a4f8287d3afec975a2c36,1,knock,neutral,43,0,1,0,['neutral']
+take_43afa0a4e0bc46ee9b20df7e269da7ff,1,neutral,neutral,43,0,1,0,['neutral']
+take_5288509451194a989b18d5f4a39b601b,1,knock,neutral,43,0,1,0,['neutral']
+take_67894658c96e4f729a678ec83bdc77f8,1,neutral,neutral,43,0,1,0,['neutral']
+take_7a546d79df044f968fa7d7540f1c2fe7,1,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_85a6d1971443465f97c20f3be03f3683,1,neutral,neutral,42,0,1,0,['neutral']
+take_a244d02facac4f1dbf2a503699b39e36,1,knock,knock,43,1,1,14,"['knock', 'neutral']"
+take_b3b350dc44824fc78c5e32b4f0e1cd71,1,knock,knock,42,1,1,7,"['knock', 'neutral']"
+take_caa85e49d4b84fb9a21265f6114ba00f,1,knock,knock,43,1,1,15,"['knock', 'neutral']"
+take_dc905f50da6d4f4f869f8960877f96cf,1,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_e3c3488b16dc4c0da0a0da58a44dff79,1,rub,rub,42,1,1,31,"['neutral', 'rub']"
+take_ee996e68bfb646a4a1d1c5923d93cdc2,1,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_0c2b9c32def64545b5f91c5c2a443ad8,2,neutral,neutral,42,0,1,0,['neutral']
+take_18dabfbabf4640a6b02afc67bfc0cabc,2,knock,knock,43,1,1,7,"['knock', 'neutral']"
+take_20fae250cb664a2bb4f2cdcfb0ff0d8c,2,knock,knock,43,1,1,15,"['knock', 'neutral']"
+take_3120a1b0d30e486390c988bf21d17312,2,neutral,neutral,42,0,1,0,['neutral']
+take_45197f36f43441f4bb127bff3098025f,2,knock,knock,43,1,1,12,"['knock', 'neutral']"
+take_52b99509957f478094d00a1938e5e46b,2,knock,knock,43,1,1,7,"['knock', 'neutral']"
+take_737d6cb19f3d4d53801286bf8cded5e1,2,knock,knock,43,1,1,12,"['knock', 'neutral']"
+take_82138dec7fea478c9362cf7d615fbafe,2,knock,knock,42,1,1,11,"['knock', 'neutral']"
+take_9eafe6b32e5b4a2f898fc3050ef7526b,2,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_a933d847ddc04508a85f2c33109cc4a9,2,knock,neutral,42,1,1,6,['neutral']
+take_b92137a988434bd9beca7f3a93b94d11,2,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_c892708b592240ceaac00338b484dddf,2,rub,rub,43,1,1,35,"['neutral', 'rub']"
+take_e206931f8253469f92579808fcf1e0ab,2,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_ea700e92ed6e4d4eb0d7d2915c7ba125,2,neutral,neutral,43,0,1,0,['neutral']
+take_fc3ffa2fe3974d63a6611341e7a4d0a0,2,knock,knock,43,1,1,6,"['knock', 'neutral']"
+take_144e7190dbf54829b0eaf7f024f83281,3,rub,rub,42,1,1,31,"['neutral', 'rub']"
+take_1b4528b19c364ddbbc1b176f958dc1e5,3,knock,knock,43,1,1,11,"['knock', 'neutral']"
+take_2a60fb52a3b4473da0c577a2d68bbdbc,3,rub,rub,42,1,1,32,"['neutral', 'rub']"
+take_3c4e93da3bb646ef8cd73ce5c5096161,3,neutral,neutral,43,0,1,0,['neutral']
+take_435e5b51299d45718468e79a725c36ee,3,neutral,neutral,43,0,1,0,['neutral']
+take_5412f4cb5c704372a8a1c06788314fd0,3,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_75a7ba587bac43f0b2d4e9f4316b92b9,3,knock,knock,42,1,1,11,"['knock', 'neutral']"
+take_76ecaae7002c4233978e53017eed94af,3,knock,knock,42,1,1,11,"['knock', 'neutral']"
+take_a02249b03ebf4b05ba349e1b6a79c195,3,rub,rub,43,1,1,25,"['neutral', 'rub']"
+take_b0c694c4eb934f33b48510c143e1a04a,3,knock,knock,43,1,1,8,"['knock', 'neutral']"
+take_bccaad40d13849378df0c794d4714aa2,3,rub,rub,43,1,1,35,"['neutral', 'rub']"
+take_ced3fee80307454aa4b3d7281e992327,3,neutral,neutral,43,0,1,0,['neutral']
+take_d46861da20ee4cf6b7f604fac3e6c7bd,3,rub,rub,43,1,1,37,"['neutral', 'rub']"
+take_e31a6a0e60764200b114f1d66e0b3250,3,rub,rub,43,1,1,33,"['neutral', 'rub']"
+take_f46ab8e6033d43f6abc42d93c1d64be7,3,neutral,neutral,43,0,1,0,['neutral']
+take_153df520e43044b183878ccceeae4880,4,knock,knock,43,1,1,6,"['knock', 'neutral']"
+take_1c58aecd340f4c958867a709e868898a,4,knock,knock,43,1,1,7,"['knock', 'neutral']"
+take_2923011314dd463387806d6deec2d81c,4,neutral,neutral,42,0,1,0,['neutral']
+take_37e0d8966c234bd89d4540d70245a528,4,neutral,neutral,42,0,1,0,['neutral']
+take_4937628601c9468988143bc103e481c9,4,neutral,neutral,42,0,1,0,['neutral']
+take_618651aec4d94eaea04676eb4261c03e,4,rub,rub,42,1,1,25,"['neutral', 'rub']"
+take_75fe387109304585b193069b5009b5be,4,neutral,neutral,43,0,1,0,['neutral']
+take_8628d54020ae4e75ab645f51ce95965b,4,knock,knock,42,1,1,7,"['knock', 'neutral']"
+take_a205b1460d8c42a9bf6b0809b9b0db20,4,knock,knock,43,1,1,6,"['knock', 'neutral']"
+take_b212f226d5ea467ca47e4a7490fcfd8a,4,knock,knock,43,1,1,4,"['knock', 'neutral']"
+take_c02b9e9010cc44389445be43286a4f60,4,knock,knock,42,1,1,4,"['knock', 'neutral']"
+take_cf48bfc7f0ae48c4ba1a28802c7fbe85,4,rub,rub,42,1,1,33,"['neutral', 'rub']"
+take_d8785687f5b8438d88cda88a1b486d49,4,rub,rub,43,1,1,32,"['neutral', 'rub']"
+take_f0b84ceab62d44ee8938afd8dad15aba,4,neutral,neutral,43,0,1,0,['neutral']
+take_f5c6b2d10ab84b93a19b5e53e1a1d377,4,rub,rub,43,1,1,33,"['neutral', 'rub']"

@@ -1,6 +1,26 @@
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 
-## Latest v3 restart: new wooden board, acceptance pending (October 19)
+## CURRENT: 75 wooden-board takes trained (October 19)
+
+This entry supersedes the historical collection plans and pending statements
+below. A collected 25 two-second takes per class in
+`data_sessions/final_v3/20261019_135608_9c907587` and explicitly confirmed ALL
+25 neutral takes are quiet. Only this source session was used; earlier data
+remain untouched and excluded. Setup is A_wood30x30x6_v3_candidate2.
+
+Model and paired parameters: `a_models/wood_v3_20261019_135608_v1/`.
+See `MODEL_NOTES.md` for the commands, cleaning, CV table and limitations.
+Five-fold take-grouped model-selection CV selects <=8kHz/C=.0003:
+72/75 take predictions correct (96%); N 25/25, K 22/25, R 25/25.
+Two K takes have no detected event; a third weak/early event predicts neutral.
+No independent adversarial, holdout, development or fresh test evaluation.
+No final acceptance/durability PASS is implied. The gate uses new quiet P95
+band energy; smoothing/cooldown are provisional, not trial-tuned.
+GUI startup can load the two artifacts and uses window gating; event-mean
+take classification is available offline and is the source of the 96% score.
+All 41 tests pass. Audio capture, FFT and feature processing are unchanged.
+
+## Historical v3 restart: new wooden board, acceptance pending (October 19)
 
 CURRENT RECORDING REQUEST supersedes all25s plans below: a CLEAN final_v3
 session,2-second TRAIN/HOLDOUT takes, exactly ONE action per take (scratch ~1s),
