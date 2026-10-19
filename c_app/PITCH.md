@@ -20,9 +20,9 @@ bare wood back and forth with the edge of a fingernail, and that goes back one
 slide.
 
 Everything else should stay neutral. The model's label is sent to our slide app.
-That app turns at most one page per action. It waits for neutral again and adds a
-short cooldown, so one long scratch never skips several pages. That rule only
-controls the slides; it doesn't change what the model recognizes.
+To reduce repeated page turns, the app only re-triggers after it has seen a
+steady neutral, and it adds a short cooldown. That rule only controls the
+slides; it doesn't change what the model recognizes.
 
 Let us show you.
 
@@ -37,9 +37,9 @@ knock（敲击）、rub（刮擦）。
 用指关节敲一下，幻灯片就往前翻一页。“rub” 指的是用指甲边缘在裸木板上来回刮，
 这样会往回翻一页。
 
-其他动作都应该识别为 neutral。模型的标签会发送给我们的翻页程序。这个程序每次
-动作最多翻一页：必须先回到 neutral 才能再触发，还有一个短暂的冷却时间，所以
-一次长时间的刮擦不会连跳好几页。这条规则只控制翻页，不会改变模型识别的结果。
+其他动作都应该识别为 neutral。模型的标签会发送给我们的翻页程序。为了减少重复
+翻页，程序要先确认稳定的 neutral 才会重新触发，并加了一个短暂的冷却时间。这条
+规则只控制翻页，不会改变模型识别的结果。
 
 下面请看演示。
 
@@ -51,5 +51,7 @@ knock（敲击）、rub（刮擦）。
   predictions instead (see `MODEL_NOTES.md`).
 - During the demo, scratch the bare wood with a fingernail edge. Keep your hand
   away from the pickup, its tape and the cable.
-- If a page turn does not happen live, pause for a second so the label returns
-  to neutral, then repeat the action once. Do not knock repeatedly.
+- Do not promise "one action never turns two pages". The re-arm and cooldown
+  rule reduces repeats; it cannot fix a wrong or late label from the model.
+- If a page turn does not happen live, hold still for about a second so the slide
+  app sees a confirmed neutral, then repeat the action once. Do not knock repeatedly.

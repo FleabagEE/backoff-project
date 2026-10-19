@@ -2,7 +2,9 @@
 
 Labels are sent as a continuous frame stream (default 21 frames/s, about B's live
 update rate), so one action produces many identical labels in a row, just like the
-real classifier. Each action is wrapped as neutral -> action -> neutral.
+real classifier. Each action is wrapped as neutral -> action -> neutral. Sending
+every frame is a denser form of the live sender's change + 0.1 s heartbeat stream,
+so it provides the continuous neutral evidence the slide app needs to re-arm.
 
     python c_app\\mock_sender.py                      # demo: knock, knock, rub, knock
     python c_app\\mock_sender.py knock rub rub         # your own action sequence
@@ -94,21 +96,23 @@ def run_stress(s):
     s.frames('neutral', 1.0)
     print('4) knock on the last page: blocked, stays page 3')
     s.action('knock')
-    print('5) rub, brief neutral, rub again inside the 0.8 s cooldown: ONE previous -> page 2')
+    print('5) rub, 0.3 s neutral (shorter than the 0.6 s hold), rub again: ONE previous -> page 2')
     s.frames('rub', 0.2)
-    s.frames('neutral', 0.15)
-    s.frames('rub', 0.2)
+    s.frames('neutral', 0.3)
+    s.frames('rub', 0.4)
     s.frames('neutral', 1.0)
     print('6) rub after the cooldown: ONE previous -> page 1')
     s.action('rub')
     print('7) rub on the first page: blocked, stays page 1')
     s.action('rub')
     print('expected final: page 1, page turns +4, invalid +5; history shows '
-          '"waiting for neutral", "suppressed by cooldown" and "blocked" entries.')
+          '"waiting for confirmed neutral" and "blocked" entries. (Cooldown is covered by '
+          'the unit tests; frame timing here is not precise enough to aim inside it.)')
 
 
 def run_interactive(s):
     print('Type k (knock), r (rub/scratch) or n (neutral), then Enter. q to quit.')
+    s.frames('neutral', 1.0)        # the slide app needs a confirmed neutral before the first action
     for line in sys.stdin:
         word = line.strip().lower()
         if word in ('q', 'quit', 'exit'):

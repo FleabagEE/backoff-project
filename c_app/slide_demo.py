@@ -1,6 +1,7 @@
 """C: slide demo driven by finalized labels received over UDP.
 
-    python c_app\\slide_demo.py [--slides DIR] [--port 5005] [--cooldown 0.8] [--log FILE.csv]
+    python c_app\\slide_demo.py [--slides DIR] [--port 5005] [--cooldown 0.8]
+                                [--neutral-hold 0.6] [--max-gap 0.35] [--log FILE.csv]
 
 knock -> next page, rub (fingernail-edge scratch on bare wood) -> previous page, neutral -> nothing.
 Only standard library is required. Pillow is optional (JPG support, smoother scaling).
@@ -9,6 +10,7 @@ The window never grabs focus, stays on top, injects keys or hooks global keys.
 import argparse
 import csv
 import queue
+import re
 import sys
 import time
 import tkinter as tk
@@ -26,6 +28,7 @@ IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg'}
 POLL_MS = 30
 MAX_MESSAGES_PER_POLL = 500
 FONT = 'Segoe UI' if sys.platform == 'win32' else 'Helvetica'
+LABEL_COLORS = dict(knock='#ffd166', rub='#7ec8ff', neutral='#bbbbbb')
 
 BUILTIN_SLIDES = [
     dict(title='Knock to go forward',
@@ -34,10 +37,18 @@ BUILTIN_SLIDES = [
     dict(title='Scratch to go back',
          body='Scratch the bare wood back and forth with a fingernail edge  ->  previous slide',
          color='#7a3b12'),
-    dict(title='One action, one page',
-         body='Return to neutral before the next action.\nRepeated labels never turn extra pages.',
+    dict(title='Pause between actions',
+         body='The app waits for a confirmed neutral and uses a short cooldown\n'
+              'to reduce repeated page turns.',
          color='#2e5e2e'),
 ]
+
+
+def natural_key(path):
+    """'2.png' < '10.png'; case-insensitive; ties broken by full name."""
+    name = path.name.lower()
+    parts = re.split(r'(\d+)', name)
+    return [(0, int(p), '') if p.isdigit() else (1, 0, p) for p in parts], name
 
 
 def load_slides(folder):
@@ -48,13 +59,17 @@ def load_slides(folder):
     if not folder.is_dir():
         return [dict(s) for s in BUILTIN_SLIDES], f'Slide folder not found: {folder} (showing built-in demo)'
     paths = sorted((p for p in folder.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES),
-                   key=lambda p: p.name.lower())
+                   key=natural_key)
     if not paths:
         return [dict(s) for s in BUILTIN_SLIDES], f'No PNG/JPG in {folder} (showing built-in demo)'
     warning = None
     if Image is None and any(p.suffix.lower() != '.png' for p in paths):
         warning = 'JPG needs Pillow (pip install pillow); JPG pages show a placeholder'
     return [dict(path=p) for p in paths], warning
+
+
+def clock_text(wall):
+    return time.strftime('%H:%M:%S', time.localtime(wall)) + f'.{int(wall % 1 * 1000):03d}'
 
 
 class SlideApp:
@@ -67,8 +82,9 @@ class SlideApp:
         self.events = listener.out if listener else queue.Queue()
         self.counts = dict(received=0, invalid=0, turns=0)
         self.history = []
+        self.prev_label = None          # last valid label received (detects changes)
+        self.last_valid = None          # (wall time, monotonic time) of last valid message
         self._image_cache = {}
-        self._flash_job = None
         self._log_file = self._log = None
         if log_path:
             self._log_file = open(log_path, 'a', newline='', encoding='utf-8')
@@ -78,19 +94,29 @@ class SlideApp:
                                     'decision', 'page'])
 
         root.title('Slide demo (C)')
-        root.geometry('1000x700')
+        root.geometry('1000x720')
         root.configure(bg='#111')
         root.protocol('WM_DELETE_WINDOW', self.close)
 
         top = tk.Frame(root, bg='#111')
         top.pack(fill='x')
         self.page_var = tk.StringVar()
-        self.action_var = tk.StringVar(value='Last action: none')
         tk.Label(top, textvariable=self.page_var, fg='white', bg='#111',
-                 font=(FONT, 16, 'bold')).pack(side='left', padx=12, pady=6)
-        self.action_label = tk.Label(top, textvariable=self.action_var, fg='#ddd', bg='#111',
-                                     font=(FONT, 16))
-        self.action_label.pack(side='right', padx=12, pady=6)
+                 font=(FONT, 16, 'bold')).pack(side='left', padx=12, pady=6, anchor='n')
+        feedback = tk.Frame(top, bg='#111')
+        feedback.pack(side='right', padx=12, pady=4)
+        # What the model said (even if the slide did not move) vs. what the slides did.
+        self.recognized_var = tk.StringVar(value='Recognized: --')
+        self.slide_var = tk.StringVar(value='Slide: --')
+        self.current_var = tk.StringVar(value='Current label: --   |   last valid message: none yet')
+        self.recognized_label = tk.Label(feedback, textvariable=self.recognized_var, bg='#111',
+                                         fg='#ddd', font=(FONT, 20, 'bold'), anchor='e')
+        self.recognized_label.pack(fill='x')
+        self.slide_label = tk.Label(feedback, textvariable=self.slide_var, bg='#111', fg='#ddd',
+                                    font=(FONT, 16), anchor='e')
+        self.slide_label.pack(fill='x')
+        tk.Label(feedback, textvariable=self.current_var, bg='#111', fg='#aaa',
+                 font=(FONT, 10), anchor='e').pack(fill='x')
 
         self.canvas = tk.Canvas(root, bg='#222', highlightthickness=0)
         self.canvas.pack(fill='both', expand=True)
@@ -153,25 +179,33 @@ class SlideApp:
             return
         _, msg, raw, now = item
         self.counts['received'] += 1
+        self.last_valid = (time.time() - (time.monotonic() - now), now)
+        changed = msg.label != self.prev_label
+        self.prev_label = msg.label
         decision = self.gate.feed(msg.label, now)
         result = decision.reason
         if decision.action:
             result = self.turn(decision.action, msg.label)
-        if msg.label != 'neutral' or decision.reason != 'neutral':
+        elif changed and msg.label != 'neutral':
+            # Recognized but not executed (waiting for neutral / cooldown).
+            self.show_recognized(msg.label)
+            self.show_slide(f'Slide: not turned ({decision.reason.split(": ", 1)[-1]})', '#ff9f80')
+        if decision.action or changed or 're-armed' in decision.reason:
             self.remember(result)
         self.write_log(now, 'msg', raw, msg.label, msg.t, result)
 
     def turn(self, action, source):
         changed = self.deck.apply(action)
         word = 'NEXT' if action == NEXT else 'PREVIOUS'
+        if source != 'key':
+            self.show_recognized(source)
         if changed:
             self.counts['turns'] += 1
-            text = f'{word} ({source})'
-            self.flash(f'Last action: {text}', '#ffd166' if action == NEXT else '#7ec8ff')
+            self.show_slide(f'Slide: {word} -> page {self.deck.index + 1}', '#8fd18f')
             self.render()
             return f'{source}: {word.lower()} -> page {self.deck.index + 1}'
         edge = 'last' if action == NEXT else 'first'
-        self.flash(f'Last action: {word} ({source}) - already on {edge} page', '#bbbbbb')
+        self.show_slide(f'Slide: {word} blocked (already on {edge} page)', '#bbbbbb')
         return f'{source}: {word.lower()} blocked, already on {edge} page'
 
     def manual(self, action):
@@ -184,12 +218,14 @@ class SlideApp:
         self.update_status()
 
     # ---------- display ----------
-    def flash(self, text, color):
-        self.action_var.set(text)
-        self.action_label.configure(fg=color)
-        if self._flash_job:
-            self.root.after_cancel(self._flash_job)
-        self._flash_job = self.root.after(1500, lambda: self.action_label.configure(fg='#ddd'))
+    def show_recognized(self, label):
+        stamp = clock_text(self.last_valid[0]) if self.last_valid else ''
+        self.recognized_var.set(f'Recognized: {label.upper()}  {stamp}')
+        self.recognized_label.configure(fg=LABEL_COLORS.get(label, '#ddd'))
+
+    def show_slide(self, text, color):
+        self.slide_var.set(text)
+        self.slide_label.configure(fg=color)
 
     def remember(self, text):
         self.history.append(time.strftime('%H:%M:%S ') + text)
@@ -198,11 +234,16 @@ class SlideApp:
     def update_status(self):
         now = time.monotonic()
         if not self.gate.armed:
-            gate = 'waiting for neutral'
+            gate = (f'waiting for confirmed neutral '
+                    f'({self.gate.neutral_held():.1f}/{self.gate.neutral_hold_s:g}s)')
         elif self.gate.in_cooldown(now):
-            gate = f'cooldown ({self.gate.cooldown_s:.1f}s)'
+            gate = f'cooldown ({self.gate.cooldown_s:g}s)'
         else:
             gate = 'ready'
+        if self.last_valid:
+            wall, mono = self.last_valid
+            self.current_var.set(f'Current label: {self.prev_label}   |   last valid message: '
+                                 f'{clock_text(wall)} ({now - mono:.1f}s ago)')
         self.page_var.set(f'Page {self.deck.index + 1} / {self.deck.count}')
         c = self.counts
         self.state_var.set(f'Gate: {gate}   |   received {c["received"]}   invalid {c["invalid"]}'
@@ -268,15 +309,20 @@ class SlideApp:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--slides', help='folder of PNG/JPG slides (sorted by file name)')
+    ap.add_argument('--slides', help='folder of PNG/JPG slides (natural sort: 1, 2, 10)')
     ap.add_argument('--host', default='127.0.0.1')
     ap.add_argument('--port', type=int, default=5005)
     ap.add_argument('--cooldown', type=float, default=0.8, help='seconds (default 0.8)')
+    ap.add_argument('--neutral-hold', type=float, default=0.6,
+                    help='seconds of continuously confirmed neutral before re-arming (default 0.6)')
+    ap.add_argument('--max-gap', type=float, default=0.35,
+                    help='max seconds between messages for neutral evidence to stay unbroken '
+                         '(default 0.35; sender heartbeat is 0.1)')
     ap.add_argument('--log', help='append received messages/decisions to this CSV')
     ap.add_argument('--fullscreen', action='store_true')
     args = ap.parse_args(argv)
-    if args.cooldown < 0:
-        ap.error('--cooldown must be >= 0')
+    if args.cooldown < 0 or args.neutral_hold < 0 or args.max_gap <= 0:
+        ap.error('--cooldown/--neutral-hold must be >= 0 and --max-gap > 0')
 
     slides, warning = load_slides(args.slides)
     listener, listen_error = None, None
@@ -294,7 +340,8 @@ def main(argv=None):
     root = tk.Tk()
     if args.fullscreen:
         root.attributes('-fullscreen', True)
-    SlideApp(root, slides, listener, listen_error, GestureGate(args.cooldown), args.log, warning)
+    gate = GestureGate(args.cooldown, args.neutral_hold, args.max_gap)
+    SlideApp(root, slides, listener, listen_error, gate, args.log, warning)
     root.mainloop()
 
 

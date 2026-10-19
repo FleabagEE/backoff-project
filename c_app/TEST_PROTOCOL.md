@@ -1,18 +1,21 @@
 # C test protocol: 20 evaluation trials + slide check (wood v3)
 
 Status: **NOT YET RUN on hardware.** Every result cell below is blank and must be
-filled in during the actual session. Do not copy numbers from mock runs, CV
+filled during the actual session. Do not copy numbers from mock runs, CV
 reports or operator impressions into it.
+
+**Formal scoring waits for the model-side SPACE trial recorder,** which B owns.
+`visualizer.py` does not have one yet. The slide app CSV is for troubleshooting
+only and is never the official score.
 
 Sources:
 - the group rule in `SETUP.md` ("5 positive + 5 negative trials per target");
 - the scoring in `trial_replay.score_trial`, which is the same as B's
-  `trial_passes` on `origin/model-training`;
+  `trial_passes`;
 - the wood v3 setup in `docs/HANDOFF_C.md` and `MODEL_NOTES.md`.
 
-The action list below adapts the earlier `docs/scratch_v2.md` table to bare
-wood, and the 8 s timing comes from that document too. **A and B still have to
-confirm both for v3.**
+The action list adapts the earlier `docs/scratch_v2.md` table to bare wood.
+**A and B still have to confirm it for v3**, along with the trial length.
 
 ## Definitions
 
@@ -22,28 +25,29 @@ confirm both for v3.**
   Never mix in another model or parameter file.
 - **knock:** one knuckle knock on the board.
 - **rub:** the fingernail edge scratched back and forth on the **bare wood**,
-  about 1 s. Paper pads and fingertip rubbing are no longer part of this definition.
-- **Label set:** every final label shown as `Prediction:` by `visualizer.py`
-  between trial start and stop. That includes the quiet start and the tail. The
-  label set is drawn from `{neutral, knock, rub}`.
-- **Tester note** (read it aloud): "Knock once with a knuckle on the board. To
-  scratch, move a fingernail edge back and forth on the bare wood. Do not touch the
-  pickup, its tape or the cable."
+  about 1 s.
+- **Label set:** every final label the model side outputs between SPACE start
+  and SPACE stop, including the quiet start and the tail. It comes from B's
+  SPACE recorder and is drawn from `{neutral, knock, rub}`. The recorder must use
+  the same final label stream that `visualizer.py` shows as `Prediction:` and
+  sends to the slide app.
 
-### Where the label set comes from
+## Rules for the performer and operator
 
-The GUI has **no live SPACE trial recorder yet**. Until B provides one, use the
-slide app log as the record of the GUI's final label stream. `visualizer.py`
-sends the first label and then every change, and the slide app writes each one
-to its CSV.
-
-For a trial running from `start` to `stop` (wall-clock times written down by the operator):
-
-> label set = { the last label received **before** `start` } ∪ { every label received between `start` and `stop` }
-
-If B's recorder becomes available, use its printed set and note which one you
-used in the session header. Both read the same final label, so they must agree.
-If they disagree, log it as a failure of type `network`.
+1. **Practice first, once per action type, before any formal trial.** The
+   performer does one knock, one scratch, and one example of each negative action
+   on the list. Practice is not scored or recorded as a trial. Give instructions
+   only during practice.
+2. Before formal trials, tell the performer the procedure once: wait until the
+   operator starts the trial, stay still, do the action **once**, stay still until
+   the operator stops the trial. For a negative trial, do the named action once.
+3. **During formal trials: no prompts, cues, countdowns, corrections or physical
+   help.** Do not call out "still" or "now" and do not point. The operator only
+   starts and stops the recorder, and says which trial number and action comes next.
+4. Keep every formal trial, pass or fail. A re-record is allowed only for an
+   INVALID trial (an empty set or a recorder/capture fault, as defined below), and
+   both attempts stay in the log.
+5. Do not change the model, gate, setup or slide app settings during the 20 trials.
 
 ## Scoring (same rule as `trial_replay.score_trial` / B `trial_passes`)
 
@@ -55,13 +59,12 @@ If they disagree, log it as a failure of type `network`.
 | rub_neg | contains **no** `rub` | `{neutral, rub}`; `{neutral, knock}` is a PASS here |
 
 A single stray label fails the trial. An empty set, or a label outside the three,
-makes the trial **invalid**, not a pass. Invalid trials and capture faults are
-re-recorded and listed in the failure log. Failed trials are never re-recorded or
-dropped.
+makes the trial **INVALID**, not a pass.
 
-Slide-side observation is recorded **separately** and does not change the
-official score. The slide app's one-turn rule and cooldown are not part of
-recognition. Start each trial on page 2 of 3: press Home, then Right.
+The slide app's re-arm and cooldown rule is **not** part of scoring. It only
+decides whether the slide moves. Slide behaviour is recorded in a separate
+column and never changes PASS/FAIL. Start each trial on page 2 of 3 (press Home,
+then Right).
 
 | Trial type | Expected slide behaviour |
 |---|---|
@@ -70,29 +73,18 @@ recognition. Start each trial on page 2 of 3: press Home, then Right.
 | knock_neg | no NEXT |
 | rub_neg | no PREVIOUS (a NEXT from the knuckle-knock negative is expected) |
 
-## Setup checklist (before trial 1)
+## Setup checklist (before practice)
 
 1. A confirms the v3 setup: the same gain mark, Windows input level 100,
    enhancements OFF, phantom power OFF, and the pickup tape untouched.
-2. Window 1 (slide app with log):
+2. Window 1 (slide app; the log is for troubleshooting only):
    `uv run python c_app\slide_demo.py --log c_app\trial_log_YYYYMMDD.csv`
 3. Window 2 (live inference, sends to `127.0.0.1:5005` by default):
    `uv run visualizer.py --setup-id A_wood30x30x6_v3_candidate2 --scratch-surface wood --trained-model a_models/wood_v3_20261019_135608_v1/model.joblib --decision-params a_models/wood_v3_20261019_135608_v1/decision_params.json`
-4. Do not change the model, gate or slide `--cooldown` during the 20 trials.
-5. Smoke test (not scored): one knock, one scratch, then 5 s of quiet. Confirm the
-   slide window's `received` counter rises and the gate returns to `ready`.
-
-## Running one trial (8 s; timing to be confirmed for v3)
-
-| Time | Performer | Operator |
-|---|---|---|
-| 0-2 s | stay still | note the start time, say "still" |
-| 2-3 s | perform the action **once** (one knock, or about 1 s of scratching) | say "now" |
-| 3-8 s | stay still | note the stop time at 8 s |
-
-Write down the label set, then the slide page before and after the trial.
-Interleave the types (K+, R+, K-, R-, then repeat 5 times) and keep that order
-even when a trial fails.
+4. Confirm B's SPACE recorder is running on the same final label stream. If it
+   is not available, stop here: do not run formal trials (see "Internal debugging").
+5. Smoke test, not scored: in the slide window, `received` rises and the gate
+   returns to `ready` after quiet.
 
 ## Session header
 
@@ -104,14 +96,15 @@ even when a trial fails.
 | Operator / scorer |  |
 | Model folder + `model_sha256` from decision_params.json |  |
 | Git commit of this repo |  |
-| Label set source (slide log CSV / B recorder) |  |
-| Slide app log file |  |
+| SPACE recorder (who / version) |  |
+| Slide app log file (troubleshooting) |  |
+| Practice done for every action type? ☐ yes |  |
 
 ## Score sheet
 
 These `action_performed` values are the proposal for v3 and need A/B confirmation.
 
-| # | trial_type | action_performed | Label set | PASS / FAIL / INVALID | Page before -> after | Notes |
+| # | trial_type | action_performed | Label set (SPACE recorder) | PASS / FAIL / INVALID | Slide page before -> after | Notes |
 |---:|---|---|---|---|---|---|
 | 1 | knock_pos | normal knuckle knock, dominant hand, board center |  |  |  |  |
 | 2 | rub_pos | nail-edge scratch on wood, normal, right index |  |  |  |  |
@@ -155,24 +148,29 @@ differs from the score. For the cause, choose one or more:
 - **cross**: knock and rub confused.
 - **double**: the slide turned more than once.
 - **late**: the label changed after stop.
-- **operator**: performer or timing error.
+- **performer**: the action was not as listed.
 - **capture**: dropout, `WAIT / NO FRESH AUDIO`, or a device problem.
-- **network**: the label did not reach the slide app, or the sources disagree.
+- **network**: the label did not reach the slide app.
 
-| # | Time | Expected | Label set | Slide (before -> after) | Suspected cause | Evidence (log rows) | Action taken |
+| # | Time | Expected | Label set (SPACE) | Slide (before -> after) | Suspected cause | Evidence | Action taken |
 |---:|---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |  |
 |  |  |  |  |  |  |  |  |
 |  |  |  |  |  |  |  |  |
 
-Rules for the log:
-- Copy the slide app CSV rows that cover the trial. Use `wall_time`, `label`, `decision` and `page`.
-- Keep failed trials in the score. A re-record is allowed only for INVALID or capture faults, and both attempts stay listed.
-- The slide cooldown can hide a second wrong label from the slide display, but
-  the trial is still scored on the full label set.
+The slide app CSV may be quoted as evidence, for example the `wall_time`,
+`label` and `decision` rows around the trial. It helps explain a failure but it
+never replaces or overrides the SPACE recorder's label set.
 
-## Software-only rehearsal (not a result)
+## Internal debugging only (never formal results)
 
-Without the sensor, the scorer can practise the sheet with
-`python c_app\mock_sender.py --interactive`. These runs check the app, not the
-classifier. Do not put them in the score sheet.
+These steps are for checking the pipeline before formal trials, or while the
+SPACE recorder does not exist. Mark any sheet produced this way
+**"INTERNAL DEBUG – not a formal trial"**.
+
+- A guided 8 s run, with the operator calling "still" for 0–2 s, "now" at
+  2–3 s, and "still" again until 8 s.
+- An approximate label set worked out from the slide app CSV: the last label
+  received before start, plus every label received between start and stop.
+- `python c_app\mock_sender.py --interactive` to practise using the sheet
+  without the sensor. This checks the app, not the classifier.
