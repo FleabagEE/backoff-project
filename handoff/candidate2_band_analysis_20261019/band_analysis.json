@@ -1,0 +1,423 @@
+{
+  "source": "data_sessions/diagnostics/final_v3_acceptance/20261019_125214_3db18f7f",
+  "levels": {
+    "quiet": {
+      "take_id": "take_8f3e07abc7344ab89b95827e99b1da16",
+      "windows": 214,
+      "median_rms_pct": 0.12973544296298983,
+      "p10_rms_pct": 0.12058981288023345,
+      "p95_rms_pct": 0.14680363204058341,
+      "p95_peak_pct": 0.579833984375,
+      "max_peak_pct": 0.5828857421875
+    },
+    "normal": {
+      "take_id": "take_e3d4b5c09a1e4c368772db52df67e224",
+      "windows": 214,
+      "median_rms_pct": 0.2246714927228062,
+      "p10_rms_pct": 0.15766371463898202,
+      "p95_rms_pct": 0.5288343917623719,
+      "p95_peak_pct": 2.1551513671874996,
+      "max_peak_pct": 4.150390625
+    },
+    "light": {
+      "take_id": "take_4640f7e3c8e24aca9c2299d0680a996d",
+      "windows": 213,
+      "median_rms_pct": 0.22650576366147512,
+      "p10_rms_pct": 0.1370546351461416,
+      "p95_rms_pct": 0.3941307101508851,
+      "p95_peak_pct": 1.3519287109375,
+      "max_peak_pct": 2.0233154296875
+    },
+    "knock": {
+      "take_id": "take_8567d49fc8bf4b8d97cdead6fc6b20c3",
+      "windows": 213,
+      "median_rms_pct": 0.13244069288300095,
+      "p10_rms_pct": 0.12302925587251627,
+      "p95_rms_pct": 0.3323739090203119,
+      "p95_peak_pct": 0.9057617187499978,
+      "max_peak_pct": 14.862060546875
+    }
+  },
+  "band_contrasts": [
+    {
+      "low_hz": 0,
+      "high_hz": 1000,
+      "condition": "normal",
+      "quiet_mean_energy_share": 0.29751485040813014,
+      "median_contrast_db": 7.111215112922381,
+      "p10_contrast_db": 3.7376888226515788,
+      "fraction_above_quiet_p95": 0.9579439252336449,
+      "p10_over_quiet_p95_db": 1.5714057005867037
+    },
+    {
+      "low_hz": 0,
+      "high_hz": 1000,
+      "condition": "light",
+      "quiet_mean_energy_share": 0.29751485040813014,
+      "median_contrast_db": 8.005405998272447,
+      "p10_contrast_db": 1.762475496787557,
+      "fraction_above_quiet_p95": 0.8732394366197183,
+      "p10_over_quiet_p95_db": -0.4038076252773182
+    },
+    {
+      "low_hz": 1000,
+      "high_hz": 4000,
+      "condition": "normal",
+      "quiet_mean_energy_share": 0.09916845668912845,
+      "median_contrast_db": 5.559024031595329,
+      "p10_contrast_db": 1.822081723510978,
+      "fraction_above_quiet_p95": 0.9766355140186916,
+      "p10_over_quiet_p95_db": 1.4017402379033814
+    },
+    {
+      "low_hz": 1000,
+      "high_hz": 4000,
+      "condition": "light",
+      "quiet_mean_energy_share": 0.09916845668912845,
+      "median_contrast_db": 4.090760110157819,
+      "p10_contrast_db": 0.057031037799704504,
+      "fraction_above_quiet_p95": 0.8497652582159625,
+      "p10_over_quiet_p95_db": -0.3633104478078927
+    },
+    {
+      "low_hz": 4000,
+      "high_hz": 8000,
+      "condition": "normal",
+      "quiet_mean_energy_share": 0.11567781514916226,
+      "median_contrast_db": 2.229893743461041,
+      "p10_contrast_db": 0.6928171387083779,
+      "fraction_above_quiet_p95": 0.9392523364485982,
+      "p10_over_quiet_p95_db": 0.2558178400393911
+    },
+    {
+      "low_hz": 4000,
+      "high_hz": 8000,
+      "condition": "light",
+      "quiet_mean_energy_share": 0.11567781514916226,
+      "median_contrast_db": 1.3813244084177971,
+      "p10_contrast_db": 0.1474515691160696,
+      "fraction_above_quiet_p95": 0.7887323943661971,
+      "p10_over_quiet_p95_db": -0.289547729552917
+    },
+    {
+      "low_hz": 8000,
+      "high_hz": 16000,
+      "condition": "normal",
+      "quiet_mean_energy_share": 0.23151037118914966,
+      "median_contrast_db": 0.1369653441087919,
+      "p10_contrast_db": -0.2642152377857985,
+      "fraction_above_quiet_p95": 0.3878504672897196,
+      "p10_over_quiet_p95_db": -0.5729464651495849
+    },
+    {
+      "low_hz": 8000,
+      "high_hz": 16000,
+      "condition": "light",
+      "quiet_mean_energy_share": 0.23151037118914966,
+      "median_contrast_db": 0.07003885552947262,
+      "p10_contrast_db": -0.20155583064187244,
+      "fraction_above_quiet_p95": 0.18779342723004694,
+      "p10_over_quiet_p95_db": -0.5102870580056591
+    },
+    {
+      "low_hz": 16000,
+      "high_hz": 24000,
+      "condition": "normal",
+      "quiet_mean_energy_share": 0.25612850656442937,
+      "median_contrast_db": 0.1401145451672038,
+      "p10_contrast_db": -0.08725362274266817,
+      "fraction_above_quiet_p95": 0.19626168224299065,
+      "p10_over_quiet_p95_db": -0.43846518088824293
+    },
+    {
+      "low_hz": 16000,
+      "high_hz": 24000,
+      "condition": "light",
+      "quiet_mean_energy_share": 0.25612850656442937,
+      "median_contrast_db": 0.09198695146988736,
+      "p10_contrast_db": -0.17245727418768284,
+      "fraction_above_quiet_p95": 0.14553990610328638,
+      "p10_over_quiet_p95_db": -0.5236688323332577
+    }
+  ],
+  "all_condition_band_energy": [
+    {
+      "band_hz": [
+        0,
+        1000
+      ],
+      "condition": "quiet",
+      "median_proxy_energy": 561405493.3226854,
+      "p10_proxy_energy": 292403263.340805,
+      "p95_proxy_energy": 924495858.7134091,
+      "max_proxy_energy": 1185411505.9125443
+    },
+    {
+      "band_hz": [
+        0,
+        1000
+      ],
+      "condition": "normal",
+      "median_proxy_energy": 2886676848.6583548,
+      "p10_proxy_energy": 1327533655.6510751,
+      "p95_proxy_energy": 9566850292.03931,
+      "max_proxy_energy": 16612440651.213934
+    },
+    {
+      "band_hz": [
+        0,
+        1000
+      ],
+      "condition": "light",
+      "median_proxy_energy": 3546641223.6568265,
+      "p10_proxy_energy": 842411346.0834799,
+      "p95_proxy_energy": 12246474737.289839,
+      "max_proxy_energy": 19819538173.505997
+    },
+    {
+      "band_hz": [
+        0,
+        1000
+      ],
+      "condition": "knock",
+      "median_proxy_energy": 608622295.0335072,
+      "p10_proxy_energy": 382170237.2252683,
+      "p95_proxy_energy": 10700499884.175266,
+      "max_proxy_energy": 2163411363483.2031
+    },
+    {
+      "band_hz": [
+        1000,
+        4000
+      ],
+      "condition": "quiet",
+      "median_proxy_energy": 188579091.56383145,
+      "p10_proxy_energy": 168221407.78433302,
+      "p95_proxy_energy": 207743616.54668537,
+      "max_proxy_energy": 224283099.59763968
+    },
+    {
+      "band_hz": [
+        1000,
+        4000
+      ],
+      "condition": "normal",
+      "median_proxy_energy": 678259589.1093316,
+      "p10_proxy_energy": 286880950.83689696,
+      "p95_proxy_energy": 16741201554.272816,
+      "max_proxy_energy": 59398655035.05717
+    },
+    {
+      "band_hz": [
+        1000,
+        4000
+      ],
+      "condition": "light",
+      "median_proxy_energy": 483692719.3142814,
+      "p10_proxy_energy": 191071821.18790132,
+      "p95_proxy_energy": 1965646765.060393,
+      "max_proxy_energy": 4475180852.854282
+    },
+    {
+      "band_hz": [
+        1000,
+        4000
+      ],
+      "condition": "knock",
+      "median_proxy_energy": 192441286.98884284,
+      "p10_proxy_energy": 174365245.23032436,
+      "p95_proxy_energy": 450246505.68133414,
+      "max_proxy_energy": 48538329868.342804
+    },
+    {
+      "band_hz": [
+        4000,
+        8000
+      ],
+      "condition": "quiet",
+      "median_proxy_energy": 218558479.91010058,
+      "p10_proxy_energy": 201227324.38425276,
+      "p95_proxy_energy": 241694958.36022612,
+      "max_proxy_energy": 260108349.2530678
+    },
+    {
+      "band_hz": [
+        4000,
+        8000
+      ],
+      "condition": "normal",
+      "median_proxy_energy": 365222088.65036887,
+      "p10_proxy_energy": 256359476.0711818,
+      "p95_proxy_energy": 6267265430.697445,
+      "max_proxy_energy": 33793275629.19619
+    },
+    {
+      "band_hz": [
+        4000,
+        8000
+      ],
+      "condition": "light",
+      "median_proxy_energy": 300400120.3360859,
+      "p10_proxy_energy": 226106380.75627738,
+      "p95_proxy_energy": 743265011.5465862,
+      "max_proxy_energy": 1729267512.2731924
+    },
+    {
+      "band_hz": [
+        4000,
+        8000
+      ],
+      "condition": "knock",
+      "median_proxy_energy": 220861689.90547296,
+      "p10_proxy_energy": 199614595.60706964,
+      "p95_proxy_energy": 355499517.8219748,
+      "max_proxy_energy": 19602892318.9706
+    },
+    {
+      "band_hz": [
+        8000,
+        16000
+      ],
+      "condition": "quiet",
+      "median_proxy_energy": 438321936.3380029,
+      "p10_proxy_energy": 412101628.83874005,
+      "p95_proxy_energy": 470615610.4136769,
+      "max_proxy_energy": 523442630.5481785
+    },
+    {
+      "band_hz": [
+        8000,
+        16000
+      ],
+      "condition": "normal",
+      "median_proxy_energy": 452365775.6847468,
+      "p10_proxy_energy": 412450355.43407166,
+      "p95_proxy_energy": 945305423.6135373,
+      "max_proxy_energy": 3641713367.5118976
+    },
+    {
+      "band_hz": [
+        8000,
+        16000
+      ],
+      "condition": "light",
+      "median_proxy_energy": 445448080.1843618,
+      "p10_proxy_energy": 418444267.80688304,
+      "p95_proxy_energy": 513816589.8032675,
+      "max_proxy_energy": 596521496.6563164
+    },
+    {
+      "band_hz": [
+        8000,
+        16000
+      ],
+      "condition": "knock",
+      "median_proxy_energy": 434734382.2390694,
+      "p10_proxy_energy": 411045284.0980849,
+      "p95_proxy_energy": 486915990.193322,
+      "max_proxy_energy": 4384999167.702238
+    },
+    {
+      "band_hz": [
+        16000,
+        24000
+      ],
+      "condition": "quiet",
+      "median_proxy_energy": 483596055.71054995,
+      "p10_proxy_energy": 454708631.6544563,
+      "p95_proxy_energy": 524329032.792871,
+      "max_proxy_energy": 539910870.6565359
+    },
+    {
+      "band_hz": [
+        16000,
+        24000
+      ],
+      "condition": "normal",
+      "median_proxy_energy": 499452515.2023891,
+      "p10_proxy_energy": 473977130.90947706,
+      "p95_proxy_energy": 557296116.6183336,
+      "max_proxy_energy": 666838152.0513628
+    },
+    {
+      "band_hz": [
+        16000,
+        24000
+      ],
+      "condition": "light",
+      "median_proxy_energy": 493948243.2395221,
+      "p10_proxy_energy": 464768860.4649844,
+      "p95_proxy_energy": 537355378.7911626,
+      "max_proxy_energy": 580281884.6010271
+    },
+    {
+      "band_hz": [
+        16000,
+        24000
+      ],
+      "condition": "knock",
+      "median_proxy_energy": 491503686.8010285,
+      "p10_proxy_energy": 457131743.2530353,
+      "p95_proxy_energy": 550689911.257668,
+      "max_proxy_energy": 4478941661.823034
+    }
+  ],
+  "top_quiet_bins": [
+    {
+      "hz": 60.0,
+      "share": 0.13608631636536758
+    },
+    {
+      "hz": 40.0,
+      "share": 0.11313406907328204
+    },
+    {
+      "hz": 80.0,
+      "share": 0.015215828021382338
+    },
+    {
+      "hz": 1540.0,
+      "share": 0.005416759448859967
+    },
+    {
+      "hz": 1520.0,
+      "share": 0.004700177753338631
+    },
+    {
+      "hz": 20.0,
+      "share": 0.004486604663136554
+    },
+    {
+      "hz": 100.0,
+      "share": 0.0018220722081077358
+    },
+    {
+      "hz": 1000.0,
+      "share": 0.001267799470067096
+    },
+    {
+      "hz": 2000.0,
+      "share": 0.0010112375563689948
+    },
+    {
+      "hz": 1560.0,
+      "share": 0.0009353683752792467
+    },
+    {
+      "hz": 1480.0,
+      "share": 0.0008959149913013208
+    },
+    {
+      "hz": 1580.0,
+      "share": 0.0008802731784837686
+    }
+  ],
+  "headroom_db_to_70pct": 13.46038027518681,
+  "headroom_db_to_44_3pct": 9.486493999363063,
+  "method": "Undo saved pink weighting; sum squared temporally smoothed Hamming FFT magnitudes; half Nyquist. DC omitted. Energy units are relative; common scale cancels in contrasts. Correct frequency axis starts at 20 Hz. This cannot reconstruct unsmoothed PCM power or establish noise gain dependence.",
+  "revised_rule": "For a fixed listed band: light P10 > quiet P95 and >=90% light windows above quiet P95; normal >=90% above quiet P95; knock peak <70% FS. These are exploratory acceptance diagnostics, not a final performance test.",
+  "joint_grid_search_run": false,
+  "model_fitted": false,
+  "new_capture_started": false,
+  "passing_bands": []
+}
