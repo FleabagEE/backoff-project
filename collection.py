@@ -18,7 +18,7 @@ def training_eligible(info):
     return (info.get('valid', True) and info.get('split', 'train') == 'train'
             and info.get('recording_kind', 'take') not in ('trial', 'diagnostic')
             and (info.get('class_name') != 'rub'
-                 or 'scratch_nail_paper' in info.get('variation', '')))
+                 or any(tag in info.get('variation', '') for tag in ('scratch_nail_paper', 'scratch_nail_wood'))))
 
 
 def atomic_npz(path, **arrays):

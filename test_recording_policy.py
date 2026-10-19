@@ -41,6 +41,17 @@ class RecordingTests(unittest.TestCase):
                     self.assertEqual(info['split'],'diagnostic')
                     self.assertTrue(info['valid'])
                 self.assertEqual(app.collected_data['neutral'],[])
+                app.event_rhythm=True
+                app.add_class('rub')
+                app.take_counts={s:dict(neutral=0,knock=0,rub=0) for s in ('train','holdout')}
+                dpg.set_value('take_limit',25)
+                app.start_take(recording_plan('take','train','rub','r01 scratch_nail_wood'),'A')
+                self.assertEqual(app.take_notes['expected_events'],12)
+                self.assertEqual(app.take_notes['event_protocol'],'one_action_every_2s')
+                app.frames=[np.ones(4),np.ones(4)]
+                app.times=[.1,24.9];app.rms=[.001,.001];app.peaks=[.005,.005]
+                app.stop_take()
+                self.assertEqual(len(app.session.take_paths()),2)
         finally:
             dpg.destroy_context()
 

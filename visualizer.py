@@ -13,14 +13,18 @@ import numpy as np
 import pyaudio
 
 from collection import CollectionSession, utc_now, training_eligible
-from recording_policy import TRIAL_TYPES, recording_plan, authorize_plan, trial_phase
+from recording_policy import TRIAL_TYPES, recording_plan, authorize_plan, trial_phase, rhythm_phase
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
 
 
 class App:
-    def __init__(self, session_root='data_sessions', device=None, final=False):
+    def __init__(self, session_root='data_sessions', device=None, final=False,
+                 setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False):
         self.session_root = session_root
+        self.setup_id = setup_id
+        self.scratch_surface = scratch_surface
+        self.event_rhythm = event_rhythm
         self.session_type = 'final' if final else 'pilot'
         self.take_counts = {split: dict(neutral=0, knock=0, rub=0) for split in ('train', 'holdout')}
         self.trial_counts = dict.fromkeys(TRIAL_TYPES, 0)
@@ -107,12 +111,13 @@ class App:
             dpg.add_combo(['Train', 'Infer'], default_value='Train', tag='mode', callback=self.mode_callback)
             with dpg.group(tag='train_group'):
                 dpg.add_text(f'Session: {self.session_type}; new session each launch')
-                dpg.add_text('rub = FINGERNAIL SCRATCH ON PAPER', color=(255, 220, 80), wrap=385)
+                dpg.add_text('rub = FINGERNAIL SCRATCH ON ' + getattr(self, 'scratch_surface', 'paper').upper(), color=(255, 220, 80), wrap=385)
                 dpg.add_combo(['take', 'trial', 'diagnostic'], default_value='take', tag='recording_kind',
                               label='Recording kind', callback=self.split_callback)
                 dpg.add_combo(['train', 'holdout'], default_value='train', tag='split',
                               label='DATA SPLIT', callback=self.split_callback)
                 dpg.add_text('WILL SAVE AS TRAIN', tag='split_banner', color=(255, 220, 80), wrap=385)
+                dpg.add_text('', tag='rhythm_status', color=(80, 230, 255), wrap=385)
                 dpg.add_text('Training takes: knock 0/10, rub 0/10, neutral 0/16', tag='take_progress', wrap=385)
                 dpg.add_text('Holdout takes: knock 0/2, rub 0/2, neutral 0/2', tag='holdout_progress', wrap=385)
                 dpg.add_input_text(label='Performer', tag='performer', default_value='A', width=210)
@@ -138,7 +143,8 @@ class App:
                 dpg.add_separator()
                 dpg.add_text('Optional model training (B can do this later)')
                 dpg.add_combo(MODEL_OPTIONS, tag='model_type', default_value=DEFAULT_MODEL_TYPE, width=220)
-                dpg.add_button(label='Train Model', tag='train_button', callback=self.train_callback)
+                dpg.add_button(label='Train Model', tag='train_button', callback=self.train_callback,
+                               enabled=not getattr(self, 'event_rhythm', False))
             with dpg.group(tag='infer_group', show=False):
                 dpg.add_text('Prediction: ---', tag='prediction')
                 dpg.add_button(label='Save Model', callback=lambda: dpg.show_item('save_model_dialog'))
@@ -266,8 +272,9 @@ class App:
 
     def config(self):
         info = self.devices[self.selected_device]
-        return dict(session_type=self.session_type, setup_id='A_paper_scratch_17x27_direct_table',
-                    interaction_2='rub means scratch_nail_paper; old fingertip rub superseded',
+        return dict(session_type=self.session_type, setup_id=self.setup_id,
+                    interaction_2=f'rub means scratch_nail_{self.scratch_surface}; old setup data excluded',
+                    training_window_policy='offline_event_segmentation_required' if getattr(self, 'event_rhythm', False) else 'take_level_labels',
                     device_name=info['name'], host_api=info['host_api'], device_index=info['index'],
                     backend='PyAudio', physical_input='UM2 INST 2', captured_channels=2,
                     selected_channel_1_based=2, dtype='int16', sample_rate=48000,
@@ -322,6 +329,11 @@ class App:
         plan = dict(plan)
         self.take_limit = plan.pop('take_limit', max(5, min(60, dpg.get_value('take_limit'))))
         self.record_val = plan.pop('class_name')
+        if (getattr(self, 'event_rhythm', False) and plan['recording_kind'] == 'take'
+                and self.record_val in ('knock', 'rub')):
+            plan.update(event_protocol='one_action_every_2s', event_period_s=2.0,
+                        first_action_s=1.0, expected_events=max(0, int(np.ceil((self.take_limit-1)/2))),
+                        requested_action_s=1.0 if self.record_val == 'rub' else .35)
         self.frames, self.times, self.rms, self.peaks = [], [], [], []
         self.take_notes = dict(plan, performer=performer, started_utc=utc_now())
         self.take_start = time.monotonic()
@@ -341,6 +353,7 @@ class App:
         if not self.is_recording:
             return
         self.is_recording = False
+        dpg.set_value('rhythm_status', '')
         for tag in ('recording_kind', 'split', 'performer', 'variation', 'trial_type',
                     'action_performed', 'take_limit', 'mode'):
             dpg.enable_item(tag)
@@ -416,6 +429,9 @@ class App:
         dpg.configure_item('infer_group', show=value == 'Infer')
 
     def train_callback(self):
+        if getattr(self, 'event_rhythm', False):
+            self.message('Event takes require offline segmentation before training; use the checkpoint trainer.')
+            return
         self.stop_take()
         names = [name for name, values in self.collected_data.items() if values]
         if len(names) < 2:
@@ -474,6 +490,8 @@ class App:
                 self.stop_take(valid=False, reason='Audio stopped or stale')
                 return
             elapsed = time.monotonic()-self.take_start
+            if self.take_notes.get('event_protocol') == 'one_action_every_2s':
+                dpg.set_value('rhythm_status', rhythm_phase(elapsed, self.record_val, self.take_limit))
             if elapsed >= self.take_limit:
                 self.stop_take()
             elif fresh:
@@ -539,9 +557,14 @@ def main():
     parser.add_argument('--device', type=int, help='explicit PyAudio input index (normally auto-select WASAPI USB Audio CODEC)')
     parser.add_argument('--session-root', default='data_sessions')
     parser.add_argument('--final', action='store_true', help='mark a NEW session as final; holdout selected per take')
+    parser.add_argument('--setup-id', default='A_paper_scratch_17x27_direct_table', help='hardware setup identifier saved with every take')
+    parser.add_argument('--scratch-surface', choices=['paper', 'wood'], default='paper', help='interaction metadata only; does not change audio or features')
+    parser.add_argument('--event-rhythm', action='store_true', help='silent two-second action cues for positive take recordings')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
-    App(args.session_root, args.device, final=args.final).run(args.smoke_seconds)
+    App(args.session_root, args.device, final=args.final,
+        setup_id=args.setup_id, scratch_surface=args.scratch_surface,
+        event_rhythm=args.event_rhythm).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':

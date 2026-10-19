@@ -71,7 +71,7 @@ def load_takes(folder, overrides=None):
             raise ValueError(f'Invalid class/split: {path.name}')
         # Interaction 2 has changed. Historical fingertip rub is never selected
         # for current training OR current holdout, regardless of its raw split.
-        if info['class_name'] == 'rub' and 'scratch_nail_paper' not in info.get('variation', ''):
+        if info['class_name'] == 'rub' and not any(tag in info.get('variation', '') for tag in ('scratch_nail_paper', 'scratch_nail_wood')):
             continue
         takes.append(dict(info=effective, arrays=arrays, file=path.name,
                           source_session=str(folder), source_config=config,

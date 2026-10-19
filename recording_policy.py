@@ -1,4 +1,6 @@
 """Recording labels and trial protocol only; no audio/feature processing."""
+import math
+
 TRIAL_TYPES = ('knock_pos', 'rub_pos', 'knock_neg', 'rub_neg')
 
 
@@ -20,8 +22,8 @@ def recording_plan(kind, split, class_name, variation, trial_type='', action_per
         raise ValueError('Select take class, train/holdout split and descriptive variation.')
     if 'holdout' in variation.lower() and split != 'holdout':
         raise ValueError('Notes say holdout but DATA SPLIT is train. Select holdout first.')
-    if class_name == 'rub' and 'scratch_nail_paper' not in variation:
-        raise ValueError('rub now means nail scratch on paper: include scratch_nail_paper in notes.')
+    if class_name == 'rub' and not any(tag in variation for tag in ('scratch_nail_paper', 'scratch_nail_wood')):
+        raise ValueError('rub means nail scratch: include scratch_nail_paper or scratch_nail_wood in notes.')
     return dict(recording_kind='take', split=split, class_name=class_name,
                 variation=variation.strip(), holdout_confirmed=bool(holdout_confirmed))
 
@@ -33,3 +35,19 @@ def authorize_plan(plan):
 
 def trial_phase(elapsed):
     return 'STAY STILL' if elapsed < 2 else ('ACTION ONCE NOW (~1s)' if elapsed < 3 else 'STAY STILL UNTIL STOP')
+
+
+def rhythm_phase(elapsed, class_name, duration=25.0):
+    """Visual cues only: actions at 1,3,...,23s, no audio-path changes."""
+    expected = max(0, math.ceil((duration - 1) / 2))
+    if elapsed < 1:
+        return f'GET READY - first action in {1-elapsed:.1f}s'
+    number = int((elapsed - 1) // 2) + 1
+    if number > expected:
+        return 'STAY STILL UNTIL STOP'
+    phase = (elapsed - 1) % 2
+    action_s = 1.0 if class_name == 'rub' else .35
+    if phase < action_s:
+        action = 'SCRATCH NOW (~1s)' if class_name == 'rub' else 'KNOCK ONCE NOW'
+        return f'{number}/{expected}: {action}'
+    return f'{number}/{expected}: STAY STILL - next action in {2-phase:.1f}s'
