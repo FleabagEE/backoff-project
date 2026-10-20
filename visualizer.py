@@ -16,16 +16,26 @@ from collection import CollectionSession, utc_now, training_eligible
 from recording_policy import (TRIAL_TYPES, recording_plan, authorize_plan, trial_phase,
                               rhythm_phase, fast_take_warnings, single_action_phase)
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
-                    predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS)
+                    predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS,
+                    SPACE_TRIAL_TYPES, TrialRecorder)
 from slide_udp import DEFAULT_TARGET, LabelSender, parse_target
+
+# Text fields where a typed space/R must never trigger an action.
+TEXT_FIELDS = ('variation', 'performer', 'class_input', 'take_limit', 'action_performed')
+# Widgets locked while a live bakeoff trial runs: only SPACE may act.
+BAKEOFF_LOCKED = ('mode', 'bakeoff_trial_type', 'bakeoff_practice', 'bakeoff_undo',
+                  'bakeoff_reset', 'save_model_button', 'load_model_button')
 
 
 class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
                  setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
-                 fast_takes=False,trained_model=None,decision_params=None,slide_udp=DEFAULT_TARGET):
+                 fast_takes=False,trained_model=None,decision_params=None,slide_udp=DEFAULT_TARGET,
+                 trial_log_root='trial_logs'):
         # C's slide app: forwards the same final label shown as Prediction (no extra decisions).
         self.slide_sender = LabelSender(parse_target(slide_udp))
+        self.trial_log_root = Path(trial_log_root)
+        self.ensure_bakeoff_state()
         self.session_root = session_root
         self.setup_id = setup_id
         self.scratch_surface = scratch_surface
@@ -103,6 +113,8 @@ class App:
                 raise ValueError('Model setup does not match the selected hardware setup ID')
             self.model=self.wood_predictor.model
             self.infer_classes=self.wood_predictor.params['class_names']
+            self.model_source=dict(trained_model=str(trained_model),decision_params=str(decision_params),
+                                   setup_id=self.setup_id)
             dpg.set_value('mode','Infer')
             self.mode_callback(None,'Infer')
             self.message('Wood v3 model + band gate loaded. PROVISIONAL: adversarial trials not validated.')
@@ -111,7 +123,19 @@ class App:
         print(text, flush=True)
         dpg.set_value('status', text)
 
+    def ensure_bakeoff_state(self):
+        """Live bakeoff SPACE trials (Infer mode): the SAME final label is shown, sent to C and
+        collected. Fills only missing attributes, so App objects built without __init__ still work."""
+        defaults = dict(trial=TrialRecorder, space_key_held=lambda: False,
+                        trial_log_root=lambda: Path('trial_logs'), trial_log_path=lambda: None,
+                        trial_status_start=lambda: None, trial_started_utc=lambda: None,
+                        model_source=lambda: None)
+        for name, make in defaults.items():
+            if not hasattr(self, name):
+                setattr(self, name, make())
+
     def build_ui(self):
+        self.ensure_bakeoff_state()
         with dpg.window(tag='fft_window', label='Live input / FFT', no_move=True, no_resize=True,
                         no_close=True, pos=(0, 0), width=740, height=840):
             dpg.add_combo(list(self.devices), tag='device_combo', label='Device', width=-1,
@@ -177,8 +201,23 @@ class App:
                                enabled=not (getattr(self, 'event_rhythm', False) or getattr(self,'fast_takes',False)))
             with dpg.group(tag='infer_group', show=False):
                 dpg.add_text('Prediction: ---', tag='prediction')
-                dpg.add_button(label='Save Model', callback=lambda: dpg.show_item('save_model_dialog'))
-                dpg.add_button(label='Load Model', callback=lambda: dpg.show_item('load_model_dialog'))
+                dpg.add_button(label='Save Model', tag='save_model_button',
+                               callback=lambda: dpg.show_item('save_model_dialog'))
+                dpg.add_button(label='Load Model', tag='load_model_button',
+                               callback=lambda: dpg.show_item('load_model_dialog'))
+                dpg.add_separator()
+                dpg.add_text('BAKEOFF TRIAL  (SPACE = start / stop)', color=(80, 230, 255))
+                dpg.add_combo(list(SPACE_TRIAL_TYPES), default_value=SPACE_TRIAL_TYPES[0],
+                              tag='bakeoff_trial_type', label='Trial type', width=160)
+                dpg.add_checkbox(label='Practice run (not counted)', tag='bakeoff_practice')
+                dpg.add_text('READY - press SPACE to start', tag='bakeoff_state', color=(150, 230, 150))
+                dpg.add_text('Set: -', tag='bakeoff_set', wrap=385)
+                dpg.add_text('Result: -', tag='bakeoff_result', wrap=385)
+                dpg.add_text('', tag='bakeoff_tally', wrap=385)
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label='Undo last trial', tag='bakeoff_undo', callback=self.undo_bakeoff_trial)
+                    dpg.add_button(label='Reset tally', tag='bakeoff_reset', callback=self.reset_bakeoff_tally)
+                dpg.add_text('', tag='bakeoff_log', wrap=385, color=(150, 150, 150))
             dpg.add_separator()
             dpg.add_text('Keep gain / mounting fixed. Windows audio enhancements OFF.', wrap=385)
         for action, callback in [('save', self.save_model_callback), ('load', self.load_model_callback)]:
@@ -202,6 +241,10 @@ class App:
             with dpg.handler_registry():
                 dpg.add_key_press_handler(key=dpg.mvKey_R,callback=self.record_shortcut)
                 dpg.add_key_release_handler(key=dpg.mvKey_R,callback=self.release_record_key)
+        with dpg.handler_registry():
+            dpg.add_key_press_handler(key=dpg.mvKey_Spacebar, callback=self.space_shortcut)
+            dpg.add_key_release_handler(key=dpg.mvKey_Spacebar, callback=self.release_space_key)
+        self.refresh_bakeoff_tally()
 
     def split_callback(self, *_):
         trial = dpg.get_value('recording_kind') == 'trial'
@@ -257,6 +300,101 @@ class App:
             if dpg.is_item_focused(tag) or dpg.is_item_active(tag):
                 return  # Never record while typing an R in a field.
         self.record_callback()
+
+    # ---------- live bakeoff SPACE trials (Infer mode) ----------
+    def release_space_key(self, *_):
+        self.space_key_held = False
+
+    def space_shortcut(self, *_):
+        if self.space_key_held:
+            return  # holding SPACE must not toggle repeatedly
+        self.space_key_held = True
+        if dpg.get_value('mode') != 'Infer':
+            return
+        if any(dpg.does_item_exist(tag) and (dpg.is_item_focused(tag) or dpg.is_item_active(tag))
+               for tag in TEXT_FIELDS):
+            return  # never toggle while typing a space in a field
+        if self.trial.active:
+            self.stop_bakeoff_trial()
+        else:
+            self.start_bakeoff_trial()
+
+    def start_bakeoff_trial(self):
+        if self.model is None:
+            self.message('Load a model before starting a bakeoff trial.')
+            return
+        if not self.healthy():
+            self.message('Wait for healthy live audio before starting a bakeoff trial.')
+            return
+        self.trial.start(dpg.get_value('bakeoff_trial_type'), practice=dpg.get_value('bakeoff_practice'))
+        self.trial_status_start = self.ear.stream_reader.status_count
+        self.trial_started_utc = utc_now()
+        for tag in BAKEOFF_LOCKED:
+            dpg.disable_item(tag)
+        kind = 'PRACTICE ' if self.trial.practice else ''
+        dpg.set_value('bakeoff_state', f'RECORDING {kind}{self.trial.trial_type} - press SPACE to stop')
+        dpg.configure_item('bakeoff_state', color=(255, 90, 90))
+        dpg.set_value('bakeoff_set', 'Set: {}')
+        dpg.set_value('bakeoff_result', 'Result: (running)')
+
+    def stop_bakeoff_trial(self, invalid_reason=None):
+        if not self.trial.active:
+            return
+        if invalid_reason is None and self.ear is not None and \
+                self.ear.stream_reader.status_count != self.trial_status_start:
+            invalid_reason = 'PortAudio reported capture status during this trial'
+        result = self.trial.stop(invalid_reason)
+        for tag in BAKEOFF_LOCKED:
+            dpg.enable_item(tag)
+        dpg.set_value('bakeoff_state', 'READY - press SPACE to start')
+        dpg.configure_item('bakeoff_state', color=(150, 230, 150))
+        dpg.set_value('bakeoff_set', 'Set: {' + ', '.join(result['label_set']) + '}')
+        if not result['valid']:
+            text, color = f"INVALID ({result['invalid_reason']}) - not counted, repeat", (255, 200, 80)
+        else:
+            text = 'PASS' if result['passed'] else 'FAIL'
+            color = (120, 230, 120) if result['passed'] else (255, 90, 90)
+            if result['practice']:
+                text += ' (practice, not counted)'
+        dpg.set_value('bakeoff_result', f"Result: {result['trial_type']} {text}  "
+                      f"[{result['n_frames']} frames, {result['duration_s']:.1f}s]")
+        dpg.configure_item('bakeoff_result', color=color)
+        self.refresh_bakeoff_tally()
+        self.log_bakeoff_event('trial', started_utc=self.trial_started_utc, **result)
+
+    def undo_bakeoff_trial(self, *_):
+        result = self.trial.undo_last()
+        if result is None:
+            self.message('No bakeoff trial to undo.')
+            return
+        dpg.set_value('bakeoff_result', f"Result: undone {result['trial_type']} "
+                      f"(set {{{', '.join(result['label_set'])}}})")
+        dpg.configure_item('bakeoff_result', color=(200, 200, 200))
+        self.refresh_bakeoff_tally()
+        self.log_bakeoff_event('undo', trial_type=result['trial_type'], label_set=result['label_set'])
+
+    def reset_bakeoff_tally(self, *_):
+        self.trial.reset_tally()
+        self.refresh_bakeoff_tally()
+        self.log_bakeoff_event('reset_tally')
+
+    def refresh_bakeoff_tally(self):
+        tally = self.trial.tally
+        passed = sum(p for p, _ in tally.values())
+        counted = sum(n for _, n in tally.values())
+        dpg.set_value('bakeoff_tally', 'Tally: ' + ', '.join(
+            f'{t} {p}/{n}' for t, (p, n) in tally.items()) + f'  |  total {passed}/{counted}')
+
+    def log_bakeoff_event(self, event, **fields):
+        """Append one JSON line per event. Logs are local evaluation records, not training data."""
+        if self.trial_log_path is None:
+            folder = self.trial_log_root / time.strftime('%Y%m%d_%H%M%S')
+            folder.mkdir(parents=True, exist_ok=True)
+            self.trial_log_path = folder / 'trials.jsonl'
+        record = dict(event=event, logged_utc=utc_now(), model=self.model_source, **fields)
+        with open(self.trial_log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(record) + '\n')
+        dpg.set_value('bakeoff_log', f'Log: {self.trial_log_path.resolve()}')
 
     def recording_tick(self,elapsed):
         if self.take_notes.get('event_protocol')=='single_action_2s':
@@ -533,6 +671,7 @@ class App:
 
     def mode_callback(self, sender, value):
         self.stop_take()
+        self.stop_bakeoff_trial(invalid_reason='mode changed during trial')
         dpg.configure_item('train_group', show=value == 'Train')
         dpg.configure_item('infer_group', show=value == 'Infer')
         if getattr(self, 'slide_sender', None) is not None:
@@ -565,6 +704,7 @@ class App:
     def load_model_callback(self, sender, data):
         self.model, self.infer_classes = load_model(Path(data['file_path_name']))
         self.wood_predictor=None
+        self.model_source=dict(model_file=str(data['file_path_name']))
         if getattr(self.model, 'n_features_in_', 1200) != 1200:
             self.model = None
             raise ValueError('Model feature count does not match this 1200-feature profile')
@@ -615,14 +755,24 @@ class App:
                 phase = trial_phase(elapsed) + ' | ' if self.take_notes['recording_kind'] == 'trial' else ''
                 dpg.set_value('recording_status', phase + f'{self.record_val}: {elapsed:.1f}s / '
                               f'{self.take_limit:g}s | {len(self.frames)} new FFT frames')
+        if self.trial.active and not healthy:
+            self.stop_bakeoff_trial(invalid_reason='Audio stopped or stale')
         if fresh and healthy and dpg.get_value('mode') == 'Infer' and self.model is not None:
             if getattr(self,'wood_predictor',None) is not None:
                 label=int(self.wood_predictor.predict_windows(np.asarray([amps]))[0])
             else:
                 label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
-            dpg.set_value('prediction', 'Prediction: ' + self.infer_classes[label])
-            if getattr(self, 'slide_sender', None) is not None:
-                self.slide_sender.update(self.infer_classes[label])
+            self.publish_label(self.infer_classes[label])
+
+    def publish_label(self, final_label):
+        """One final label feeds the display, C's slide app and the bakeoff trial SET."""
+        dpg.set_value('prediction', 'Prediction: ' + final_label)
+        if getattr(self, 'slide_sender', None) is not None:
+            self.slide_sender.update(final_label)
+        if self.trial.active:
+            self.trial.add(final_label)
+            dpg.set_value('bakeoff_set', 'Set: {' + ', '.join(sorted(self.trial.label_set)) + '}'
+                          f'   ({len(self.trial.labels)} frames)')
 
     def run(self, seconds=None):
         dpg.setup_dearpygui()
@@ -647,6 +797,7 @@ class App:
                         traceback.print_exc()
                         self.fault = str(exc)
                         self.stop_take(valid=False, reason=str(exc))
+                        self.stop_bakeoff_trial(invalid_reason=str(exc))
                         self.message(f'Capture paused: {exc}. Restart after resolving the problem.')
                     next_update = now + 1/30
                 dpg.render_dearpygui_frame()
@@ -654,6 +805,7 @@ class App:
                     break
         finally:
             try:
+                self.stop_bakeoff_trial(invalid_reason='GUI closed during trial')
                 self.stop_take()
                 if self.pending_take is not None:
                     self.persist_pending()
@@ -681,6 +833,7 @@ def main():
     parser.add_argument('--trained-model',help='joblib model to load at startup (requires matching decision parameters)')
     parser.add_argument('--decision-params',help='matching decision_params.json for startup inference')
     parser.add_argument('--slide-udp', default=DEFAULT_TARGET, help="send live Infer labels to C's slide app at HOST:PORT on change, or 'off'")
+    parser.add_argument('--trial-log-root', default='trial_logs', help='folder for live bakeoff SPACE trial logs (local, not training data)')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
     if args.fast_takes and args.event_rhythm:
@@ -695,7 +848,7 @@ def main():
         setup_id=args.setup_id, scratch_surface=args.scratch_surface,
         event_rhythm=args.event_rhythm,fast_takes=args.fast_takes,
         trained_model=args.trained_model,decision_params=args.decision_params,
-        slide_udp=args.slide_udp).run(args.smoke_seconds)
+        slide_udp=args.slide_udp,trial_log_root=args.trial_log_root).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':
