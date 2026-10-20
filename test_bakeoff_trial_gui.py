@@ -97,9 +97,42 @@ class BakeoffTrialGuiTests(unittest.TestCase):
         self.press_space()
         self.assertFalse(self.app.trial.active)
         dpg.set_value('mode', 'Infer')
-        with patch('visualizer.dpg.is_item_focused', side_effect=lambda tag: tag == 'variation'):
+        with patch('visualizer.dpg.is_item_visible', return_value=True), \
+                patch('visualizer.dpg.is_item_focused', side_effect=lambda tag: tag == 'variation'):
             self.press_space()
         self.assertFalse(self.app.trial.active)
+
+    def test_click_button_uses_same_start_stop_and_log(self):
+        callback=dpg.get_item_callback('bakeoff_toggle')
+        dpg.run_callbacks([[callback,'bakeoff_toggle',None,None]])
+        self.assertTrue(self.app.trial.active)
+        self.assertEqual(dpg.get_item_configuration('bakeoff_toggle')['label'],'STOP TRIAL (SPACE)')
+        self.app.publish_label('knock')
+        dpg.run_callbacks([[callback,'bakeoff_toggle',None,None]])
+        self.assertFalse(self.app.trial.active)
+        self.assertTrue(self.app.trial.history[-1]['passed'])
+        self.assertEqual(dpg.get_item_configuration('bakeoff_toggle')['label'],'START TRIAL (SPACE)')
+
+    def test_polling_starts_stops_without_callbacks_and_does_not_repeat(self):
+        with patch('visualizer.dpg.is_key_down',return_value=True):
+            self.app.poll_space_key()
+            self.app.poll_space_key()
+        self.assertTrue(self.app.trial.active)
+        self.app.publish_label('knock')
+        with patch('visualizer.dpg.is_key_down',return_value=False):
+            self.app.poll_space_key()
+        with patch('visualizer.dpg.is_key_down',return_value=True):
+            self.app.poll_space_key()
+        self.assertFalse(self.app.trial.active)
+        self.assertTrue(self.app.trial.history[-1]['passed'])
+
+    def test_callback_and_poll_share_one_latch_and_hidden_fields_cannot_block(self):
+        with patch('visualizer.dpg.is_item_visible',return_value=False), \
+                patch('visualizer.dpg.is_item_focused',return_value=True):
+            self.app.space_shortcut()
+        with patch('visualizer.dpg.is_key_down',return_value=True):
+            self.app.poll_space_key()
+        self.assertTrue(self.app.trial.active)
 
     def test_requires_model_and_healthy_audio(self):
         self.app.model = None

@@ -25,13 +25,18 @@ Under **BAKEOFF TRIAL (SPACE = start / stop)**:
 
 1. Select knock_pos, rub_pos, knock_neg or rub_neg.
 2. Optionally tick Practice run; practice is logged but not counted.
-3. Focus the inference window (click its plot); press and release SPACE to start.
-4. Perform the intended action, wait for its tail, press SPACE again to stop.
+3. Click **START TRIAL (SPACE)**, or focus the inference window (click its plot)
+   and press/release SPACE. Wait for the red RECORDING state before acting.
+4. Perform the intended action, wait for its tail, click **STOP TRIAL (SPACE)**
+   or press SPACE again to stop.
 5. Review Set, PASS/FAIL/INVALID and tally. Undo removes the last trial from
    the tally; Reset tally resets counts. Both are recorded in the log.
 
 SPACE is local to the inference window, not a global hotkey. Typing spaces in
 text fields does not start/stop trials. Holding SPACE does not repeatedly toggle.
+The keyboard state is also polled per frame to recover missed key/release
+callbacks. Hidden text fields cannot block the shortcut. The visible button
+provides an equivalent operation when a keyboard callback is unavailable.
 There is no automatic eight-second deadline for this live SPACE recorder.
 The Train-mode eight-second FFT trial capture is a separate feature.
 
@@ -71,3 +76,8 @@ including actual DearPyGui widgets, SPACE repeat/typing protection, scoring,
 invalid/practice/undo/reset/log behavior, real model loading and UDP integration.
 The C Tk test was rerun with access to the installed Tcl runtime and passed;
 the final verification has no skipped tests. Sensor verification awaits A.
+
+Follow-up for A's reported nonresponsive SPACE key: 29 targeted GUI/UDP/fast-take
+tests pass, including three new button/polling/hidden-focus regression cases.
+This verifies program behavior under controlled input; actual physical keyboard
+confirmation is still needed after restarting the updated GUI.

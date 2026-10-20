@@ -9,6 +9,9 @@ a-tuning. See docs/SPACE_TRIAL_MODE.md for launch and SPACE scoring workflow.
 Unfinished event_decision.py, select_event_time.py and event-v2 params/report
 are saved in the named WIP stash, excluded from this integration and runtime.
 No new physical tests were performed. The rub-onset ordering issue still exists.
+Follow-up SPACE usability fix: visible START/STOP TRIAL button, frame-by-frame
+key-state fallback and visibility-aware typing guard;29 targeted tests pass.
+A must restart the GUI to load this change and confirm physical operation.
 
 CONTROLLED LIVE DIAGNOSIS UPDATE: see docs/live_test_20261019.md. Five knocks
 give5 next turns. Five scratches give5 wrong next attempts (1 moved,4 blocked)

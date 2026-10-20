@@ -210,6 +210,8 @@ class App:
                 dpg.add_combo(list(SPACE_TRIAL_TYPES), default_value=SPACE_TRIAL_TYPES[0],
                               tag='bakeoff_trial_type', label='Trial type', width=160)
                 dpg.add_checkbox(label='Practice run (not counted)', tag='bakeoff_practice')
+                dpg.add_button(label='START TRIAL (SPACE)', tag='bakeoff_toggle',
+                               callback=self.toggle_bakeoff_trial, width=240, height=38)
                 dpg.add_text('READY - press SPACE to start', tag='bakeoff_state', color=(150, 230, 150))
                 dpg.add_text('Set: -', tag='bakeoff_set', wrap=385)
                 dpg.add_text('Result: -', tag='bakeoff_result', wrap=385)
@@ -305,15 +307,33 @@ class App:
     def release_space_key(self, *_):
         self.space_key_held = False
 
+    def poll_space_key(self):
+        """Recover missing key callbacks/releases using the viewport key state.
+
+        Call on every rendered frame. The same held-key latch is shared with
+        the callback, so polling and callbacks cannot start and stop together.
+        """
+        if dpg.is_key_down(dpg.mvKey_Spacebar):
+            self.space_shortcut()
+        else:
+            self.release_space_key()
+
     def space_shortcut(self, *_):
         if self.space_key_held:
             return  # holding SPACE must not toggle repeatedly
         self.space_key_held = True
         if dpg.get_value('mode') != 'Infer':
             return
-        if any(dpg.does_item_exist(tag) and (dpg.is_item_focused(tag) or dpg.is_item_active(tag))
+        if any(dpg.does_item_exist(tag) and dpg.is_item_visible(tag)
+               and (dpg.is_item_focused(tag) or dpg.is_item_active(tag))
                for tag in TEXT_FIELDS):
             return  # never toggle while typing a space in a field
+        self.toggle_bakeoff_trial()
+
+    def toggle_bakeoff_trial(self, *_):
+        """Mouse and keyboard use the same checked start/stop operation."""
+        if dpg.get_value('mode') != 'Infer':
+            return
         if self.trial.active:
             self.stop_bakeoff_trial()
         else:
@@ -327,6 +347,7 @@ class App:
             self.message('Wait for healthy live audio before starting a bakeoff trial.')
             return
         self.trial.start(dpg.get_value('bakeoff_trial_type'), practice=dpg.get_value('bakeoff_practice'))
+        dpg.configure_item('bakeoff_toggle',label='STOP TRIAL (SPACE)')
         self.trial_status_start = self.ear.stream_reader.status_count
         self.trial_started_utc = utc_now()
         for tag in BAKEOFF_LOCKED:
@@ -344,6 +365,7 @@ class App:
                 self.ear.stream_reader.status_count != self.trial_status_start:
             invalid_reason = 'PortAudio reported capture status during this trial'
         result = self.trial.stop(invalid_reason)
+        dpg.configure_item('bakeoff_toggle',label='START TRIAL (SPACE)')
         for tag in BAKEOFF_LOCKED:
             dpg.enable_item(tag)
         dpg.set_value('bakeoff_state', 'READY - press SPACE to start')
@@ -789,6 +811,7 @@ class App:
                     except Exception as exc:
                         traceback.print_exc()
                         self.message(f'Action failed: {exc}')
+                self.poll_space_key()
                 now = time.monotonic()
                 if now >= next_update:
                     try:
