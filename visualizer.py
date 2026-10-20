@@ -1,5 +1,6 @@
 ﻿"""UM2 collection GUI: fixed 48 kHz / 50 ms FFT, physical input 2."""
 import argparse
+from dataclasses import asdict
 import hashlib
 from importlib.metadata import version
 import json
@@ -17,7 +18,8 @@ from recording_policy import (TRIAL_TYPES, recording_plan, authorize_plan, trial
                               rhythm_phase, fast_take_warnings, single_action_phase)
 from models import (get_ear, get_audio_features, preprocess_data, train_model,
                     predict, save_model, load_model, DEFAULT_MODEL_TYPE, MODEL_OPTIONS,
-                    SPACE_TRIAL_TYPES, TrialRecorder)
+                    SPACE_TRIAL_TYPES, TrialRecorder, EventDecisionConfig, EventDecoder)
+from event_segmentation import band_energy
 from slide_udp import DEFAULT_TARGET, LabelSender, parse_target
 
 # Text fields where a typed space/R must never trigger an action.
@@ -31,7 +33,7 @@ class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
                  setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
                  fast_takes=False,trained_model=None,decision_params=None,slide_udp=DEFAULT_TARGET,
-                 trial_log_root='trial_logs'):
+                 trial_log_root='trial_logs',decision='event'):
         # C's slide app: forwards the same final label shown as Prediction (no extra decisions).
         self.slide_sender = LabelSender(parse_target(slide_udp))
         self.trial_log_root = Path(trial_log_root)
@@ -114,7 +116,13 @@ class App:
             self.model=self.wood_predictor.model
             self.infer_classes=self.wood_predictor.params['class_names']
             self.model_source=dict(trained_model=str(trained_model),decision_params=str(decision_params),
-                                   setup_id=self.setup_id)
+                                   setup_id=self.setup_id,decision='window')
+            if decision=='event':
+                # Event-level decisions: trigger and vote on the model's own band-energy gate.
+                gate=self.wood_predictor.event_config.gate_energy
+                self.event_decoder=EventDecoder(EventDecisionConfig(trigger_energy=gate,vote_energy=gate),
+                                                self.infer_classes)
+                self.model_source.update(decision='event',event_config=asdict(self.event_decoder.config))
             dpg.set_value('mode','Infer')
             self.mode_callback(None,'Infer')
             self.message('Wood v3 model + band gate loaded. PROVISIONAL: adversarial trials not validated.')
@@ -129,7 +137,7 @@ class App:
         defaults = dict(trial=TrialRecorder, space_key_held=lambda: False,
                         trial_log_root=lambda: Path('trial_logs'), trial_log_path=lambda: None,
                         trial_status_start=lambda: None, trial_started_utc=lambda: None,
-                        model_source=lambda: None)
+                        model_source=lambda: None, event_decoder=lambda: None)
         for name, make in defaults.items():
             if not hasattr(self, name):
                 setattr(self, name, make())
@@ -201,6 +209,7 @@ class App:
                                enabled=not (getattr(self, 'event_rhythm', False) or getattr(self,'fast_takes',False)))
             with dpg.group(tag='infer_group', show=False):
                 dpg.add_text('Prediction: ---', tag='prediction')
+                dpg.add_text('', tag='raw_prediction', wrap=385, color=(150, 150, 150))
                 dpg.add_button(label='Save Model', tag='save_model_button',
                                callback=lambda: dpg.show_item('save_model_dialog'))
                 dpg.add_button(label='Load Model', tag='load_model_button',
@@ -326,6 +335,8 @@ class App:
         if not self.healthy():
             self.message('Wait for healthy live audio before starting a bakeoff trial.')
             return
+        if self.event_decoder is not None:
+            self.event_decoder.reset()
         self.trial.start(dpg.get_value('bakeoff_trial_type'), practice=dpg.get_value('bakeoff_practice'))
         self.trial_status_start = self.ear.stream_reader.status_count
         self.trial_started_utc = utc_now()
@@ -343,6 +354,11 @@ class App:
         if invalid_reason is None and self.ear is not None and \
                 self.ear.stream_reader.status_count != self.trial_status_start:
             invalid_reason = 'PortAudio reported capture status during this trial'
+        if invalid_reason is None and self.event_decoder is not None:
+            # SPACE pressed while an action is still being collected: decide it now.
+            label = self.event_decoder.flush(time.monotonic())
+            if label is not None:
+                self.publish_label(label)
         result = self.trial.stop(invalid_reason)
         for tag in BAKEOFF_LOCKED:
             dpg.enable_item(tag)
@@ -704,7 +720,8 @@ class App:
     def load_model_callback(self, sender, data):
         self.model, self.infer_classes = load_model(Path(data['file_path_name']))
         self.wood_predictor=None
-        self.model_source=dict(model_file=str(data['file_path_name']))
+        self.event_decoder=None  # band-energy events need the wood predictor's gate
+        self.model_source=dict(model_file=str(data['file_path_name']),decision='window')
         if getattr(self.model, 'n_features_in_', 1200) != 1200:
             self.model = None
             raise ValueError('Model feature count does not match this 1200-feature profile')
@@ -758,11 +775,29 @@ class App:
         if self.trial.active and not healthy:
             self.stop_bakeoff_trial(invalid_reason='Audio stopped or stale')
         if fresh and healthy and dpg.get_value('mode') == 'Infer' and self.model is not None:
+            if self.event_decoder is not None and getattr(self,'wood_predictor',None) is not None:
+                self.publish_label(self.event_label(amps, time.monotonic()))
+                return
             if getattr(self,'wood_predictor',None) is not None:
                 label=int(self.wood_predictor.predict_windows(np.asarray([amps]))[0])
             else:
                 label = int(predict(self.model, preprocess_data(np.asarray([amps])))[0])
             self.publish_label(self.infer_classes[label])
+
+    def event_label(self, amps, now):
+        """Score this frame, feed the event decoder and show the raw per-window label."""
+        X = np.asarray([amps])
+        energy = float(band_energy(X)[0])
+        scores = self.wood_predictor.model.decision_function(X)[0]
+        decoder = self.event_decoder
+        raw = self.infer_classes[int(np.argmax(scores))] if energy > decoder.config.vote_energy else 'neutral'
+        final = decoder.step(now, energy, scores)
+        state = f'COLLECTING ({len(decoder.votes)} votes)' if decoder.collecting else 'idle'
+        last = decoder.last_decision
+        last_text = (f" | last event: {last['label']} ({last['reason']}, votes {last['vote_counts']})"
+                     if last else '')
+        dpg.set_value('raw_prediction', f'raw window: {raw} | event: {state}{last_text}')
+        return final
 
     def publish_label(self, final_label):
         """One final label feeds the display, C's slide app and the bakeoff trial SET."""
@@ -834,6 +869,8 @@ def main():
     parser.add_argument('--decision-params',help='matching decision_params.json for startup inference')
     parser.add_argument('--slide-udp', default=DEFAULT_TARGET, help="send live Infer labels to C's slide app at HOST:PORT on change, or 'off'")
     parser.add_argument('--trial-log-root', default='trial_logs', help='folder for live bakeoff SPACE trial logs (local, not training data)')
+    parser.add_argument('--decision', choices=['event', 'window'], default='event',
+                        help='with --trained-model: event = collect then majority vote per action; window = per-window labels')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
     if args.fast_takes and args.event_rhythm:
@@ -848,7 +885,8 @@ def main():
         setup_id=args.setup_id, scratch_surface=args.scratch_surface,
         event_rhythm=args.event_rhythm,fast_takes=args.fast_takes,
         trained_model=args.trained_model,decision_params=args.decision_params,
-        slide_udp=args.slide_udp,trial_log_root=args.trial_log_root).run(args.smoke_seconds)
+        slide_udp=args.slide_udp,trial_log_root=args.trial_log_root,
+        decision=args.decision).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':
