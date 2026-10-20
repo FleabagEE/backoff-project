@@ -1,9 +1,16 @@
-"""Parse UDP label messages from B's live classifier (or mock_sender.py).
+"""Parse UDP label messages from the backend's final-action output (or mock_sender.py).
 
 Accepted payloads (UTF-8, surrounding whitespace and case ignored):
-  plain text     knock
-  JSON string    "knock"
-  JSON object    {"label": "knock", "t": 123.4}     ("t" optional, numeric)
+  plain text     knock                                     one final action
+  JSON string    "knock"                                   one final action
+  JSON object    {"label": "knock", "t": 123.4}            one final action ("t" optional,
+                                                           numeric, only logged)
+  JSON object    {"label": "neutral", "t": 1.0, "hb": true} state heartbeat: updates the
+                                                           shown state, never turns a page
+
+"hb" counts as a heartbeat only when it is JSON `true`; any other value (missing,
+false, 1, "true") means a normal action message. Other keys are ignored. The backend
+has no event id in its protocol, so none is parsed here.
 
 Anything else returns None; the caller counts it as invalid and keeps running.
 """
@@ -15,17 +22,19 @@ MAX_BYTES = 1024
 
 
 class Message:
-    __slots__ = ('label', 't')
+    __slots__ = ('label', 't', 'hb')
 
-    def __init__(self, label, t=None):
+    def __init__(self, label, t=None, hb=False):
         self.label = label
         self.t = t
+        self.hb = hb
 
     def __eq__(self, other):
-        return isinstance(other, Message) and (self.label, self.t) == (other.label, other.t)
+        return (isinstance(other, Message)
+                and (self.label, self.t, self.hb) == (other.label, other.t, other.hb))
 
     def __repr__(self):
-        return f'Message({self.label!r}, t={self.t!r})'
+        return f'Message({self.label!r}, t={self.t!r}, hb={self.hb!r})'
 
 
 def _label(value):
@@ -68,5 +77,5 @@ def parse_message(data):
         t = obj.get('t')
         if isinstance(t, bool) or not isinstance(t, (int, float)) or not math.isfinite(t):
             t = None
-        return Message(label, t)
+        return Message(label, t, obj.get('hb') is True)
     return None

@@ -61,10 +61,12 @@ The action list adapts the earlier `docs/scratch_v2.md` table to bare wood.
 A single stray label fails the trial. An empty set, or a label outside the three,
 makes the trial **INVALID**, not a pass.
 
-The slide app's re-arm and cooldown rule is **not** part of scoring. It only
-decides whether the slide moves. Slide behaviour is recorded in a separate
-column and never changes PASS/FAIL. Start each trial on page 2 of 3 (press Home,
-then Right).
+The slide app is **not** part of scoring. It turns one page per final action
+message it receives and makes no decision of its own. Slide behaviour is recorded
+in a separate column and never changes PASS/FAIL. Start each trial on page 2 of 3
+(press Home, then Right). The slide column is meaningful only when the backend
+sends one message per confirmed action; with the per-window label sender, pages
+follow every label change.
 
 | Trial type | Expected slide behaviour |
 |---|---|
@@ -83,8 +85,9 @@ then Right).
    `uv run visualizer.py --setup-id A_wood30x30x6_v3_candidate2 --scratch-surface wood --trained-model a_models/wood_v3_20261019_135608_v1/model.joblib --decision-params a_models/wood_v3_20261019_135608_v1/decision_params.json`
 4. Confirm B's SPACE recorder is running on the same final label stream. If it
    is not available, stop here: do not run formal trials (see "Internal debugging").
-5. Smoke test, not scored: in the slide window, `received` rises and the gate
-   returns to `ready` after quiet.
+5. Smoke test, not scored: in the slide window, `received` rises, `heartbeats`
+   keeps counting while the GUI is in Infer, and `page turns` stays unchanged
+   while quiet.
 
 ## Session header
 

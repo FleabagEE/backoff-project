@@ -1,9 +1,11 @@
-"""C: slide demo driven by finalized labels received over UDP.
+"""C: slide demo driven by final action messages received over UDP.
 
-    python c_app\\slide_demo.py [--slides DIR] [--port 5005] [--cooldown 0.8]
-                                [--neutral-hold 0.6] [--max-gap 0.35] [--log FILE.csv]
+    python c_app\\slide_demo.py [--slides DIR] [--port 5005] [--log FILE.csv]
 
-knock -> next page, rub (fingernail-edge scratch on bare wood) -> previous page, neutral -> nothing.
+The backend recognizes and confirms each action and sends ONE message per action.
+This window only executes: knock -> next page, rub (fingernail-edge scratch on bare
+wood) -> previous page, neutral -> nothing. Heartbeats ({"hb": true}) refresh the
+shown state and never turn a page. No neutral confirmation, no cooldown.
 Only standard library is required. Pillow is optional (JPG support, smoother scaling).
 The window never grabs focus, stays on top, injects keys or hooks global keys.
 """
@@ -16,7 +18,7 @@ import time
 import tkinter as tk
 from pathlib import Path
 
-from gesture import NEXT, PREV, GestureGate, SlideDeck
+from gesture import NEXT, PREV, ActionRule, SlideDeck
 from udp_listener import PortInUseError, UdpListener
 
 try:
@@ -37,9 +39,9 @@ BUILTIN_SLIDES = [
     dict(title='Scratch to go back',
          body='Scratch the bare wood back and forth with a fingernail edge  ->  previous slide',
          color='#7a3b12'),
-    dict(title='Pause between actions',
-         body='The app waits for a confirmed neutral and uses a short cooldown\n'
-              'to reduce repeated page turns.',
+    dict(title='One message, one page',
+         body='The backend confirms each action and sends it once.\n'
+              'This window only executes it; heartbeats never turn a page.',
          color='#2e5e2e'),
 ]
 
@@ -73,16 +75,16 @@ def clock_text(wall):
 
 
 class SlideApp:
-    def __init__(self, root, slides, listener, listen_error, gate, log_path=None, warning=None):
+    def __init__(self, root, slides, listener, listen_error, rule=None, log_path=None,
+                 warning=None):
         self.root = root
         self.slides = slides
         self.deck = SlideDeck(len(slides))
-        self.gate = gate
+        self.rule = rule if rule is not None else ActionRule()
         self.listener = listener
         self.events = listener.out if listener else queue.Queue()
         self.counts = dict(received=0, invalid=0, turns=0)
         self.history = []
-        self.prev_label = None          # last valid label received (detects changes)
         self.last_valid = None          # (wall time, monotonic time) of last valid message
         self._image_cache = {}
         self._log_file = self._log = None
@@ -105,7 +107,7 @@ class SlideApp:
                  font=(FONT, 16, 'bold')).pack(side='left', padx=12, pady=6, anchor='n')
         feedback = tk.Frame(top, bg='#111')
         feedback.pack(side='right', padx=12, pady=4)
-        # What the model said (even if the slide did not move) vs. what the slides did.
+        # Last action message received vs. what the slides did with it.
         self.recognized_var = tk.StringVar(value='Recognized: --')
         self.slide_var = tk.StringVar(value='Slide: --')
         self.current_var = tk.StringVar(value='Current label: --   |   last valid message: none yet')
@@ -180,19 +182,15 @@ class SlideApp:
         _, msg, raw, now = item
         self.counts['received'] += 1
         self.last_valid = (time.time() - (time.monotonic() - now), now)
-        changed = msg.label != self.prev_label
-        self.prev_label = msg.label
-        decision = self.gate.feed(msg.label, now)
+        decision = self.rule.feed(msg.label, heartbeat=msg.hb)
         result = decision.reason
         if decision.action:
+            # Every action message is one final action: execute it, even if the
+            # previous message carried the same label.
             result = self.turn(decision.action, msg.label)
-        elif changed and msg.label != 'neutral':
-            # Recognized but not executed (waiting for neutral / cooldown).
-            self.show_recognized(msg.label)
-            self.show_slide(f'Slide: not turned ({decision.reason.split(": ", 1)[-1]})', '#ff9f80')
-        if decision.action or changed or 're-armed' in decision.reason:
-            self.remember(result)
-        self.write_log(now, 'msg', raw, msg.label, msg.t, result)
+        if not msg.hb:
+            self.remember(result)        # heartbeats are counted and logged, not listed
+        self.write_log(now, 'hb' if msg.hb else 'msg', raw, msg.label, msg.t, result)
 
     def turn(self, action, source):
         changed = self.deck.apply(action)
@@ -233,21 +231,16 @@ class SlideApp:
 
     def update_status(self):
         now = time.monotonic()
-        if not self.gate.armed:
-            gate = (f'waiting for confirmed neutral '
-                    f'({self.gate.neutral_held():.1f}/{self.gate.neutral_hold_s:g}s)')
-        elif self.gate.in_cooldown(now):
-            gate = f'cooldown ({self.gate.cooldown_s:g}s)'
-        else:
-            gate = 'ready'
         if self.last_valid:
             wall, mono = self.last_valid
-            self.current_var.set(f'Current label: {self.prev_label}   |   last valid message: '
+            self.current_var.set(f'Current label: {self.rule.current}   |   last valid message: '
                                  f'{clock_text(wall)} ({now - mono:.1f}s ago)')
         self.page_var.set(f'Page {self.deck.index + 1} / {self.deck.count}')
-        c = self.counts
-        self.state_var.set(f'Gate: {gate}   |   received {c["received"]}   invalid {c["invalid"]}'
-                           f'   page turns {c["turns"]}   |   keys: Left/Right/Home, F11')
+        c, r = self.counts, self.rule
+        self.state_var.set(f'Rule: one page per action message   |   received {c["received"]}'
+                           f'   actions {r.actions}   neutral {r.neutrals}   heartbeats {r.heartbeats}'
+                           f'   invalid {c["invalid"]}   page turns {c["turns"]}'
+                           f'   |   keys: Left/Right/Home, F11')
         self.history_var.set('\n'.join(self.history) or 'No messages yet.')
 
     def render(self):
@@ -312,17 +305,9 @@ def main(argv=None):
     ap.add_argument('--slides', help='folder of PNG/JPG slides (natural sort: 1, 2, 10)')
     ap.add_argument('--host', default='127.0.0.1')
     ap.add_argument('--port', type=int, default=5005)
-    ap.add_argument('--cooldown', type=float, default=0.8, help='seconds (default 0.8)')
-    ap.add_argument('--neutral-hold', type=float, default=0.6,
-                    help='seconds of continuously confirmed neutral before re-arming (default 0.6)')
-    ap.add_argument('--max-gap', type=float, default=0.35,
-                    help='max seconds between messages for neutral evidence to stay unbroken '
-                         '(default 0.35; sender heartbeat is 0.1)')
     ap.add_argument('--log', help='append received messages/decisions to this CSV')
     ap.add_argument('--fullscreen', action='store_true')
     args = ap.parse_args(argv)
-    if args.cooldown < 0 or args.neutral_hold < 0 or args.max_gap <= 0:
-        ap.error('--cooldown/--neutral-hold must be >= 0 and --max-gap > 0')
 
     slides, warning = load_slides(args.slides)
     listener, listen_error = None, None
@@ -340,8 +325,7 @@ def main(argv=None):
     root = tk.Tk()
     if args.fullscreen:
         root.attributes('-fullscreen', True)
-    gate = GestureGate(args.cooldown, args.neutral_hold, args.max_gap)
-    SlideApp(root, slides, listener, listen_error, gate, args.log, warning)
+    SlideApp(root, slides, listener, listen_error, ActionRule(), args.log, warning)
     root.mainloop()
 
 

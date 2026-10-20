@@ -19,10 +19,9 @@ Knock once with a knuckle, and the slides go forward. "Rub" means scratching the
 bare wood back and forth with the edge of a fingernail, and that goes back one
 slide.
 
-Everything else should stay neutral. The model's label is sent to our slide app.
-To reduce repeated page turns, the app only re-triggers after it has seen a
-steady neutral, and it adds a short cooldown. That rule only controls the
-slides; it doesn't change what the model recognizes.
+Everything else should stay neutral. The backend confirms each action once and
+sends it to our slide app, which turns exactly one page per message. The slide
+app makes no decisions of its own; it only executes what the model side decided.
 
 Let us show you.
 
@@ -37,9 +36,8 @@ knock（敲击）、rub（刮擦）。
 用指关节敲一下，幻灯片就往前翻一页。“rub” 指的是用指甲边缘在裸木板上来回刮，
 这样会往回翻一页。
 
-其他动作都应该识别为 neutral。模型的标签会发送给我们的翻页程序。为了减少重复
-翻页，程序要先确认稳定的 neutral 才会重新触发，并加了一个短暂的冷却时间。这条
-规则只控制翻页，不会改变模型识别的结果。
+其他动作都应该识别为 neutral。后端确认一次动作后，只发送一条消息给我们的翻页
+程序，程序收到一条就翻一页。翻页程序自己不做判断，只执行模型侧的最终结果。
 
 下面请看演示。
 
@@ -51,7 +49,11 @@ knock（敲击）、rub（刮擦）。
   predictions instead (see `MODEL_NOTES.md`).
 - During the demo, scratch the bare wood with a fingernail edge. Keep your hand
   away from the pickup, its tape and the cable.
-- Do not promise "one action never turns two pages". The re-arm and cooldown
-  rule reduces repeats; it cannot fix a wrong or late label from the model.
-- If a page turn does not happen live, hold still for about a second so the slide
-  app sees a confirmed neutral, then repeat the action once. Do not knock repeatedly.
+- Do not promise "one action never turns two pages". The slide app executes
+  every action message it receives; whether one physical action becomes exactly
+  one message is decided on the model side, not in the slide app.
+- The live demo needs the backend's final-action output. The per-window label
+  sender in `visualizer.py` is not that output: with it, every label change turns
+  a page.
+- If a page turn does not happen live, wait a moment and repeat the action once.
+  Do not knock repeatedly: every confirmed knock is one more page.

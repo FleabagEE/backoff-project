@@ -5,7 +5,7 @@ import socket
 import time
 import unittest
 
-from gesture import NEXT, PREV, GestureGate, SlideDeck
+from gesture import NEXT, PREV, ActionRule, SlideDeck
 from protocol import Message, parse_message
 from udp_listener import PortInUseError, UdpListener
 
@@ -15,6 +15,7 @@ class ParseTests(unittest.TestCase):
         for raw in (b'knock', b'rub', b'neutral', b' Knock\r\n', 'RUB'):
             self.assertIsNotNone(parse_message(raw), raw)
         self.assertEqual(parse_message(b'knock'), Message('knock'))
+        self.assertFalse(parse_message(b'knock').hb)
 
     def test_json_string(self):
         self.assertEqual(parse_message(b'"rub"'), Message('rub'))
@@ -26,148 +27,100 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(parse_message(b'{"label":"rub","t":"x"}'), Message('rub'))
         self.assertEqual(parse_message(b'{"label":"rub","t":true}'), Message('rub'))
 
+    def test_heartbeat_flag_only_for_json_true(self):
+        self.assertEqual(parse_message(b'{"label":"neutral","t":1.0,"hb":true}'),
+                         Message('neutral', 1.0, hb=True))
+        self.assertTrue(parse_message(b'{"label":"KNOCK","hb":true}').hb)
+        for raw in (b'{"label":"knock","hb":false}', b'{"label":"knock","hb":1}',
+                    b'{"label":"knock","hb":"true"}', b'{"label":"knock","hb":null}',
+                    b'{"label":"knock"}', b'knock', b'"knock"'):
+            msg = parse_message(raw)
+            self.assertIsNotNone(msg, raw)
+            self.assertFalse(msg.hb, raw)
+        self.assertNotEqual(Message('knock', hb=True), Message('knock'))
+
     def test_invalid_never_raises(self):
         for raw in (b'', b'   ', b'tap', b'scratch', b'"tap"', b'{"label":"jump"}', b'{}',
-                    b'{"t":1}', b'{"label":1}', b'[1,2]', b'123', b'null', b'\xff\xfe',
-                    b'{"label": "knock"', b'[' * 5000, b'k' * 5000, None, 42):
+                    b'{"t":1}', b'{"label":1}', b'{"hb":true}', b'[1,2]', b'123', b'null',
+                    b'\xff\xfe', b'{"label": "knock"', b'[' * 5000, b'k' * 5000, None, 42):
             self.assertIsNone(parse_message(raw), raw if raw is None else repr(raw)[:30])
 
 
-def run(gate, labels, start=100.0, dt=1 / 21):
-    """Feed a frame stream; return list of (time, action) for triggers."""
+def run(rule, messages):
+    """Feed (label, hb) pairs or bare labels; return the list of executed actions."""
     out = []
-    for i, label in enumerate(labels):
-        t = start + i * dt
-        d = gate.feed(label, t)
+    for m in messages:
+        label, hb = m if isinstance(m, tuple) else (m, False)
+        d = rule.feed(label, heartbeat=hb)
         if d.action:
-            out.append((round(t - start, 3), d.action))
+            out.append(d.action)
     return out
 
 
-def neutral(gate, t0, t1, step=0.1):
-    """Neutral change at t0 plus heartbeats every `step` up to t1 (like slide_udp)."""
-    d, t = None, t0
-    while t <= t1 + 1e-9:
-        d = gate.feed('neutral', round(t, 6))
-        t += step
-    return d
-
-
-def armed_gate(**kw):
-    g = GestureGate(**kw)
-    neutral(g, -3.0, -1.0)
-    assert g.armed
-    return g
-
-
-class GateTests(unittest.TestCase):
+class RuleTests(unittest.TestCase):
     def test_mapping(self):
-        self.assertEqual(armed_gate().feed('knock', 0).action, NEXT)
-        self.assertEqual(armed_gate().feed('rub', 0).action, PREV)
-        self.assertIsNone(armed_gate().feed('neutral', 0).action)
+        self.assertEqual(ActionRule().feed('knock').action, NEXT)
+        self.assertEqual(ActionRule().feed('rub').action, PREV)
+        self.assertIsNone(ActionRule().feed('neutral').action)
 
-    def test_starts_disarmed(self):
-        g = GestureGate()
-        self.assertFalse(g.armed)
-        self.assertIsNone(g.feed('knock', 0).action)
+    def test_first_message_executes_without_prior_neutral(self):
+        # No "starts disarmed": the backend already confirmed the action.
+        self.assertEqual(ActionRule().feed('rub').action, PREV)
 
-    def test_regression_single_neutral_message_does_not_rearm(self):
-        # Reported bug: rub@0.1, neutral@0.5, rub@1.0 turned two pages (change-only sender).
-        g = armed_gate()
-        self.assertEqual(g.feed('rub', 0.1).action, PREV)
-        g.feed('neutral', 0.5)
-        d = g.feed('rub', 1.0)
-        self.assertIsNone(d.action)
-        self.assertIn('waiting for confirmed neutral', d.reason)
+    def test_two_consecutive_knocks_turn_two_pages(self):
+        self.assertEqual(run(ActionRule(), ['knock', 'knock']), [NEXT, NEXT])
+        self.assertEqual(run(ActionRule(), ['knock'] * 5), [NEXT] * 5)
 
-    def test_short_neutral_with_heartbeats_does_not_rearm(self):
-        g = armed_gate()
-        g.feed('rub', 0.1)
-        neutral(g, 0.5, 0.9)                         # 0.4 s of evidence < 0.6 s hold
-        self.assertIsNone(g.feed('rub', 1.0).action)
+    def test_two_consecutive_rubs_go_back_two_pages(self):
+        self.assertEqual(run(ActionRule(), ['rub', 'rub']), [PREV, PREV])
 
-    def test_silence_is_not_neutral(self):
-        g = armed_gate()
-        g.feed('knock', 0.0)
-        g.feed('neutral', 0.2)
-        g.feed('neutral', 1.5)                       # 1.3 s gap > max_gap: chain restarts
-        self.assertFalse(g.armed)
-        self.assertIsNone(g.feed('knock', 1.6).action)
-        g = armed_gate()
-        g.feed('knock', 0.0)
-        g.feed('neutral', 0.2)                       # then nothing at all
-        self.assertIsNone(g.feed('knock', 5.0).action)
+    def test_different_actions_without_neutral_between(self):
+        self.assertEqual(run(ActionRule(), ['knock', 'rub', 'knock']), [NEXT, PREV, NEXT])
 
-    def test_broken_chain_restarts(self):
-        g = armed_gate()
-        g.feed('rub', 0.0)
-        neutral(g, 0.1, 0.5)
-        neutral(g, 1.0, 1.4)                         # 0.5 s gap broke the chain at 1.0
-        self.assertFalse(g.armed)
-        self.assertIsNone(g.feed('rub', 1.5).action)
-        neutral(g, 1.6, 2.3)
-        self.assertTrue(g.armed)
-        self.assertEqual(g.feed('rub', 2.4).action, PREV)
+    def test_no_cooldown_or_neutral_hold(self):
+        # Timing is not an input at all: the rule has no clock to suppress with.
+        self.assertEqual(run(ActionRule(), ['knock', 'knock', 'rub', 'rub']),
+                         [NEXT, NEXT, PREV, PREV])
 
-    def test_confirmed_neutral_rearms(self):
-        g = armed_gate()
-        self.assertEqual(g.feed('rub', 0.1).action, PREV)
-        d = neutral(g, 0.5, 1.1)                     # 0.6 s of continuous evidence
-        self.assertTrue(g.armed)
-        self.assertIn('re-armed', d.reason)
-        self.assertEqual(g.feed('rub', 1.2).action, PREV)
+    def test_neutral_never_turns(self):
+        r = ActionRule()
+        self.assertEqual(run(r, ['neutral', 'neutral', 'knock', 'neutral', 'rub', 'neutral']),
+                         [NEXT, PREV])
+        self.assertEqual(r.neutrals, 4)
+        self.assertIn('no page turn', r.feed('neutral').reason)
 
-    def test_neutral_hold_configurable(self):
-        g = armed_gate(neutral_hold_s=0)              # first neutral message re-arms
-        g.feed('knock', 0.0); g.feed('neutral', 0.9)
-        self.assertEqual(g.feed('knock', 1.0).action, NEXT)
-        g = armed_gate(neutral_hold_s=1.5)
-        g.feed('knock', 0.0); neutral(g, 0.1, 1.2)
-        self.assertFalse(g.armed)
-        with self.assertRaises(ValueError):
-            GestureGate(neutral_hold_s=-1)
-        with self.assertRaises(ValueError):
-            GestureGate(max_gap_s=0)
+    def test_heartbeat_never_turns_whatever_the_label(self):
+        r = ActionRule()
+        for label in ('knock', 'rub', 'neutral'):
+            d = r.feed(label, heartbeat=True)
+            self.assertIsNone(d.action, label)
+            self.assertIn('heartbeat', d.reason)
+            self.assertEqual(r.current, label)        # state is still updated
+        self.assertEqual(r.heartbeats, 3)
+        self.assertEqual(r.actions, 0)
+        # A heartbeat between two real actions does not block or add a turn.
+        self.assertEqual(run(ActionRule(), ['knock', ('knock', True), ('knock', True), 'knock']),
+                         [NEXT, NEXT])
+        self.assertEqual(run(ActionRule(), [('rub', True)] * 20), [])
 
-    def test_repeated_label_turns_once(self):
-        actions = run(GestureGate(), ['neutral'] * 21 + ['knock'] * 63 + ['neutral'] * 5)
-        self.assertEqual([a for _, a in actions], [NEXT])
+    def test_unknown_label_ignored(self):
+        r = ActionRule()
+        self.assertIsNone(r.feed('tap').action)
+        self.assertIsNone(r.feed('tap', heartbeat=True).action)
+        self.assertEqual((r.actions, r.neutrals, r.heartbeats, r.current), (0, 0, 0, None))
 
-    def test_needs_neutral_between_actions(self):
-        g = armed_gate(cooldown_s=0)
-        self.assertEqual(g.feed('knock', 0).action, NEXT)
-        self.assertIsNone(g.feed('rub', 0.1).action)      # no neutral since the knock
-        self.assertIsNone(g.feed('knock', 0.2).action)
-        neutral(g, 0.3, 1.0)
-        self.assertEqual(g.feed('rub', 1.1).action, PREV)
-
-    def test_cooldown(self):
-        g = armed_gate(cooldown_s=0.8, neutral_hold_s=0.3)
-        self.assertEqual(g.feed('knock', 0.0).action, NEXT)
-        neutral(g, 0.1, 0.4)
-        d = g.feed('knock', 0.5)
-        self.assertIsNone(d.action)
-        self.assertIn('cooldown', d.reason)
-        # The suppressed knock also disarmed: still held after cooldown -> nothing.
-        self.assertIsNone(g.feed('knock', 1.5).action)
-        neutral(g, 1.6, 2.0)
-        self.assertEqual(g.feed('knock', 2.1).action, NEXT)
-
-    def test_cooldown_boundary_and_config(self):
-        g = armed_gate(cooldown_s=0.8, neutral_hold_s=0.3)
-        g.feed('knock', 0.0); neutral(g, 0.1, 0.7)
-        self.assertEqual(g.feed('rub', 0.8).action, PREV)
-        g = armed_gate(cooldown_s=2.0)
-        g.feed('knock', 0.0); neutral(g, 0.1, 1.4)
-        self.assertIsNone(g.feed('rub', 1.5).action)
-        with self.assertRaises(ValueError):
-            GestureGate(cooldown_s=-1)
+    def test_counts_and_current(self):
+        r = ActionRule()
+        run(r, ['neutral', 'knock', ('knock', True), 'knock', 'rub', ('neutral', True), 'neutral'])
+        self.assertEqual((r.actions, r.neutrals, r.heartbeats), (3, 2, 2))
+        self.assertEqual(r.current, 'neutral')
 
     def test_mock_sequence(self):
-        f = lambda label, s: [label] * round(s * 21)
-        stream = (f('neutral', 1) + f('knock', .3) + f('neutral', 1) + f('knock', .3)
-                  + f('neutral', 1) + f('rub', 1) + f('neutral', 1))
-        self.assertEqual([a for _, a in run(GestureGate(), stream)], [NEXT, NEXT, PREV])
+        # mock_sender default: neutral, knock, knock, rub, knock with heartbeats between.
+        stream = ['neutral'] + [('neutral', True)] * 10
+        for a in ('knock', 'knock', 'rub', 'knock'):
+            stream += [a] + [(a, True)] * 10
+        self.assertEqual(run(ActionRule(), stream), [NEXT, NEXT, PREV, NEXT])
 
 
 class DeckTests(unittest.TestCase):
@@ -191,15 +144,17 @@ class ListenerTests(unittest.TestCase):
         listener = UdpListener('127.0.0.1', 0).start()
         try:
             tx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            for payload in (b'knock', b'garbage', b'{"label":"rub","t":1.5}', b'"neutral"'):
+            for payload in (b'knock', b'garbage', b'{"label":"rub","t":1.5}', b'"neutral"',
+                            b'{"label":"rub","t":2.5,"hb":true}'):
                 tx.sendto(payload, listener.address)
             tx.close()
-            got = [listener.out.get(timeout=2) for _ in range(4)]
+            got = [listener.out.get(timeout=2) for _ in range(5)]
         finally:
             listener.close()
-        self.assertEqual([g[0] for g in got], ['msg', 'invalid', 'msg', 'msg'])
+        self.assertEqual([g[0] for g in got], ['msg', 'invalid', 'msg', 'msg', 'msg'])
         self.assertEqual(got[0][1], Message('knock'))
         self.assertEqual(got[2][1], Message('rub', 1.5))
+        self.assertEqual(got[4][1], Message('rub', 2.5, hb=True))
 
     def test_port_in_use(self):
         first = UdpListener('127.0.0.1', 0)
@@ -209,6 +164,59 @@ class ListenerTests(unittest.TestCase):
             self.assertIn('--port', str(ctx.exception))
         finally:
             first.close()
+
+
+class MockSenderTests(unittest.TestCase):
+    """mock_sender sends one datagram per action plus heartbeats; the rule executes each."""
+
+    def test_sequence_and_stress_through_listener(self):
+        from mock_sender import Sender, run_sequence, run_stress
+        listener = UdpListener('127.0.0.1', 0).start()
+        try:
+            s = Sender(*listener.address, fmt='mixed', gap_s=0.05, heartbeat_s=0.01)
+            run_sequence(s, ['knock', 'knock', 'rub', 'knock', 'rub', 'rub'])
+            time.sleep(0.2)
+            items = []
+            while True:
+                try:
+                    items.append(listener.out.get(timeout=0.3))
+                except queue.Empty:
+                    break
+            self.assertEqual(len(items), s.sent)
+            rule, deck = ActionRule(), SlideDeck(10)
+            turns = []
+            for item in items:
+                self.assertEqual(item[0], 'msg')
+                d = rule.feed(item[1].label, heartbeat=item[1].hb)
+                if d.action:
+                    deck.apply(d.action); turns.append(d.action)
+            self.assertEqual(turns, [NEXT, NEXT, PREV, NEXT, PREV, PREV])
+            self.assertEqual(deck.index, 0)                  # +1 +1 -1 +1 -1 -1
+            self.assertEqual(rule.heartbeats, s.heartbeats)
+            self.assertGreater(rule.heartbeats, 0)
+            s.close()
+
+            s = Sender(*listener.address, fmt='object', gap_s=0.05, heartbeat_s=0.01)
+            run_stress(s)
+            time.sleep(0.2)
+            rule, deck = ActionRule(), SlideDeck(3)
+            invalid = turns = 0
+            while True:
+                try:
+                    item = listener.out.get(timeout=0.3)
+                except queue.Empty:
+                    break
+                if item[0] == 'invalid':
+                    invalid += 1
+                    continue
+                d = rule.feed(item[1].label, heartbeat=item[1].hb)
+                if d.action and deck.apply(d.action):
+                    turns += 1
+            self.assertEqual((deck.index, turns, rule.actions, invalid), (0, 4, 7, 5))
+            self.assertEqual(rule.heartbeats, s.heartbeats)
+            s.close()
+        finally:
+            listener.close()
 
 
 class SlideFolderTests(unittest.TestCase):
@@ -243,13 +251,15 @@ class SlideFolderTests(unittest.TestCase):
 class AppTests(unittest.TestCase):
     """Drives the real Tk window without sockets; skipped if no display."""
 
-    def test_handle_messages(self):
+    def setUp(self):
         try:
             import tkinter as tk
-            root = tk.Tk()
+            self.root = tk.Tk()
         except Exception as exc:  # no display / Tk
             self.skipTest(f'Tk unavailable: {exc}')
-        root.withdraw()
+        self.root.withdraw()
+
+    def make_app(self, log_path=None):
         from slide_demo import BUILTIN_SLIDES, SlideApp
 
         class FakeListener:
@@ -257,43 +267,75 @@ class AppTests(unittest.TestCase):
             address = ('127.0.0.1', 5005)
             def close(self): pass
 
-        app = SlideApp(root, [dict(s) for s in BUILTIN_SLIDES], FakeListener(), None,
-                       GestureGate(0.8))
+        app = SlideApp(self.root, [dict(s) for s in BUILTIN_SLIDES], FakeListener(), None,
+                       log_path=log_path)
         t0 = time.monotonic()
 
-        def send(raw, dt):
+        def send(raw, dt=0.0):
             msg = parse_message(raw)
             app.handle(('invalid', raw, t0 + dt) if msg is None else ('msg', msg, raw, t0 + dt))
+        return app, send
 
-        def neutral_for(start, stop):
-            dt = start
-            while dt <= stop + 1e-9:
-                send(b'{"label":"neutral","t":1,"hb":true}', dt); dt += 0.1
-
+    def test_handle_messages(self):
+        app, send = self.make_app()
         try:
-            neutral_for(0.0, 0.7)
-            send(b'\xff', 0.75)
-            send(b'knock', 0.8)                             # NEXT -> page 2
+            send(b'{"label":"neutral","t":1,"hb":true}', 0.0)
+            send(b'neutral', 0.1)
+            self.assertEqual(app.deck.index, 0)
+            send(b'\xff', 0.2)
+            send(b'knock', 0.3)                             # NEXT -> page 2
             self.assertIn('KNOCK', app.recognized_var.get())
-            self.assertIn('NEXT', app.slide_var.get())
-            neutral_for(1.2, 1.5)                           # too short to re-arm
-            send(b'rub', 1.6)                               # recognized, NOT executed
+            self.assertIn('NEXT -> page 2', app.slide_var.get())
+            send(b'knock', 0.35)                            # second knock, 50 ms later -> page 3
+            self.assertEqual(app.deck.index, 2)
+            self.assertIn('NEXT -> page 3', app.slide_var.get())
+            send(b'{"label":"knock","t":2,"hb":true}', 0.4)  # heartbeat: no turn, display kept
+            send(b'{"label":"knock","t":2.1,"hb":true}', 0.5)
+            self.assertEqual(app.deck.index, 2)
+            self.assertIn('NEXT -> page 3', app.slide_var.get())
+            send(b'knock', 0.6)                             # blocked on the last page
+            self.assertIn('blocked (already on last page)', app.slide_var.get())
+            send(b'rub', 0.65)                              # right after knock, no neutral -> page 2
             self.assertIn('RUB', app.recognized_var.get())
-            self.assertIn('not turned (waiting for confirmed neutral)', app.slide_var.get())
-            self.assertEqual(app.deck.index, 1)
-            send(b'rub', 1.7)                               # repeat: display unchanged
-            neutral_for(1.8, 2.5)
-            send(b'{"label":"rub","t":2.0}', 2.6)           # PREVIOUS -> page 1
-            self.assertIn('PREVIOUS', app.slide_var.get())
+            self.assertIn('PREVIOUS -> page 2', app.slide_var.get())
+            send(b'{"label":"rub","t":3.0}', 0.7)            # second rub -> page 1
+            self.assertEqual(app.deck.index, 0)
+            send(b'{"label":"rub","t":3.5,"hb":true}', 0.8)  # rub heartbeat: still page 1
+            send(b'neutral', 0.9)                           # neutral: still page 1
+            self.assertEqual(app.deck.index, 0)
+            self.assertIn('PREVIOUS -> page 1', app.slide_var.get())
             app.update_status()
             self.assertIn('last valid message:', app.current_var.get())
-            self.assertIn('rub', app.current_var.get())
-            root.update()
-            self.assertEqual(app.deck.index, 0)
-            self.assertEqual(app.counts['turns'], 2)
+            self.assertIn('Current label: neutral', app.current_var.get())
+            self.assertIn('heartbeats 4', app.state_var.get())
+            self.root.update()
+            self.assertEqual(app.counts['turns'], 4)
             self.assertEqual(app.counts['invalid'], 1)
+            self.assertEqual(app.counts['received'], 11)
+            self.assertEqual((app.rule.actions, app.rule.neutrals, app.rule.heartbeats), (5, 2, 4))
+            self.assertFalse(any('heartbeat' in h for h in app.history))
         finally:
             app.close()
+
+    def test_log_marks_heartbeats_and_pages(self):
+        import csv
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / 'log.csv'
+            app, send = self.make_app(str(path))
+            try:
+                send(b'knock')
+                send(b'{"label":"knock","t":5,"hb":true}')
+                send(b'garbage')
+                send(b'rub')
+            finally:
+                app.close()
+            rows = list(csv.DictReader(path.open(encoding='utf-8')))
+        self.assertEqual([r['kind'] for r in rows], ['msg', 'hb', 'invalid', 'msg'])
+        self.assertEqual([r['page'] for r in rows], ['2', '2', '2', '1'])
+        self.assertIn('no page turn', rows[1]['decision'])
+        self.assertEqual(rows[1]['t'], '5')
 
 
 if __name__ == '__main__':

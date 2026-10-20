@@ -15,7 +15,7 @@ from slide_udp import LabelSender, parse_target
 from visualizer import App
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'c_app'))
-from gesture import GestureGate, SlideDeck   # noqa: E402  (C's app, stdlib only)
+from gesture import ActionRule, SlideDeck    # noqa: E402  (C's app, stdlib only)
 from udp_listener import UdpListener         # noqa: E402
 
 MODEL_DIR = Path('a_models/wood_v3_20261019_135608_v1')
@@ -103,7 +103,7 @@ class GuiToSlideChainTests(unittest.TestCase):
     """Drive the real App.update() inference branch with fake fresh FFT frames.
 
     A fake clock advances 1/21 s per frame; it stamps both the sender's heartbeat
-    timing and the "t" field, which the test then uses as arrival time for C's gate.
+    timing and the "t" field, which the test then uses as arrival time for C's rule.
     """
 
     def setUp(self):
@@ -165,10 +165,10 @@ class GuiToSlideChainTests(unittest.TestCase):
 
     def test_simulated_predictions_reach_slides(self):
         # Simulated per-window final labels, as the GUI would show them at 21 frames/s.
-        seq = ([0] * 20 + [1] * 2 + [0] * 25        # knock            -> next
-               + [2] * 15 + [0] * 25                # scratch          -> previous
-               + [1] * 1 + [2] * 3 + [0] * 25       # knock->rub, no neutral between -> next only
-               + [2] * 2 + [0] * 8 + [2] * 3        # rub, 0.38 s neutral, rub -> previous once
+        seq = ([0] * 20 + [1] * 2 + [0] * 25        # knock            -> change msg: knock
+               + [2] * 15 + [0] * 25                # scratch          -> change msg: rub
+               + [1] * 1 + [2] * 3 + [0] * 25       # knock->rub, no neutral between: two changes
+               + [2] * 2 + [0] * 8 + [2] * 3        # rub, 0.38 s neutral, rub: two rub changes
                + [0] * 20)
         it = iter(seq)
         self.start_infer(SimpleNamespace(predict_windows=lambda X: np.array([next(it)] * len(X))))
@@ -181,25 +181,29 @@ class GuiToSlideChainTests(unittest.TestCase):
         # Every change point of the GUI stream is sent, in order, at its frame time.
         changes = [(round(i / FPS, 3), shown[i]) for i in range(len(shown))
                    if i == 0 or shown[i] != shown[i - 1]]
-        sent_changes = [(m.t, m.label) for k, m in enumerate(msgs)
-                        if k == 0 or m.label != msgs[k - 1].label]
+        sent_changes = [(m.t, m.label) for m in msgs if not m.hb]
         self.assertEqual(sent_changes, changes)
         # Heartbeats only repeat the current GUI label; never a label the GUI did not show.
         for m in msgs:
             self.assertEqual(shown[round(m.t * FPS)], m.label)
         self.assertGreater(len(msgs), len(changes))                 # heartbeats present
 
-        gate, deck, turns, reasons = GestureGate(0.8), SlideDeck(5), [], []
-        deck.index = 2
-        for k, m in enumerate(msgs):
-            d = gate.feed(m.label, m.t)
-            if k == 0 or m.label != msgs[k - 1].label:
-                reasons.append(d.reason)                             # decision at each change
+        # C's simplified rule executes EVERY non-heartbeat knock/rub message once and
+        # never turns on a heartbeat. With this per-window change sender that means one
+        # page per label change, so knock->rub without neutral turns forward then back,
+        # and the split rub (rub, short neutral, rub) turns back twice. This is the
+        # documented reason the live sender needs a final-action stage before it can
+        # drive the simplified front end.
+        rule, deck, turns = ActionRule(), SlideDeck(10), []
+        deck.index = 5
+        for m in msgs:
+            d = rule.feed(m.label, heartbeat=m.hb)
             if d.action:
                 deck.apply(d.action); turns.append(d.action)
-        self.assertEqual(turns, ['next', 'prev', 'next', 'prev'])
-        # rub right after knock (no neutral) and rub after only 0.38 s neutral: not executed.
-        self.assertEqual(sum(r == 'rub: waiting for confirmed neutral' for r in reasons), 2)
+        self.assertEqual(turns, ['next', 'prev', 'next', 'prev', 'prev', 'prev'])
+        self.assertEqual(rule.heartbeats, sum(m.hb for m in msgs))
+        self.assertEqual(rule.actions, 6)
+        self.assertEqual(deck.index, 3)
 
     def test_reentering_infer_resends_current_label(self):
         self.app.slide_sender.heartbeat_s = None                     # isolate reset behaviour
