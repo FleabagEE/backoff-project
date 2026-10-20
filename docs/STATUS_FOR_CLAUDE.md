@@ -2,6 +2,19 @@
 
 ## CURRENT: 75 wooden-board takes trained (October 19)
 
+CONTROLLED LIVE DIAGNOSIS UPDATE: see docs/live_test_20261019.md. Five knocks
+give5 next turns. Five scratches give5 wrong next attempts (1 moved,4 blocked)
+and1 previous turn: transient K precedes sustained R and C rejects R until
+neutral re-arm. This supersedes earlier informal "all successful" observations.
+Live/offline parity:0 raw/gate label mismatches in1538 windows; actual UDP
+561/561 payloads matched; capture status0. No retraining or live decision changes.
+Actual current model K=1 both classes/cooldown0, C frontend .8s/.6s neutral hold.
+Event-mean replay5/5 K and5/5 R;250ms pending-K alternative5/5 K and4/5 R;
+K2/R6 only1/5 R; cooldown-only changes0/5 R. Replay scores are development,
+not independent validation. Recommend prospective event-level live test next.
+Diagnostic code stays on live-diagnosis-20261019, original C branch unchanged.
+Thirty-second quiet/adversarial series and prospective fix validation pending.
+
 Latest delivery: origin/a-tuning contains code, docs, compact model.joblib and
 paired decision_params.json. C's entry point is docs/HANDOFF_C.md. See
 docs/WOOD_V3_REALTIME_CHECK.md for preliminary live observations and one saved

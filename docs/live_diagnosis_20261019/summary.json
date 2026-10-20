@@ -1,0 +1,1698 @@
+{
+  "date": "2026-10-19 America/Los_Angeles",
+  "operator_confirmed_batches": {
+    "knock": {
+      "windows": 769,
+      "raw_live_replay_mismatches": 0,
+      "decision_live_replay_mismatches": 0,
+      "max_score_delta": 4.468647674116255e-15,
+      "capture_status_max": 0,
+      "median_update_gap_ms": 47.0000000204891,
+      "source": "knock_01_retry_02",
+      "operator_confirmed": true,
+      "artifacts": {
+        "model.joblib": {
+          "path": "C:\\Users\\VivoBook\\Desktop\\backoff-live-diagnostics\\a_models\\wood_v3_20261019_135608_v1\\model.joblib",
+          "sha256": "605e7a3c0dd04029783c6f5997d1872e94483786dd9bd9a74249f6bff90cc6ac"
+        },
+        "decision_params.json": {
+          "path": "C:\\Users\\VivoBook\\Desktop\\backoff-live-diagnostics\\a_models\\wood_v3_20261019_135608_v1\\decision_params.json",
+          "sha256": "bcc3c40a475ab473371fd433f7e5c4a495e5ec035cbdd466370ca92ee0dedba2"
+        }
+      },
+      "capture_profile": {
+        "point": "capture_profile",
+        "unix_s": 1792474885.2364256,
+        "monotonic_s": 981695.171,
+        "device": {
+          "index": 15,
+          "name": "\u9ea5\u514b\u98a8 (USB Audio CODEC )",
+          "host_api": "Windows WASAPI"
+        },
+        "rate": 48000,
+        "channels": 2,
+        "selected_channel": 2,
+        "fft_samples": 2400,
+        "capture_block": 480,
+        "feature_count": 1200,
+        "smoothing_length_ms": 50,
+        "pipeline": "Pipeline(steps=[('logspectrum', LogSpectrum(max_hz=8000)),\n                ('standardscaler', StandardScaler()),\n                ('linearsvc',\n                 LinearSVC(C=0.0003, class_weight='balanced', max_iter=20000,\n                           random_state=42))])",
+        "source_hashes": {
+          "models.py": "3b55bf3e1a913fcf34de3a94286f09516a6e68ca02c135f3b500eb5581b17104",
+          "wood_v3_model.py": "4847f51f9057ae0714acb3f3e8c8523240be64fb560a98e08ee5f635b58adf81",
+          "src/stream_reader.py": "6ed790adc9a3e8851590d249bad77c467dfaa275415b5df39b974099abce8371",
+          "src/stream_analyzer.py": "307d3d1a5d9111f5b118de50a56531bc5273a9205ab90e9a3a8578f691ea941f",
+          "src/utils.py": "d0342f61dac924a4ec8c125239c585357c7e98f34c5f7f9adca51c9af1fc6535"
+        }
+      },
+      "features_sha256": "c52ed89fddd422a845347bc7ccdc1cf8e519ef6cf5fef33e170d03e346ed35c1",
+      "udp_sent": 277,
+      "udp_received": 277,
+      "unmatched_sent": 0,
+      "unmatched_received": 0,
+      "next_page_changes": 5,
+      "previous_page_changes": 0,
+      "blocked_next_attempts": 0,
+      "blocked_previous_attempts": 0,
+      "start_page": 1,
+      "end_page": 6,
+      "trials": [
+        {
+          "trial": 1,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 6.0,
+              "windows": 24
+            },
+            {
+              "label": "knock",
+              "start_s": 7.125,
+              "windows": 3
+            },
+            {
+              "label": "neutral",
+              "start_s": 7.266,
+              "windows": 101
+            }
+          ],
+          "event_result": {
+            "predicted_class": "knock",
+            "predicted_set": [
+              "knock",
+              "neutral"
+            ],
+            "events": [
+              {
+                "onset_s": 7.125,
+                "start_s": 6.925,
+                "stop_s": 8.625,
+                "complete": true,
+                "window_count": 37,
+                "label": "knock",
+                "active_windows": 3
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 7.141,
+              "decision": "knock: next -> page 2",
+              "page": 2
+            }
+          ]
+        },
+        {
+          "trial": 2,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 12.0,
+              "windows": 32
+            },
+            {
+              "label": "knock",
+              "start_s": 13.5,
+              "windows": 4
+            },
+            {
+              "label": "neutral",
+              "start_s": 13.687,
+              "windows": 92
+            }
+          ],
+          "event_result": {
+            "predicted_class": "knock",
+            "predicted_set": [
+              "knock",
+              "neutral"
+            ],
+            "events": [
+              {
+                "onset_s": 13.5,
+                "start_s": 13.3,
+                "stop_s": 15.0,
+                "complete": true,
+                "window_count": 37,
+                "label": "knock",
+                "active_windows": 4
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 13.5,
+              "decision": "knock: next -> page 3",
+              "page": 3
+            }
+          ]
+        },
+        {
+          "trial": 3,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 18.0,
+              "windows": 47
+            },
+            {
+              "label": "knock",
+              "start_s": 20.203,
+              "windows": 4
+            },
+            {
+              "label": "neutral",
+              "start_s": 20.391,
+              "windows": 77
+            }
+          ],
+          "event_result": {
+            "predicted_class": "knock",
+            "predicted_set": [
+              "knock",
+              "neutral"
+            ],
+            "events": [
+              {
+                "onset_s": 20.20299999997951,
+                "start_s": 20.00299999997951,
+                "stop_s": 21.70299999997951,
+                "complete": true,
+                "window_count": 37,
+                "label": "knock",
+                "active_windows": 5
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 20.219,
+              "decision": "knock: next -> page 4",
+              "page": 4
+            }
+          ]
+        },
+        {
+          "trial": 4,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 24.0,
+              "windows": 49
+            },
+            {
+              "label": "knock",
+              "start_s": 26.297,
+              "windows": 4
+            },
+            {
+              "label": "neutral",
+              "start_s": 26.484,
+              "windows": 75
+            }
+          ],
+          "event_result": {
+            "predicted_class": "knock",
+            "predicted_set": [
+              "knock",
+              "neutral"
+            ],
+            "events": [
+              {
+                "onset_s": 26.296999999904074,
+                "start_s": 26.096999999904074,
+                "stop_s": 27.796999999904074,
+                "complete": true,
+                "window_count": 37,
+                "label": "knock",
+                "active_windows": 4
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 26.312,
+              "decision": "knock: next -> page 5",
+              "page": 5
+            }
+          ]
+        },
+        {
+          "trial": 5,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 30.0,
+              "windows": 37
+            },
+            {
+              "label": "knock",
+              "start_s": 31.734,
+              "windows": 4
+            },
+            {
+              "label": "neutral",
+              "start_s": 31.922,
+              "windows": 87
+            }
+          ],
+          "event_result": {
+            "predicted_class": "knock",
+            "predicted_set": [
+              "knock",
+              "neutral"
+            ],
+            "events": [
+              {
+                "onset_s": 31.733999999938533,
+                "start_s": 31.533999999938533,
+                "stop_s": 33.23399999993853,
+                "complete": true,
+                "window_count": 37,
+                "label": "knock",
+                "active_windows": 4
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 31.734,
+              "decision": "knock: next -> page 6",
+              "page": 6
+            }
+          ]
+        }
+      ]
+    },
+    "rub": {
+      "windows": 769,
+      "raw_live_replay_mismatches": 0,
+      "decision_live_replay_mismatches": 0,
+      "max_score_delta": 4.440892098500626e-15,
+      "capture_status_max": 0,
+      "median_update_gap_ms": 47.0000000204891,
+      "source": "rub_01",
+      "operator_confirmed": true,
+      "artifacts": {
+        "model.joblib": {
+          "path": "C:\\Users\\VivoBook\\Desktop\\backoff-live-diagnostics\\a_models\\wood_v3_20261019_135608_v1\\model.joblib",
+          "sha256": "605e7a3c0dd04029783c6f5997d1872e94483786dd9bd9a74249f6bff90cc6ac"
+        },
+        "decision_params.json": {
+          "path": "C:\\Users\\VivoBook\\Desktop\\backoff-live-diagnostics\\a_models\\wood_v3_20261019_135608_v1\\decision_params.json",
+          "sha256": "bcc3c40a475ab473371fd433f7e5c4a495e5ec035cbdd466370ca92ee0dedba2"
+        }
+      },
+      "capture_profile": {
+        "point": "capture_profile",
+        "unix_s": 1792475056.1158755,
+        "monotonic_s": 981866.062,
+        "device": {
+          "index": 15,
+          "name": "\u9ea5\u514b\u98a8 (USB Audio CODEC )",
+          "host_api": "Windows WASAPI"
+        },
+        "rate": 48000,
+        "channels": 2,
+        "selected_channel": 2,
+        "fft_samples": 2400,
+        "capture_block": 480,
+        "feature_count": 1200,
+        "smoothing_length_ms": 50,
+        "pipeline": "Pipeline(steps=[('logspectrum', LogSpectrum(max_hz=8000)),\n                ('standardscaler', StandardScaler()),\n                ('linearsvc',\n                 LinearSVC(C=0.0003, class_weight='balanced', max_iter=20000,\n                           random_state=42))])",
+        "source_hashes": {
+          "models.py": "3b55bf3e1a913fcf34de3a94286f09516a6e68ca02c135f3b500eb5581b17104",
+          "wood_v3_model.py": "4847f51f9057ae0714acb3f3e8c8523240be64fb560a98e08ee5f635b58adf81",
+          "src/stream_reader.py": "6ed790adc9a3e8851590d249bad77c467dfaa275415b5df39b974099abce8371",
+          "src/stream_analyzer.py": "307d3d1a5d9111f5b118de50a56531bc5273a9205ab90e9a3a8578f691ea941f",
+          "src/utils.py": "d0342f61dac924a4ec8c125239c585357c7e98f34c5f7f9adca51c9af1fc6535"
+        }
+      },
+      "features_sha256": "681a4337cda6b344c38fcdc0a2055dcd380dd491aacb1e43dfdbe97bddb8bded",
+      "udp_sent": 284,
+      "udp_received": 284,
+      "unmatched_sent": 0,
+      "unmatched_received": 0,
+      "next_page_changes": 1,
+      "previous_page_changes": 1,
+      "blocked_next_attempts": 4,
+      "blocked_previous_attempts": 0,
+      "start_page": 6,
+      "end_page": 6,
+      "trials": [
+        {
+          "trial": 1,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 6.0,
+              "windows": 35
+            },
+            {
+              "label": "knock",
+              "start_s": 7.641,
+              "windows": 5
+            },
+            {
+              "label": "rub",
+              "start_s": 7.875,
+              "windows": 20
+            },
+            {
+              "label": "knock",
+              "start_s": 8.813,
+              "windows": 1
+            },
+            {
+              "label": "neutral",
+              "start_s": 8.86,
+              "windows": 67
+            }
+          ],
+          "event_result": {
+            "predicted_class": "rub",
+            "predicted_set": [
+              "neutral",
+              "rub"
+            ],
+            "events": [
+              {
+                "onset_s": 7.782000000006519,
+                "start_s": 7.582000000006519,
+                "stop_s": 9.28200000000652,
+                "complete": true,
+                "window_count": 37,
+                "label": "rub",
+                "active_windows": 28
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 7.641,
+              "decision": "knock: next -> page 7",
+              "page": 7
+            }
+          ]
+        },
+        {
+          "trial": 2,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 12.0,
+              "windows": 36
+            },
+            {
+              "label": "knock",
+              "start_s": 13.688,
+              "windows": 3
+            },
+            {
+              "label": "rub",
+              "start_s": 13.829,
+              "windows": 17
+            },
+            {
+              "label": "knock",
+              "start_s": 14.625,
+              "windows": 1
+            },
+            {
+              "label": "neutral",
+              "start_s": 14.672,
+              "windows": 71
+            }
+          ],
+          "event_result": {
+            "predicted_class": "rub",
+            "predicted_set": [
+              "neutral",
+              "rub"
+            ],
+            "events": [
+              {
+                "onset_s": 13.688000000081956,
+                "start_s": 13.488000000081957,
+                "stop_s": 15.188000000081956,
+                "complete": true,
+                "window_count": 37,
+                "label": "rub",
+                "active_windows": 21
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 13.704,
+              "decision": "knock: next blocked, already on last page",
+              "page": 7
+            }
+          ]
+        },
+        {
+          "trial": 3,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 18.0,
+              "windows": 34
+            },
+            {
+              "label": "knock",
+              "start_s": 19.594,
+              "windows": 2
+            },
+            {
+              "label": "rub",
+              "start_s": 19.688,
+              "windows": 20
+            },
+            {
+              "label": "knock",
+              "start_s": 20.625,
+              "windows": 1
+            },
+            {
+              "label": "neutral",
+              "start_s": 20.672,
+              "windows": 71
+            }
+          ],
+          "event_result": {
+            "predicted_class": "rub",
+            "predicted_set": [
+              "neutral",
+              "rub"
+            ],
+            "events": [
+              {
+                "onset_s": 19.594000000040978,
+                "start_s": 19.39400000004098,
+                "stop_s": 21.094000000040978,
+                "complete": true,
+                "window_count": 37,
+                "label": "rub",
+                "active_windows": 25
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 19.594,
+              "decision": "knock: next blocked, already on last page",
+              "page": 7
+            }
+          ]
+        },
+        {
+          "trial": 4,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 24.0,
+              "windows": 36
+            },
+            {
+              "label": "knock",
+              "start_s": 25.688,
+              "windows": 2
+            },
+            {
+              "label": "rub",
+              "start_s": 25.782,
+              "windows": 3
+            },
+            {
+              "label": "knock",
+              "start_s": 25.922,
+              "windows": 1
+            },
+            {
+              "label": "rub",
+              "start_s": 25.969,
+              "windows": 18
+            },
+            {
+              "label": "neutral",
+              "start_s": 26.813,
+              "windows": 68
+            }
+          ],
+          "event_result": {
+            "predicted_class": "rub",
+            "predicted_set": [
+              "neutral",
+              "rub"
+            ],
+            "events": [
+              {
+                "onset_s": 25.78200000000652,
+                "start_s": 25.58200000000652,
+                "stop_s": 27.28200000000652,
+                "complete": true,
+                "window_count": 37,
+                "label": "rub",
+                "active_windows": 24
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 25.704,
+              "decision": "knock: next blocked, already on last page",
+              "page": 7
+            }
+          ]
+        },
+        {
+          "trial": 5,
+          "decision_runs": [
+            {
+              "label": "neutral",
+              "start_s": 30.0,
+              "windows": 39
+            },
+            {
+              "label": "knock",
+              "start_s": 31.829,
+              "windows": 1
+            },
+            {
+              "label": "neutral",
+              "start_s": 31.875,
+              "windows": 28
+            },
+            {
+              "label": "rub",
+              "start_s": 33.188,
+              "windows": 5
+            },
+            {
+              "label": "knock",
+              "start_s": 33.422,
+              "windows": 1
+            },
+            {
+              "label": "rub",
+              "start_s": 33.469,
+              "windows": 11
+            },
+            {
+              "label": "knock",
+              "start_s": 33.985,
+              "windows": 1
+            },
+            {
+              "label": "rub",
+              "start_s": 34.032,
+              "windows": 6
+            },
+            {
+              "label": "knock",
+              "start_s": 34.313,
+              "windows": 1
+            },
+            {
+              "label": "neutral",
+              "start_s": 34.36,
+              "windows": 35
+            }
+          ],
+          "event_result": {
+            "predicted_class": "rub",
+            "predicted_set": [
+              "neutral",
+              "rub"
+            ],
+            "events": [
+              {
+                "onset_s": 33.188000000081956,
+                "start_s": 32.98800000008195,
+                "stop_s": 34.688000000081956,
+                "complete": true,
+                "window_count": 37,
+                "label": "rub",
+                "active_windows": 25
+              }
+            ]
+          },
+          "slide_outcomes": [
+            {
+              "elapsed_s": 31.829,
+              "decision": "knock: next blocked, already on last page",
+              "page": 7
+            },
+            {
+              "elapsed_s": 33.188,
+              "decision": "rub: previous -> page 6",
+              "page": 6
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "candidate_replays": {
+    "baseline_cooldown_0.8": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 7.125,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.5,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 20.20299999997951,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 26.296999999904074,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.733999999938533,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 0,
+        "turns": [
+          {
+            "elapsed_s": 7.641000000061467,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.688000000081956,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 19.594000000040978,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 25.688000000081956,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.82900000002701,
+            "action": "next",
+            "trial": 5
+          },
+          {
+            "elapsed_s": 33.188000000081956,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next",
+              "prev"
+            ],
+            "pass_exactly_one": false,
+            "missed": false,
+            "wrong": 1,
+            "extra": 1
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    },
+    "event_mean_cooldown_0.8": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 8.625,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 15.0,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 21.70299999997951,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 27.796999999904074,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 33.23399999993853,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 9.28200000000652,
+            "action": "prev",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 15.188000000081956,
+            "action": "prev",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 21.094000000040978,
+            "action": "prev",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 27.28200000000652,
+            "action": "prev",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 34.688000000081956,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    },
+    "K2_R6_cooldown_0.8": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 7.171999999904074,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.546999999904074,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 20.25,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 26.343999999924563,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.780999999959022,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 1,
+        "turns": [
+          {
+            "elapsed_s": 7.688000000081956,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.73499999998603,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 19.641000000061467,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 25.73499999998603,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 33.70400000002701,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    },
+    "delay_knock_250ms_cooldown_0.8": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 7.405999999959022,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.780999999959022,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 20.483999999938533,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 26.57799999997951,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 32.01599999994505,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 4,
+        "turns": [
+          {
+            "elapsed_s": 7.922000000020489,
+            "action": "prev",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.875,
+            "action": "prev",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 19.73499999998603,
+            "action": "prev",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 25.82900000002701,
+            "action": "prev",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 32.10999999998603,
+            "action": "next",
+            "trial": 5
+          },
+          {
+            "elapsed_s": 33.25,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "prev"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next",
+              "prev"
+            ],
+            "pass_exactly_one": false,
+            "missed": false,
+            "wrong": 1,
+            "extra": 1
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    },
+    "baseline_cooldown_0.4": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 7.125,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.5,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 20.20299999997951,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 26.296999999904074,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.733999999938533,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 0,
+        "turns": [
+          {
+            "elapsed_s": 7.641000000061467,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.688000000081956,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 19.594000000040978,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 25.688000000081956,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.82900000002701,
+            "action": "next",
+            "trial": 5
+          },
+          {
+            "elapsed_s": 33.188000000081956,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next",
+              "prev"
+            ],
+            "pass_exactly_one": false,
+            "missed": false,
+            "wrong": 1,
+            "extra": 1
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    },
+    "baseline_cooldown_0.0": {
+      "knock": {
+        "exactly_one_correct_action": 5,
+        "turns": [
+          {
+            "elapsed_s": 7.125,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.5,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 20.20299999997951,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 26.296999999904074,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.733999999938533,
+            "action": "next",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": true,
+            "missed": false,
+            "wrong": 0,
+            "extra": 0
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      },
+      "rub": {
+        "exactly_one_correct_action": 0,
+        "turns": [
+          {
+            "elapsed_s": 7.641000000061467,
+            "action": "next",
+            "trial": 1
+          },
+          {
+            "elapsed_s": 13.688000000081956,
+            "action": "next",
+            "trial": 2
+          },
+          {
+            "elapsed_s": 19.594000000040978,
+            "action": "next",
+            "trial": 3
+          },
+          {
+            "elapsed_s": 25.688000000081956,
+            "action": "next",
+            "trial": 4
+          },
+          {
+            "elapsed_s": 31.82900000002701,
+            "action": "next",
+            "trial": 5
+          },
+          {
+            "elapsed_s": 33.188000000081956,
+            "action": "prev",
+            "trial": 5
+          }
+        ],
+        "per_trial": [
+          {
+            "trial": 1,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 2,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 3,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 4,
+            "actions": [
+              "next"
+            ],
+            "pass_exactly_one": false,
+            "missed": true,
+            "wrong": 1,
+            "extra": 0
+          },
+          {
+            "trial": 5,
+            "actions": [
+              "next",
+              "prev"
+            ],
+            "pass_exactly_one": false,
+            "missed": false,
+            "wrong": 1,
+            "extra": 1
+          }
+        ],
+        "note": "actual C LabelSender change/heartbeat logic + GestureGate; ideal zero-loss/zero-latency delivery at captured timestamps; no page-boundary clamp; actual receive trace remains authoritative"
+      }
+    }
+  },
+  "not_completed": [
+    "30-second stillness test",
+    "new adversarial action test series",
+    "prospective validation of any fix"
+  ],
+  "no_retraining": true,
+  "live_decisions_unchanged": true,
+  "model_selection_note": "These ten live actions are now diagnostic development data for comparing decision approaches, not independent final evaluation. Ground truth is per action/slot, not every window."
+}
