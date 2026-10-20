@@ -4,6 +4,7 @@ from pathlib import Path
 
 import json
 import pickle
+import time
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
@@ -11,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC, SVC
 
 from stream_analyzer import StreamAnalyzer
+from recording_policy import TRIAL_TYPES as SPACE_TRIAL_TYPES  # knock_pos, rub_pos, knock_neg, rub_neg
+from trial_replay import score_trial  # single source of the bakeoff SET rule (shared with A's replay)
 
 MODEL_B_PIPELINE = "B: log1p <=8kHz + scaler + LinearSVC"
 MODEL_LINEAR_SVC = "LinearSVC"
@@ -285,6 +288,185 @@ def trial_passes(trial_type, label_set):
     if sign == "+":
         return label_set in ({target}, {NEUTRAL, target})
     return target not in label_set
+
+
+class TrialRecorder:
+    """Bakeoff SPACE trial: collect every final label between start and stop into a SET.
+
+    Scoring uses A's score_trial (trial_replay.py), so live GUI results and offline
+    replay follow one rule. Feed add() the SAME final label that is displayed and
+    sent to C. An empty or unrecognised set is INVALID (not counted), e.g. SPACE
+    pressed twice with no fresh frame, or audio stopped. Practice trials and invalid
+    trials are kept in history but never enter the tally.
+    """
+
+    LABELS = ("neutral", "knock", "rub")
+
+    def __init__(self, clock=time.monotonic):
+        self.clock = clock
+        self.active = False
+        self.trial_type = None
+        self.practice = False
+        self.labels = []          # every added label, in order (for the trial log)
+        self.started = None
+        self.history = []         # one result dict per stopped trial
+        self.reset_tally()
+
+    def reset_tally(self):
+        self.tally = {t: [0, 0] for t in SPACE_TRIAL_TYPES}  # [passed, counted]
+
+    def start(self, trial_type, practice=False):
+        if self.active:
+            raise RuntimeError("Trial already running; stop it first")
+        if trial_type not in SPACE_TRIAL_TYPES:
+            raise ValueError(f"Unknown trial type {trial_type!r}")
+        self.active, self.trial_type, self.practice = True, trial_type, bool(practice)
+        self.labels = []
+        self.started = self.clock()
+
+    @property
+    def label_set(self):
+        return set(self.labels)
+
+    def add(self, label):
+        """Call once per fresh final label. Ignored when no trial is running."""
+        if self.active:
+            self.labels.append(label)
+
+    def stop(self, invalid_reason=None):
+        """End the trial and return its result. invalid_reason forces INVALID (e.g. audio fault)."""
+        if not self.active:
+            raise RuntimeError("No trial running")
+        self.active = False
+        label_set = self.label_set
+        if invalid_reason is None and not label_set:
+            invalid_reason = "no labels collected"
+        if invalid_reason is None and not label_set <= set(self.LABELS):
+            invalid_reason = f"unexpected labels {sorted(label_set - set(self.LABELS))}"
+        passed = None if invalid_reason else bool(score_trial(self.trial_type, label_set))
+        counted = passed is not None and not self.practice
+        if counted:
+            self.tally[self.trial_type][0] += passed
+            self.tally[self.trial_type][1] += 1
+        result = dict(trial_type=self.trial_type, practice=self.practice,
+                      label_set=sorted(label_set), passed=passed, valid=invalid_reason is None,
+                      invalid_reason=invalid_reason, counted=counted, n_frames=len(self.labels),
+                      duration_s=round(self.clock() - self.started, 3), labels=list(self.labels))
+        self.history.append(result)
+        return result
+
+    def undo_last(self):
+        """Remove the most recent stopped trial (e.g. wrong SPACE or wrong action). Returns it."""
+        if self.active:
+            raise RuntimeError("Stop the running trial before undo")
+        if not self.history:
+            return None
+        result = self.history.pop()
+        if result["counted"]:
+            self.tally[result["trial_type"]][0] -= result["passed"]
+            self.tally[result["trial_type"]][1] -= 1
+        return result
+
+
+@dataclass
+class EventDecisionConfig:
+    """Live event-level decision parameters. Energies use the model's band-energy units
+    (event_segmentation.band_energy, as in decision_params.json), NOT % FS."""
+    trigger_energy: float          # start an event when frame energy exceeds this
+    vote_energy: float             # only frames above this get a vote (the energy gate)
+    max_s: float = 1.0             # collect at most this long after the trigger
+    end_quiet_s: float = 0.3       # end early this long after the LAST voting frame
+    min_votes: int = 2             # fewer votes -> neutral (rejects single noise frames)
+    hold_s: float = 0.25           # keep the decided label this long, then neutral
+    rearm_quiet_s: float = 0.15    # energy must stay <= vote_energy this long before a new event
+
+
+class EventDecoder:
+    """Collect first, decide once: one final label per physical action.
+
+    Every frame is scored by the model, but the output stays neutral while an event is
+    open. The event ends after end_quiet_s without a voting frame (knock) or at max_s
+    (scratch). Majority vote over voting frames decides; ties go to the highest mean
+    decision score; a neutral majority emits nothing. Call reset() at trial start and
+    flush() before scoring a trial stopped while an event is still open.
+    """
+
+    def __init__(self, config: EventDecisionConfig, class_names=("neutral", "knock", "rub")):
+        self.config = config
+        self.class_names = list(class_names)
+        self.reset()
+
+    def reset(self):
+        self.collecting = False
+        self.votes = []
+        self.event_start = None
+        self.last_vote = None
+        self.armed = True
+        self.quiet_since = None
+        self.hold_label = NEUTRAL
+        self.hold_until = None
+        self.last_decision = None  # summary of the latest closed event, for display/logs
+
+    def vote_counts(self):
+        votes = np.asarray(self.votes, dtype=float).reshape(-1, len(self.class_names))
+        return np.bincount(votes.argmax(axis=1), minlength=len(self.class_names))
+
+    def decide(self):
+        """Label for the votes collected so far (neutral if too few)."""
+        if len(self.votes) < self.config.min_votes:
+            return NEUTRAL
+        counts = self.vote_counts()
+        tied = np.flatnonzero(counts == counts.max())
+        if len(tied) > 1:
+            mean_scores = np.mean(self.votes, axis=0)
+            return self.class_names[int(tied[np.argmax(mean_scores[tied])])]
+        return self.class_names[int(tied[0])]
+
+    def _close(self, t, reason):
+        label = self.decide()
+        self.last_decision = dict(label=label, reason=reason, n_votes=len(self.votes),
+                                  vote_counts=dict(zip(self.class_names, self.vote_counts().tolist())),
+                                  duration_s=round(t - self.event_start, 3))
+        self.collecting = False
+        self.votes = []
+        if label != NEUTRAL:
+            self.hold_label, self.hold_until = label, t + self.config.hold_s
+        return label
+
+    def step(self, t, energy, scores):
+        """t: monotonic seconds; energy: this frame's band energy; scores: the model's
+        decision_function row for this frame. Returns the final label for this frame."""
+        cfg = self.config
+        voting = energy > cfg.vote_energy
+        if voting:
+            self.quiet_since = None
+        else:
+            if self.quiet_since is None:
+                self.quiet_since = t
+            if t - self.quiet_since >= cfg.rearm_quiet_s:
+                self.armed = True
+        if self.collecting:
+            if voting:
+                self.votes.append(np.asarray(scores, dtype=float))
+                self.last_vote = t
+            if t - self.event_start >= cfg.max_s:
+                self._close(t, "max_s")
+            elif t - self.last_vote >= cfg.end_quiet_s:
+                self._close(t, "end_quiet")
+        elif self.armed and energy > cfg.trigger_energy:
+            self.collecting, self.armed = True, False
+            self.event_start = self.last_vote = t
+            self.votes = [np.asarray(scores, dtype=float)] if voting else []
+        if self.hold_until is not None and t < self.hold_until:
+            return self.hold_label
+        return NEUTRAL
+
+    def flush(self, t):
+        """Decide an open event now (e.g. SPACE pressed right after the action).
+        Returns the label, or None when no event was open."""
+        if not self.collecting:
+            return None
+        return self._close(t, "flush")
 
 
 def _format_c_float(value: float) -> str:
