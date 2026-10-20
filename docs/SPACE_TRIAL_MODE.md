@@ -81,3 +81,25 @@ Follow-up for A's reported nonresponsive SPACE key: 29 targeted GUI/UDP/fast-tak
 tests pass, including three new button/polling/hidden-focus regression cases.
 This verifies program behavior under controlled input; actual physical keyboard
 confirmation is still needed after restarting the updated GUI.
+
+## A's real-sensor workflow confirmation
+
+A subsequently completed two trials on October20 with the integrated GUI:
+
+| Type | Collected label set | Result | Fresh frames | Duration |
+|---|---|---|---:|---:|
+| knock_pos | knock, neutral | PASS | 363 | 17.015s |
+| rub_pos | knock, neutral, rub | FAIL | 283 | 13.281s |
+
+Both records are valid and saved in the local
+`trial_logs/20261020_102851/trials.jsonl`. Thus trial start/stop, final-label
+collection, SET scoring, tally and persistent log work on real sensor input.
+The rub FAIL is correct scoring of the known classification issue, not a failure
+of the trial recorder. Screenshots confirm the visible button workflow; the
+physical SPACE shortcut has not been independently confirmed working by A.
+Raw local trial logs remain excluded from Git/training.
+
+At A's explicit request, subsequent event-decision changes are deferred and
+stored in a named WIP stash. Current runtime remains the SPACE integration with
+the unchanged v1 per-window model/gate. No separate release branch is required;
+teammates can pull a-tuning. The B/C source branches remain unchanged.

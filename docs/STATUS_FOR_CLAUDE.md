@@ -12,6 +12,12 @@ No new physical tests were performed. The rub-onset ordering issue still exists.
 Follow-up SPACE usability fix: visible START/STOP TRIAL button, frame-by-frame
 key-state fallback and visibility-aware typing guard;29 targeted tests pass.
 A must restart the GUI to load this change and confirm physical operation.
+UPDATE: real-sensor trial records now confirm recorder start/stop, final-label
+SET, scoring, tally and saving: knock_pos PASS363frames/17.015s; rub_pos
+FAIL283frames/13.281s with K/N/R. Physical SPACE key operation itself remains
+unconfirmed; visible button workflow is verified. A explicitly deferred event
+decision changes; all partial event implementation is preserved in named WIP
+stash and removed from active code. Continue with SPACE-only v1 runtime.
 
 CONTROLLED LIVE DIAGNOSIS UPDATE: see docs/live_test_20261019.md. Five knocks
 give5 next turns. Five scratches give5 wrong next attempts (1 moved,4 blocked)
