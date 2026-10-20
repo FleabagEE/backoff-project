@@ -173,7 +173,7 @@ class MockSenderTests(unittest.TestCase):
         from mock_sender import Sender, run_sequence, run_stress
         listener = UdpListener('127.0.0.1', 0).start()
         try:
-            s = Sender(*listener.address, fmt='mixed', gap_s=0.05, heartbeat_s=0.01)
+            s = Sender(*listener.address, fmt='mixed', gap_s=0.05, heartbeat_s=0.01, hold_s=0.03)
             run_sequence(s, ['knock', 'knock', 'rub', 'knock', 'rub', 'rub'])
             time.sleep(0.2)
             items = []
@@ -194,6 +194,10 @@ class MockSenderTests(unittest.TestCase):
             self.assertEqual(deck.index, 0)                  # +1 +1 -1 +1 -1 -1
             self.assertEqual(rule.heartbeats, s.heartbeats)
             self.assertGreater(rule.heartbeats, 0)
+            # Like the live decoder: each knock/rub is followed by its own neutral message.
+            self.assertEqual([i[1].label for i in items if not i[1].hb],
+                             ['neutral'] + [x for a in ('knock', 'knock', 'rub', 'knock', 'rub', 'rub')
+                                            for x in (a, 'neutral')])
             s.close()
 
             s = Sender(*listener.address, fmt='object', gap_s=0.05, heartbeat_s=0.01)

@@ -1,9 +1,11 @@
 """Simulate the backend's FINAL ACTION output without any sensor.
 
 The backend recognizes and confirms each physical action and sends it ONCE. So this
-sender sends one message per action, not a frame stream. Between actions it can
-repeat the current label as a state heartbeat ({"hb": true}), which the slide app
-must never treat as a page turn.
+sender sends one message per action, not a frame stream. It mirrors the live event
+decoder's stream: the decided label is sent as one change message, repeated as a
+state heartbeat ({"hb": true}) for a short hold (0.25 s, --hold), then a neutral
+change message follows, and neutral heartbeats continue until the next action.
+The slide app must never treat a heartbeat or a neutral as a page turn.
 
     python c_app\\mock_sender.py                      # demo: knock, knock, rub, knock
     python c_app\\mock_sender.py knock rub rub         # your own action sequence
@@ -41,11 +43,12 @@ def encode_heartbeat(label, t0):
 
 
 class Sender:
-    def __init__(self, host, port, fmt, gap_s=1.0, heartbeat_s=0.1):
+    def __init__(self, host, port, fmt, gap_s=1.0, heartbeat_s=0.1, hold_s=0.25):
         self.addr = (host, port)
         self.formats = itertools.cycle(FORMATS) if fmt == 'mixed' else itertools.repeat(fmt)
         self.gap_s = gap_s
         self.heartbeat_s = heartbeat_s
+        self.hold_s = hold_s
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.t0 = time.monotonic()
         self.current = None
@@ -61,6 +64,14 @@ class Sender:
         print(f'  send {label:<8}{note}', flush=True)
         self.raw(encode(label, next(self.formats), self.t0))
         self.current = label
+
+    def event(self, label, note=''):
+        """Like the live event decoder: one action message, held with heartbeats for
+        hold_s, then a neutral change message. Neutral itself is just one message."""
+        self.action(label, note)
+        if label != 'neutral':
+            self.hold(self.hold_s)
+            self.action('neutral', '   (hold ended)')
 
     def hold(self, seconds=None):
         """Wait between actions, repeating the current label as heartbeats."""
@@ -95,7 +106,7 @@ def run_sequence(s, labels):
     s.hold()
     for label in labels:
         note = {'knock': '   -> NEXT page', 'rub': '   -> PREVIOUS page'}.get(label, '   (no turn)')
-        s.action(label, note)
+        s.event(label, note)
         s.hold()
     print(f'done: {s.sent} datagrams ({s.heartbeats} heartbeats). Starting from page 1 the '
           f'net move is {expected_move(labels):+d} page(s), clamped at the first/last page.')
@@ -145,7 +156,7 @@ def run_interactive(s):
             print(f'  heartbeat {label} (no turn)')
             continue
         try:
-            s.action(parse_label(word))
+            s.event(parse_label(word))
         except ValueError as exc:
             print(exc)
 
@@ -158,20 +169,23 @@ def main(argv=None):
     ap.add_argument('--gap', type=float, default=1.0, help='seconds between actions (default 1)')
     ap.add_argument('--heartbeat', type=float, default=0.1,
                     help='seconds between state heartbeats while waiting (default 0.1; 0 = none)')
+    ap.add_argument('--hold', type=float, default=0.25,
+                    help='seconds a knock/rub is held before the neutral message, like the live '
+                         'event decoder (default 0.25; 0 = neutral immediately)')
     ap.add_argument('--format', choices=FORMATS + ('mixed',), default='text',
                     help='action message form (heartbeats are always JSON objects)')
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument('--stress', action='store_true')
     mode.add_argument('--interactive', action='store_true')
     args = ap.parse_args(argv)
-    if args.gap < 0 or args.heartbeat < 0:
-        ap.error('--gap and --heartbeat must be >= 0')
+    if args.gap < 0 or args.heartbeat < 0 or args.hold < 0:
+        ap.error('--gap, --heartbeat and --hold must be >= 0')
     try:
         labels = [parse_label(a) for a in args.actions] or ['knock', 'knock', 'rub', 'knock']
     except ValueError as exc:
         ap.error(str(exc))
 
-    s = Sender(args.host, args.port, args.format, args.gap, args.heartbeat)
+    s = Sender(args.host, args.port, args.format, args.gap, args.heartbeat, args.hold)
     print(f'sending to UDP {args.host}:{args.port}, one message per action, format={args.format}')
     try:
         if args.stress:

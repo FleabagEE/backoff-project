@@ -52,8 +52,9 @@ knock（敲击）、rub（刮擦）。
 - Do not promise "one action never turns two pages". The slide app executes
   every action message it receives; whether one physical action becomes exactly
   one message is decided on the model side, not in the slide app.
-- The live demo needs the backend's final-action output. The per-window label
-  sender in `visualizer.py` is not that output: with it, every label change turns
-  a page.
+- The live demo relies on the GUI's default event decision (`--decision event`,
+  B's `EventDecoder`): one message per decided action. Never start the GUI with
+  `--decision window` or load a model through the Load Model dialog for the demo;
+  in that per-window mode every label change turns a page.
 - If a page turn does not happen live, wait a moment and repeat the action once.
   Do not knock repeatedly: every confirmed knock is one more page.

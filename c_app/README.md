@@ -41,23 +41,58 @@ knock                                        plain text         = ONE final acti
   is counted as `invalid` and ignored. The app keeps running.
 
 **Premise: every non-heartbeat action message is one final action.** The backend
-protocol has no event id or event message type yet, so the slide app does not
-invent one and does not deduplicate. Two `knock` messages in a row are two
-actions and turn two pages; two `rub` messages go back two pages; `knock`
-followed directly by `rub` (no neutral between) turns forward then back. A
-message is never ignored just because its label equals the previous one. If the
-backend later adds an event id, the slide app should dedupe only repeats of the
-same id; nothing else changes.
+protocol has no event id or event message type, so the slide app does not
+invent one and does not deduplicate by label or timestamp. Two `knock` messages
+in a row are two actions and turn two pages; two `rub` messages go back two
+pages; `knock` followed directly by `rub` (no neutral between) turns forward
+then back. A message is never ignored just because its label equals the previous
+one. If the backend later adds an event id, the slide app should dedupe only
+repeats of the same id (and treat a backend restart as a new id space); nothing
+else changes.
 
-**The current live sender is not a final-action output.** `slide_udp.LabelSender`
-in `visualizer.py` forwards the per-window `Prediction:` label: a change message on
-every label change plus `hb` heartbeats of the current label every 0.1 s. Driving
-this simplified front end from that stream turns one page per label *change*, so a
-label that flips during one physical action (for example knock -> rub -> neutral,
-or rub -> neutral -> rub) turns more than one page. `test_slide_udp.py` shows this
-on a simulated stream. Before live use, the backend must send **one message per
-confirmed action** (A/B's event decision). The sender, model, event decision and
-SPACE scoring are not changed by this branch.
+**What the live backend actually sends (checked against B's commit `db4f9d4`,
+merged into this branch).** With `--trained-model` the GUI now defaults to
+`--decision event`: `models.EventDecoder` collects the frames of one action
+above the energy gate, decides once by majority vote, and `publish_label()`
+passes that one final label to the display, to `slide_udp.LabelSender` and to
+the SPACE trial set. The sender is unchanged, so on the wire one decided event
+looks like this (times are Unix seconds):
+
+```
+{"label": "knock", "t": 1792450715.095}                 change: the decided event (ONE per event)
+{"label": "knock", "t": 1792450715.195, "hb": true}     heartbeats while the label is held 0.25 s
+{"label": "knock", "t": 1792450715.295, "hb": true}
+{"label": "neutral", "t": 1792450715.345}               change: hold ended
+{"label": "neutral", "t": 1792450715.445, "hb": true}   neutral heartbeats until the next event
+```
+
+There is no event id, event type or session id in this protocol, so the slide
+app does not deduplicate anything. It relies on the decoder's own structure:
+after a decision the label is held 0.25 s and then goes back to neutral, and a
+new event cannot close for at least 0.45 s, so two independent knocks always
+arrive as two separate `knock` change messages with a `neutral` change between
+them. The sender never re-sends the same event: repeating a label only produces
+`hb` heartbeats.
+
+Two backend situations are known to break this one-message-per-event property
+and are **not** patched over in C:
+
+- `--decision window`, or a model loaded via the **Load Model** dialog, is still
+  per-window output. Every label flip is then a change message and the slides
+  follow each flip (`test_slide_udp.py` shows knock -> rub without neutral turning
+  two pages). Do not drive the slides in that mode.
+- `LabelSender.reset()` (mode change, model load) re-sends the current label as a
+  change. If that happens inside the 0.25 s hold, C sees the same event twice.
+- The sender only sends a change when the label differs from the last one sent.
+  If SPACE flushes a second event with the same label while the first event's
+  0.25 s hold is still active (second knock starting within about 0.3 s of the
+  first decision, SPACE pressed right then), the second event reaches the wire
+  only as heartbeats and C does not turn. Reproduced with B's decoder and the
+  sender on a fake clock; it needs SPACE inside that window, so it cannot
+  happen during a plain demo.
+
+Neither case was patched in C: both are properties of the backend's decoder and
+sender, and C deduplicating by label or time would hide real double actions.
 
 ## Run without hardware (mock)
 
@@ -72,9 +107,9 @@ In a second window:
 python c_app\mock_sender.py
 ```
 
-This sends neutral, then knock, knock, rub, knock as **one message each**, with
-heartbeats of the current label between them. You should see page
-1 -> 2 -> 3 -> 2 -> 3.
+This sends neutral, then knock, knock, rub, knock as **one message each**, each
+held with heartbeats for 0.25 s and followed by a neutral message, exactly like
+the live event decoder's stream. You should see page 1 -> 2 -> 3 -> 2 -> 3.
 
 The window layout:
 - **Top left:** the page counter.
@@ -127,6 +162,7 @@ python c_app\mock_sender.py --format object knock        # {"label":"knock","t":
 python c_app\mock_sender.py --format mixed knock rub     # text / JSON string / object in rotation
 python c_app\mock_sender.py --gap 0.3 knock knock        # 0.3 s between actions (default 1 s)
 python c_app\mock_sender.py --heartbeat 0 knock          # no heartbeats between actions
+python c_app\mock_sender.py --hold 0 knock               # neutral right after the action (default 0.25 s hold)
 python c_app\mock_sender.py --stress                     # invalid + repeats + heartbeats + edges
 python c_app\mock_sender.py --interactive                # k / r / n send one action; h = heartbeat; q quits
 python c_app\mock_sender.py --port 5006 knock            # match the app's --port
@@ -157,10 +193,10 @@ already in use, the bottom line turns red with the reason and the app still open
 
 ## Run with the live model (on A's computer, with A's hardware)
 
-**Only once the backend sends one message per confirmed action** (see "Message
-format" above). With the current per-window sender the pages follow every label
-change. Use the same two windows as before, from the repository root with the
-`c-integration` branch checked out:
+This branch (`c-integration`) contains B's event-level decision commit
+`db4f9d4`; `a-tuning` does not yet, so run from this branch (or from a branch
+that has merged it) and keep the default `--decision event`. Use two windows
+from the repository root:
 
 **Window 1: slide app.** Start it first.
 
@@ -175,14 +211,15 @@ uv run visualizer.py --setup-id A_wood30x30x6_v3_candidate2 --scratch-surface wo
 ```
 
 The default target is `127.0.0.1:5005`. Add `--slide-udp 127.0.0.1:5006` to use
-another port, or `--slide-udp off` to send nothing. If the slide app is not
-running, nothing breaks; the datagrams are simply lost. Check that it works: the
-bottom line of the slide window shows `received` increasing.
+another port, or `--slide-udp off` to send nothing. Do not add `--decision window`.
+If the slide app is not running, nothing breaks; the datagrams are simply lost.
+Check that it works: the bottom line of the slide window shows `received` and
+`heartbeats` increasing, and `actions` increasing by one per knock or scratch.
 
-The GUI currently has **no live SPACE trial recorder** on this branch. If B adds a
-live recorder or a final-action output, it must come from the same
-`self.infer_classes[label]` value that is sent here. The slide app does not change
-the label stream that the GUI shows or that trials are scored on.
+The GUI's **SPACE trial recorder** (B) collects the same final labels that are
+sent here: `publish_label()` feeds the display, the UDP sender and the trial set
+from one value. The slide app does not change that stream and is not part of
+scoring.
 
 ## Tests and what was verified
 
@@ -210,16 +247,24 @@ The slide-app tests cover:
 `test_slide_udp.py` keeps the unchanged sender tests (changes go out immediately,
 heartbeats at least 0.1 s apart and only of the current label, nothing sent in
 Train mode, resend after re-entering Infer, invalid labels dropped, missing
-receiver never raises). Its chain test runs the real `App.update()` inference
-branch on fake FFT frames with a simulated prediction sequence and feeds the
-received datagrams to C's rule: every label change to knock/rub turns one page,
-heartbeats turn none. With that per-window stream the simulated knock -> rub
-and rub -> neutral -> rub cases turn two pages each, which is exactly why the
-live sender needs a final-action stage first.
+receiver never raises). Its chain tests run the real `App.update()` inference
+branch on fake FFT frames through the real UDP sender, C's listener and rule:
+
+- **Event mode (B's live default):** two separate knocks, a scratch, then a knock
+  followed by a scratch with the shortest quiet gap, inside a SPACE trial. The
+  wire carries exactly one `knock`/`rub` change per decided event, each followed
+  by a `neutral` change; datagrams contain only `label`, `t` and `hb`; C turns
+  next, next, prev, next, prev; heartbeats turn nothing; the trial's label set
+  equals the set of labels C received. A's live scratch #1 pattern (knock
+  windows at the scratch onset) sends one `rub` only, and quiet or neutral-majority
+  noise sends nothing but heartbeats.
+- **Per-window mode:** kept to show that knock -> rub without neutral and
+  rub -> short neutral -> rub each turn two pages, which is why that mode must
+  not drive the slides.
 
 **Not verified:** nothing has run with A's sensor, audio interface or real FFT
-frames, and no backend final-action output exists yet to run end to end.
-See `TEST_PROTOCOL.md`.
+frames. The event-mode sequences are hand-written frame patterns (B's own test
+fixtures), not recorded signals. See `TEST_PROTOCOL.md`.
 
 ## Files
 
@@ -233,5 +278,6 @@ See `TEST_PROTOCOL.md`.
 | `test_c_app.py` | unit + socket + Tk tests |
 | `TEST_PROTOCOL.md` | 20-trial protocol, score sheet, failure log |
 | `PITCH.md` | one-minute pitch (English + Chinese) |
-| `../slide_udp.py` | per-window label sender used by `visualizer.py` (repo root, unchanged) |
-| `../test_slide_udp.py` | sender + GUI -> UDP -> slide chain tests (repo root) |
+| `../slide_udp.py` | label sender used by `visualizer.py` (repo root, unchanged) |
+| `../models.py` | B's `EventDecoder`: the final-action decision (not C's code) |
+| `../test_slide_udp.py` | sender + GUI -> UDP -> slide chain tests, event and per-window (repo root) |
