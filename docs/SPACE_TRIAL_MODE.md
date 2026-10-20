@@ -45,8 +45,10 @@ target is absent. Every fresh final label counts: one wrong transient can fail
 a positive trial even when the slide app suppresses that transient. Empty sets,
 audio capture faults, mode changes or closing during a trial invalidate it.
 
-The identical label feeds GUI Prediction, UDP sender and trial recorder. The
-slide frontend's own cooldown/neutral re-arm does not alter the scored label set.
+The identical label feeds GUI Prediction, UDP sender and trial recorder. On the
+combined branch with C f577b85, the slide frontend has no cooldown/neutral re-arm;
+it executes non-heartbeat actions and ignores heartbeat page turns. The scored
+label set is still the GUI's final-label set, not slide movement counts.
 SPACE logs contain final-label sequences/sets, result, timestamps, model source,
 duration, frame count and tally events. They are evaluation records, never
 training data; no new model is fitted and no FFT dataset is recorded by SPACE.

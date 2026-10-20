@@ -1,6 +1,8 @@
+LATEST C UPDATE: c-integration f577b85 merged into a-b-event-integration-20261020. Receiver now executes each non-heartbeat final action, no cooldown/neutral re-arm; heartbeats never turn pages. 88 repo +25 slide tests pass. Capture, model, gate and B EventDecoder unchanged. Physical slide test remains pending. See CURRENT_HANDOFF_20261020.md.
+
 # Current snapshot: a-b-event-integration-20261020
 
-See CURRENT_HANDOFF_20261020.md. This branch combines A b111a0c and B db4f9d4, including event-majority decisions, slide UDP and working mouse trial controls. 109 automated tests pass; v1 model/gate/audio/features unchanged. Fresh rub trials include both passes and failures; slide testing is pending confirmation. A, B and C original branches are untouched. The entries below describe historical states and should not override this snapshot.
+See CURRENT_HANDOFF_20261020.md. This branch combines A b111a0c and B db4f9d4, including event-majority decisions, slide UDP and working mouse trial controls. 113 automated tests pass; v1 model/gate/audio/features unchanged. Fresh rub trials include both passes and failures; slide testing is pending confirmation. A, B and C original branches are untouched. The entries below describe historical states and should not override this snapshot.
 
 # Teammate A progress report — October 17, 2026 (America/Los_Angeles)
 

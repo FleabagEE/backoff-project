@@ -4,7 +4,7 @@ Branch: **a-b-event-integration-20261020**.
 
 This branch merges A `b111a0c` (working trial buttons/keyboard fallback, reports
 and v1 model pair) with B `db4f9d4` (event-level live decoder and SPACE trials).
-C's slide app/UDP sender is included through B's existing integration. A's
+C latest `f577b85` is merged: its slide receiver executes one page turn per non-heartbeat action message, with no frontend cooldown or neutral confirmation. Heartbeats never turn pages. A's
 separate unfinished event-T implementation remains parked locally and is NOT
 part of this snapshot. No teammate source branch is modified.
 
@@ -57,7 +57,7 @@ are never training data. Slide behavior runs continuously even outside a trial.
 
 ## Evidence and limits
 
-- Combined automated validation: **85 repository +24 C slide tests =109 passed**.
+- Combined automated validation: **88 repository +25 C slide tests =113 passed**.
 - Earlier B-only validation:82 tests; replay of the original ten development
   actions through B's decoder gave knock5/5 and rub5/5. These are reused
   development actions, not a fresh success-rate measurement.

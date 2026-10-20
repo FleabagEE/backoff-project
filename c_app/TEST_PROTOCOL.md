@@ -4,9 +4,10 @@ Status: **NOT YET RUN on hardware.** Every result cell below is blank and must b
 filled during the actual session. Do not copy numbers from mock runs, CV
 reports or operator impressions into it.
 
-**Formal scoring waits for the model-side SPACE trial recorder,** which B owns.
-`visualizer.py` does not have one yet. The slide app CSV is for troubleshooting
-only and is never the official score.
+**Formal scoring uses the model-side SPACE trial recorder** (B, in
+`visualizer.py` Infer mode: SPACE starts and stops a trial, the set is scored
+and logged to `trial_logs/`). The slide app CSV is for troubleshooting only and
+is never the official score.
 
 Sources:
 - the group rule in `SETUP.md` ("5 positive + 5 negative trials per target");
@@ -61,10 +62,12 @@ The action list adapts the earlier `docs/scratch_v2.md` table to bare wood.
 A single stray label fails the trial. An empty set, or a label outside the three,
 makes the trial **INVALID**, not a pass.
 
-The slide app's re-arm and cooldown rule is **not** part of scoring. It only
-decides whether the slide moves. Slide behaviour is recorded in a separate
-column and never changes PASS/FAIL. Start each trial on page 2 of 3 (press Home,
-then Right).
+The slide app is **not** part of scoring. It turns one page per final action
+message it receives and makes no decision of its own. Slide behaviour is recorded
+in a separate column and never changes PASS/FAIL. Start each trial on page 2 of 3
+(press Home, then Right). The slide column is meaningful only with the GUI's
+default event decision (`--decision event`); in per-window mode (`--decision
+window` or Load Model) pages follow every label change.
 
 | Trial type | Expected slide behaviour |
 |---|---|
@@ -81,10 +84,13 @@ then Right).
    `uv run python c_app\slide_demo.py --log c_app\trial_log_YYYYMMDD.csv`
 3. Window 2 (live inference, sends to `127.0.0.1:5005` by default):
    `uv run visualizer.py --setup-id A_wood30x30x6_v3_candidate2 --scratch-surface wood --trained-model a_models/wood_v3_20261019_135608_v1/model.joblib --decision-params a_models/wood_v3_20261019_135608_v1/decision_params.json`
-4. Confirm B's SPACE recorder is running on the same final label stream. If it
-   is not available, stop here: do not run formal trials (see "Internal debugging").
-5. Smoke test, not scored: in the slide window, `received` rises and the gate
-   returns to `ready` after quiet.
+4. Confirm the GUI shows the BAKEOFF TRIAL panel and `raw window: ... | event: idle`
+   under the prediction (event decision active). If the event line is missing,
+   the GUI is in per-window mode: stop here, do not run formal trials or the slide
+   check.
+5. Smoke test, not scored: in the slide window, `received` rises, `heartbeats`
+   keeps counting while the GUI is in Infer, and `page turns` stays unchanged
+   while quiet.
 
 ## Session header
 
