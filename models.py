@@ -4,6 +4,7 @@ from pathlib import Path
 
 import json
 import pickle
+import time
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
@@ -11,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC, SVC
 
 from stream_analyzer import StreamAnalyzer
+from recording_policy import TRIAL_TYPES as SPACE_TRIAL_TYPES  # knock_pos, rub_pos, knock_neg, rub_neg
+from trial_replay import score_trial  # single source of the bakeoff SET rule (shared with A's replay)
 
 MODEL_B_PIPELINE = "B: log1p <=8kHz + scaler + LinearSVC"
 MODEL_LINEAR_SVC = "LinearSVC"
@@ -285,6 +288,84 @@ def trial_passes(trial_type, label_set):
     if sign == "+":
         return label_set in ({target}, {NEUTRAL, target})
     return target not in label_set
+
+
+class TrialRecorder:
+    """Bakeoff SPACE trial: collect every final label between start and stop into a SET.
+
+    Scoring uses A's score_trial (trial_replay.py), so live GUI results and offline
+    replay follow one rule. Feed add() the SAME final label that is displayed and
+    sent to C. An empty or unrecognised set is INVALID (not counted), e.g. SPACE
+    pressed twice with no fresh frame, or audio stopped. Practice trials and invalid
+    trials are kept in history but never enter the tally.
+    """
+
+    LABELS = ("neutral", "knock", "rub")
+
+    def __init__(self, clock=time.monotonic):
+        self.clock = clock
+        self.active = False
+        self.trial_type = None
+        self.practice = False
+        self.labels = []          # every added label, in order (for the trial log)
+        self.started = None
+        self.history = []         # one result dict per stopped trial
+        self.reset_tally()
+
+    def reset_tally(self):
+        self.tally = {t: [0, 0] for t in SPACE_TRIAL_TYPES}  # [passed, counted]
+
+    def start(self, trial_type, practice=False):
+        if self.active:
+            raise RuntimeError("Trial already running; stop it first")
+        if trial_type not in SPACE_TRIAL_TYPES:
+            raise ValueError(f"Unknown trial type {trial_type!r}")
+        self.active, self.trial_type, self.practice = True, trial_type, bool(practice)
+        self.labels = []
+        self.started = self.clock()
+
+    @property
+    def label_set(self):
+        return set(self.labels)
+
+    def add(self, label):
+        """Call once per fresh final label. Ignored when no trial is running."""
+        if self.active:
+            self.labels.append(label)
+
+    def stop(self, invalid_reason=None):
+        """End the trial and return its result. invalid_reason forces INVALID (e.g. audio fault)."""
+        if not self.active:
+            raise RuntimeError("No trial running")
+        self.active = False
+        label_set = self.label_set
+        if invalid_reason is None and not label_set:
+            invalid_reason = "no labels collected"
+        if invalid_reason is None and not label_set <= set(self.LABELS):
+            invalid_reason = f"unexpected labels {sorted(label_set - set(self.LABELS))}"
+        passed = None if invalid_reason else bool(score_trial(self.trial_type, label_set))
+        counted = passed is not None and not self.practice
+        if counted:
+            self.tally[self.trial_type][0] += passed
+            self.tally[self.trial_type][1] += 1
+        result = dict(trial_type=self.trial_type, practice=self.practice,
+                      label_set=sorted(label_set), passed=passed, valid=invalid_reason is None,
+                      invalid_reason=invalid_reason, counted=counted, n_frames=len(self.labels),
+                      duration_s=round(self.clock() - self.started, 3), labels=list(self.labels))
+        self.history.append(result)
+        return result
+
+    def undo_last(self):
+        """Remove the most recent stopped trial (e.g. wrong SPACE or wrong action). Returns it."""
+        if self.active:
+            raise RuntimeError("Stop the running trial before undo")
+        if not self.history:
+            return None
+        result = self.history.pop()
+        if result["counted"]:
+            self.tally[result["trial_type"]][0] -= result["passed"]
+            self.tally[result["trial_type"]][1] -= 1
+        return result
 
 
 def _format_c_float(value: float) -> str:

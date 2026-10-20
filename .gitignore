@@ -219,3 +219,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Live bakeoff SPACE trial logs: local evaluation records, never training data.
+trial_logs/

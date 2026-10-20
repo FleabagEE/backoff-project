@@ -2,6 +2,14 @@
 
 ## CURRENT: 75 wooden-board takes trained (October 19)
 
+LATEST STEERING (October20): integrate b-space-trial-mode FIRST, then return to
+event decisions. Source88b9905 and its C slide/UDP dependencies are merged into
+a-tuning. See docs/SPACE_TRIAL_MODE.md for launch and SPACE scoring workflow.
+68 repository +24 C tests pass (92 total). Model/gate/capture/features unchanged.
+Unfinished event_decision.py, select_event_time.py and event-v2 params/report
+are saved in the named WIP stash, excluded from this integration and runtime.
+No new physical tests were performed. The rub-onset ordering issue still exists.
+
 CONTROLLED LIVE DIAGNOSIS UPDATE: see docs/live_test_20261019.md. Five knocks
 give5 next turns. Five scratches give5 wrong next attempts (1 moved,4 blocked)
 and1 previous turn: transient K precedes sustained R and C rejects R until
