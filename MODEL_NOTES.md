@@ -1,3 +1,5 @@
+CURRENT INTEGRATION (October 20): use [docs/CURRENT_HANDOFF_20261020.md](docs/CURRENT_HANDOFF_20261020.md) for this branch's B event decoder, launch instructions and limitations. Model/gate unchanged; older window-runtime descriptions below are historical.
+
 # Wooden-board v3 provisional model — October 19, 2026
 
 Latest preliminary live GUI and saved neutral interference results are in

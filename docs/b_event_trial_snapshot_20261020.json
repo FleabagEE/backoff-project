@@ -1,0 +1,298 @@
+{
+  "date": "2026-10-20 America/Los_Angeles",
+  "source": "B db4f9d4 with local UI-only start/stop adapter",
+  "records": [
+    {
+      "trial_type": "knock_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": false,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 143,
+      "duration_s": 6.656,
+      "started_utc": "2026-10-20T18:33:12.431574+00:00",
+      "logged_utc": "2026-10-20T18:33:19.094593+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral"
+      ],
+      "passed": false,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 111,
+      "duration_s": 5.218,
+      "started_utc": "2026-10-20T18:33:38.402715+00:00",
+      "logged_utc": "2026-10-20T18:33:43.620481+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "knock",
+        "neutral"
+      ],
+      "passed": false,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 152,
+      "duration_s": 7.11,
+      "started_utc": "2026-10-20T18:35:33.985166+00:00",
+      "logged_utc": "2026-10-20T18:35:41.096631+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 109,
+      "duration_s": 5.078,
+      "started_utc": "2026-10-20T18:35:44.104362+00:00",
+      "logged_utc": "2026-10-20T18:35:49.178790+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 73,
+      "duration_s": 3.422,
+      "started_utc": "2026-10-20T18:35:55.344426+00:00",
+      "logged_utc": "2026-10-20T18:35:58.768680+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 132,
+      "duration_s": 6.14,
+      "started_utc": "2026-10-20T18:36:47.904116+00:00",
+      "logged_utc": "2026-10-20T18:36:54.042164+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 42,
+      "duration_s": 1.891,
+      "started_utc": "2026-10-20T18:37:20.459278+00:00",
+      "logged_utc": "2026-10-20T18:37:22.357148+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "rub_pos",
+      "practice": false,
+      "label_set": [
+        "neutral",
+        "rub"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 105,
+      "duration_s": 4.922,
+      "started_utc": "2026-10-20T18:37:28.373245+00:00",
+      "logged_utc": "2026-10-20T18:37:33.290728+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    },
+    {
+      "trial_type": "knock_pos",
+      "practice": false,
+      "label_set": [
+        "knock",
+        "neutral"
+      ],
+      "passed": true,
+      "valid": true,
+      "invalid_reason": null,
+      "counted": true,
+      "n_frames": 78,
+      "duration_s": 3.625,
+      "started_utc": "2026-10-20T18:37:42.496422+00:00",
+      "logged_utc": "2026-10-20T18:37:46.115185+00:00",
+      "model": {
+        "trained_model": "a_models/wood_v3_20261019_135608_v1/model.joblib",
+        "decision_params": "a_models/wood_v3_20261019_135608_v1/decision_params.json",
+        "setup_id": "A_wood30x30x6_v3_candidate2",
+        "decision": "event",
+        "event_config": {
+          "trigger_energy": 469941572.43828094,
+          "vote_energy": 469941572.43828094,
+          "max_s": 1.0,
+          "end_quiet_s": 0.3,
+          "min_votes": 2,
+          "hold_s": 0.25,
+          "rearm_quiet_s": 0.15
+        }
+      }
+    }
+  ],
+  "source_logs": [
+    {
+      "file": "trial_logs\\b_event_db4f9d4\\20261020_113319\\trials.jsonl",
+      "sha256": "657eaef19f53e2ea68cdafab65da83edad1298050d3bc214a48d329bb17655e5"
+    }
+  ],
+  "rub_trials": 7,
+  "rub_passed": 5,
+  "caveats": [
+    "First trial type/action mismatch; retain as recorded, not a knock accuracy estimate",
+    "Actions not individually time/video annotated; trial duration is not action duration",
+    "Longer scratch success is operator-reported; short scratch misses remain",
+    "Not an independent standardized evaluation; slide outcome pending operator confirmation"
+  ]
+}

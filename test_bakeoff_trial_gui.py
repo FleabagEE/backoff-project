@@ -7,8 +7,31 @@ import unittest
 from unittest.mock import patch
 
 import dearpygui.dearpygui as dpg
+import numpy as np
 
+from models import EventDecisionConfig, EventDecoder
 from visualizer import App, BAKEOFF_LOCKED
+
+FRAME_S = 0.047
+
+
+class FakeWoodModel:
+    """decision_function reads a class marker stored in the last FFT bin (24 kHz, outside
+    the 0.5-8 kHz energy band): 1 -> knock, 2 -> rub, otherwise neutral."""
+
+    def decision_function(self, X):
+        scores = np.full((len(X), 3), -1.0)
+        scores[np.arange(len(X)), np.asarray(X)[:, -1].astype(int) % 3] = 1.0
+        return scores
+
+
+def frame(kind):
+    """Q = quiet (below gate); N/K/R = loud frame the model labels neutral/knock/rub."""
+    amps = np.zeros(1200)
+    if kind != 'Q':
+        amps[30:400] = 1000.0  # inside the 0.5-8 kHz band -> energy far above the gate
+        amps[-1] = 'NKR'.index(kind)
+    return amps
 
 
 class FakeSender:
@@ -168,6 +191,52 @@ class BakeoffTrialGuiTests(unittest.TestCase):
         first = self.log_records()[0]
         self.assertEqual((first['trial_type'], first['practice'], first['labels']), ('knock_pos', True, ['knock']))
         self.assertTrue(str(self.app.trial_log_path).startswith(self.temp.name))
+
+    def use_event_decisions(self):
+        self.app.wood_predictor = SimpleNamespace(model=FakeWoodModel())
+        self.app.event_decoder = EventDecoder(EventDecisionConfig(trigger_energy=1.0, vote_energy=1.0),
+                                              self.app.infer_classes)
+
+    def feed(self, frames, start=0.0):
+        for i, kind in enumerate(frames):
+            self.app.publish_label(self.app.event_label(frame(kind), start + i * FRAME_S))
+
+    def test_event_mode_knock_trial_passes(self):
+        self.use_event_decisions()
+        dpg.set_value('bakeoff_trial_type', 'knock_pos')
+        self.press_space()
+        self.feed('Q' * 10 + 'KKKK' + 'Q' * 20)
+        self.press_space()
+        self.assertEqual(self.app.trial.history[-1]['label_set'], ['knock', 'neutral'])
+        self.assertIn('knock_pos PASS', dpg.get_value('bakeoff_result'))
+        self.assertIn('last event: knock', dpg.get_value('raw_prediction'))
+
+    def test_event_mode_scratch_onset_knock_never_reaches_slides_or_set(self):
+        self.use_event_decisions()
+        dpg.set_value('bakeoff_trial_type', 'rub_pos')
+        self.press_space()
+        self.feed('Q' * 10 + 'K' * 5 + 'R' * 20 + 'K' + 'Q' * 20)  # A's live scratch #1
+        self.press_space()
+        self.assertIn('rub_pos PASS', dpg.get_value('bakeoff_result'))
+        self.assertNotIn('knock', self.app.slide_sender.labels)
+        self.assertIn('rub', self.app.slide_sender.labels)
+
+    def test_space_during_collection_flushes_the_action(self):
+        self.use_event_decisions()
+        dpg.set_value('bakeoff_trial_type', 'rub_pos')
+        self.press_space()
+        self.feed('Q' * 10 + 'R' * 8)  # still scratching when SPACE is pressed
+        self.assertTrue(self.app.event_decoder.collecting)
+        self.press_space()
+        self.assertEqual(self.app.trial.history[-1]['label_set'], ['neutral', 'rub'])
+        self.assertIn('rub_pos PASS', dpg.get_value('bakeoff_result'))
+
+    def test_trial_start_resets_event_state(self):
+        self.use_event_decisions()
+        self.feed('Q' * 5 + 'R' * 5)  # an action in progress before the trial
+        self.assertTrue(self.app.event_decoder.collecting)
+        self.press_space()
+        self.assertFalse(self.app.event_decoder.collecting)
 
     def test_mode_change_or_fault_invalidates_running_trial(self):
         self.press_space()

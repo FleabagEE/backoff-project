@@ -368,6 +368,107 @@ class TrialRecorder:
         return result
 
 
+@dataclass
+class EventDecisionConfig:
+    """Live event-level decision parameters. Energies use the model's band-energy units
+    (event_segmentation.band_energy, as in decision_params.json), NOT % FS."""
+    trigger_energy: float          # start an event when frame energy exceeds this
+    vote_energy: float             # only frames above this get a vote (the energy gate)
+    max_s: float = 1.0             # collect at most this long after the trigger
+    end_quiet_s: float = 0.3       # end early this long after the LAST voting frame
+    min_votes: int = 2             # fewer votes -> neutral (rejects single noise frames)
+    hold_s: float = 0.25           # keep the decided label this long, then neutral
+    rearm_quiet_s: float = 0.15    # energy must stay <= vote_energy this long before a new event
+
+
+class EventDecoder:
+    """Collect first, decide once: one final label per physical action.
+
+    Every frame is scored by the model, but the output stays neutral while an event is
+    open. The event ends after end_quiet_s without a voting frame (knock) or at max_s
+    (scratch). Majority vote over voting frames decides; ties go to the highest mean
+    decision score; a neutral majority emits nothing. Call reset() at trial start and
+    flush() before scoring a trial stopped while an event is still open.
+    """
+
+    def __init__(self, config: EventDecisionConfig, class_names=("neutral", "knock", "rub")):
+        self.config = config
+        self.class_names = list(class_names)
+        self.reset()
+
+    def reset(self):
+        self.collecting = False
+        self.votes = []
+        self.event_start = None
+        self.last_vote = None
+        self.armed = True
+        self.quiet_since = None
+        self.hold_label = NEUTRAL
+        self.hold_until = None
+        self.last_decision = None  # summary of the latest closed event, for display/logs
+
+    def vote_counts(self):
+        votes = np.asarray(self.votes, dtype=float).reshape(-1, len(self.class_names))
+        return np.bincount(votes.argmax(axis=1), minlength=len(self.class_names))
+
+    def decide(self):
+        """Label for the votes collected so far (neutral if too few)."""
+        if len(self.votes) < self.config.min_votes:
+            return NEUTRAL
+        counts = self.vote_counts()
+        tied = np.flatnonzero(counts == counts.max())
+        if len(tied) > 1:
+            mean_scores = np.mean(self.votes, axis=0)
+            return self.class_names[int(tied[np.argmax(mean_scores[tied])])]
+        return self.class_names[int(tied[0])]
+
+    def _close(self, t, reason):
+        label = self.decide()
+        self.last_decision = dict(label=label, reason=reason, n_votes=len(self.votes),
+                                  vote_counts=dict(zip(self.class_names, self.vote_counts().tolist())),
+                                  duration_s=round(t - self.event_start, 3))
+        self.collecting = False
+        self.votes = []
+        if label != NEUTRAL:
+            self.hold_label, self.hold_until = label, t + self.config.hold_s
+        return label
+
+    def step(self, t, energy, scores):
+        """t: monotonic seconds; energy: this frame's band energy; scores: the model's
+        decision_function row for this frame. Returns the final label for this frame."""
+        cfg = self.config
+        voting = energy > cfg.vote_energy
+        if voting:
+            self.quiet_since = None
+        else:
+            if self.quiet_since is None:
+                self.quiet_since = t
+            if t - self.quiet_since >= cfg.rearm_quiet_s:
+                self.armed = True
+        if self.collecting:
+            if voting:
+                self.votes.append(np.asarray(scores, dtype=float))
+                self.last_vote = t
+            if t - self.event_start >= cfg.max_s:
+                self._close(t, "max_s")
+            elif t - self.last_vote >= cfg.end_quiet_s:
+                self._close(t, "end_quiet")
+        elif self.armed and energy > cfg.trigger_energy:
+            self.collecting, self.armed = True, False
+            self.event_start = self.last_vote = t
+            self.votes = [np.asarray(scores, dtype=float)] if voting else []
+        if self.hold_until is not None and t < self.hold_until:
+            return self.hold_label
+        return NEUTRAL
+
+    def flush(self, t):
+        """Decide an open event now (e.g. SPACE pressed right after the action).
+        Returns the label, or None when no event was open."""
+        if not self.collecting:
+            return None
+        return self._close(t, "flush")
+
+
 def _format_c_float(value: float) -> str:
     value = float(np.float32(value))
     if not np.isfinite(value):
