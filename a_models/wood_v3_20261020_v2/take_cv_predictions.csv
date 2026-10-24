@@ -1,0 +1,96 @@
+take_id,session,fold,class_name,notes,quiet,predicted_class,emitted,decoder_pass,detected_events,windows,gated_windows
+take_0794074cfcbd438dae8e1b9b43eb2527,20261019_135608_9c907587,0,neutral,neutral,True,neutral,[],True,0,43,0
+take_2a60fb52a3b4473da0c577a2d68bbdbc,20261019_135608_9c907587,0,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,33
+take_3120a1b0d30e486390c988bf21d17312,20261019_135608_9c907587,0,neutral,neutral,True,neutral,[],True,0,42,4
+take_43afa0a4e0bc46ee9b20df7e269da7ff,20261019_135608_9c907587,0,neutral,neutral,True,neutral,[],True,0,43,5
+take_5288509451194a989b18d5f4a39b601b,20261019_135608_9c907587,0,knock,knock_medium_right_center,False,neutral,[],False,0,43,11
+take_67894658c96e4f729a678ec83bdc77f8,20261019_135608_9c907587,0,neutral,neutral,True,neutral,[],True,0,43,1
+take_75a7ba587bac43f0b2d4e9f4316b92b9,20261019_135608_9c907587,0,knock,knock_medium_right_center,False,knock,['knock'],True,1,42,12
+take_a244d02facac4f1dbf2a503699b39e36,20261019_135608_9c907587,0,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,15
+take_b3b350dc44824fc78c5e32b4f0e1cd71,20261019_135608_9c907587,0,knock,knock_medium_right_center,False,knock,['knock'],True,1,42,7
+take_c02b9e9010cc44389445be43286a4f60,20261019_135608_9c907587,0,knock,knock_medium_right_center,False,knock,['knock'],True,1,42,4
+take_cf48bfc7f0ae48c4ba1a28802c7fbe85,20261019_135608_9c907587,0,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_e3c3488b16dc4c0da0a0da58a44dff79,20261019_135608_9c907587,0,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,40
+take_f41f5f588a7840d49c212981f1450d03,20261019_135608_9c907587,0,neutral,neutral,True,neutral,[],True,0,42,3
+take_17f4cca21509429aa81c70d1aaccbe1e,20261020_185237_766164bf,0,neutral,v3 neutral fingertip_tap,False,neutral,[],True,0,42,9
+take_228f356d348145399ca06e5a7914a532,20261020_185237_766164bf,0,neutral,v3 neutral palm_slap,False,neutral,[],True,0,43,5
+take_7c2d3928fa934df4a64e5ee02cbdd16a,20261020_185237_766164bf,0,neutral,v3 neutral object_drag,False,neutral,[],True,0,43,9
+take_8f8e97688bce4ff49d8d284b29cc32c9,20261020_185237_766164bf,0,neutral,v3 neutral palm_slap,False,neutral,[],True,0,43,12
+take_ae185b8c6a754705aa31895dc336c754,20261020_185237_766164bf,0,neutral,v3 neutral typing,False,neutral,[],True,0,43,9
+take_e1b7937856ae406fb5aa959477decd91,20261020_185237_766164bf,0,neutral,v3 neutral hand_rest,False,neutral,[],True,0,42,16
+take_0bedaabf412d42a4a22c443e9cb186bc,20261019_135608_9c907587,1,neutral,neutral,True,neutral,[],True,0,43,4
+take_1809a0966a47405b9595fd381de0015e,20261019_135608_9c907587,1,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_255b2fd41e694536a4438a170a390038,20261019_135608_9c907587,1,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_2f4a68c7d74a4f8287d3afec975a2c36,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,neutral,[],False,0,43,8
+take_37e0d8966c234bd89d4540d70245a528,20261019_135608_9c907587,1,neutral,neutral,True,neutral,[],True,0,42,1
+take_45197f36f43441f4bb127bff3098025f,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,12
+take_52b99509957f478094d00a1938e5e46b,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,9
+take_737d6cb19f3d4d53801286bf8cded5e1,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,knock,[],False,1,43,13
+take_75fe387109304585b193069b5009b5be,20261019_135608_9c907587,1,neutral,neutral,True,neutral,[],True,0,43,5
+take_82138dec7fea478c9362cf7d615fbafe,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,knock,[],False,1,42,15
+take_9fb95316e64746eca10096b0a1ddf08c,20261019_135608_9c907587,1,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_caa85e49d4b84fb9a21265f6114ba00f,20261019_135608_9c907587,1,knock,knock_medium_right_center,False,knock,[],False,1,43,16
+take_d8785687f5b8438d88cda88a1b486d49,20261019_135608_9c907587,1,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,32
+take_f46ab8e6033d43f6abc42d93c1d64be7,20261019_135608_9c907587,1,neutral,neutral,True,neutral,[],True,0,43,1
+take_95477773aec54d6f98072487fe7138d7,20261020_185237_766164bf,1,neutral,v3 neutral object_drag,False,neutral,[],True,0,43,15
+take_b2a269b90ef04f1d97117c737069dd42,20261020_185237_766164bf,1,neutral,v3 neutral table_tap,False,neutral,[],True,0,43,13
+take_b85b7df100c54193b1012397ee55333b,20261020_185237_766164bf,1,neutral,v3 neutral fingertip_tap,False,neutral,[],True,0,42,20
+take_d1399899874e42b8b36bcd4997475a5c,20261020_185237_766164bf,1,neutral,v3 neutral table_tap,False,neutral,[],True,0,42,13
+take_e3ca6f775f13449f9052874e02d6ddf9,20261020_185237_766164bf,1,neutral,v3 neutral phone_lift,False,neutral,[],True,0,43,15
+take_0c2b9c32def64545b5f91c5c2a443ad8,20261019_135608_9c907587,2,neutral,neutral,True,neutral,[],True,0,42,2
+take_18dabfbabf4640a6b02afc67bfc0cabc,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,8
+take_1c58aecd340f4c958867a709e868898a,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,7
+take_2923011314dd463387806d6deec2d81c,20261019_135608_9c907587,2,neutral,neutral,True,neutral,[],True,0,42,1
+take_3c4e93da3bb646ef8cd73ce5c5096161,20261019_135608_9c907587,2,neutral,neutral,True,neutral,[],True,0,43,1
+take_5412f4cb5c704372a8a1c06788314fd0,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_76ecaae7002c4233978e53017eed94af,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,knock,['knock'],True,1,42,12
+take_85a6d1971443465f97c20f3be03f3683,20261019_135608_9c907587,2,neutral,neutral,True,neutral,[],True,0,42,6
+take_a02249b03ebf4b05ba349e1b6a79c195,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,27
+take_a933d847ddc04508a85f2c33109cc4a9,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,neutral,['knock'],True,1,42,6
+take_b0c694c4eb934f33b48510c143e1a04a,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,rub,['rub'],False,1,43,8
+take_b92137a988434bd9beca7f3a93b94d11,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_c892708b592240ceaac00338b484dddf,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,42
+take_da8159d45a8844cbbc488630a7522515,20261019_135608_9c907587,2,neutral,neutral,True,neutral,[],True,0,43,3
+take_e20b654d2f4a45c88d1e2a33f0442b94,20261019_135608_9c907587,2,knock,knock_medium_right_center,False,knock,[],False,1,42,10
+take_ee996e68bfb646a4a1d1c5923d93cdc2,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_f5c6b2d10ab84b93a19b5e53e1a1d377,20261019_135608_9c907587,2,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_48c82d4533794e1dbb1aa674654ff0ff,20261020_185237_766164bf,2,neutral,v3 neutral phone_lift,False,neutral,[],True,0,42,19
+take_64355fd3d5d14e7d96f1d6388fb78668,20261020_185237_766164bf,2,neutral,v3 neutral phone_place,False,neutral,[],True,0,43,21
+take_144e7190dbf54829b0eaf7f024f83281,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,31
+take_1b4528b19c364ddbbc1b176f958dc1e5,20261019_135608_9c907587,3,knock,knock_medium_right_center,False,knock,[],False,1,43,15
+take_20fae250cb664a2bb4f2cdcfb0ff0d8c,20261019_135608_9c907587,3,knock,knock_medium_right_center,False,knock,"['knock', 'knock']",True,1,43,15
+take_2f9e6cba3e96452face1c20e8b1fdc14,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_435e5b51299d45718468e79a725c36ee,20261019_135608_9c907587,3,neutral,neutral,True,neutral,[],True,0,43,0
+take_4937628601c9468988143bc103e481c9,20261019_135608_9c907587,3,neutral,neutral,True,neutral,[],True,0,42,2
+take_618651aec4d94eaea04676eb4261c03e,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,25
+take_7a3483582f67430aa5eecf64f987b88b,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_a205b1460d8c42a9bf6b0809b9b0db20,20261019_135608_9c907587,3,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,6
+take_b328e4cc422645a99dd08dc7ef476892,20261019_135608_9c907587,3,neutral,neutral,True,neutral,[],True,0,42,2
+take_c086978ccc1b42e4bb0471f0405f6bd8,20261019_135608_9c907587,3,neutral,neutral,True,neutral,[],True,0,43,1
+take_d46861da20ee4cf6b7f604fac3e6c7bd,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,42
+take_e206931f8253469f92579808fcf1e0ab,20261019_135608_9c907587,3,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_ea700e92ed6e4d4eb0d7d2915c7ba125,20261019_135608_9c907587,3,neutral,neutral,True,neutral,[],True,0,43,5
+take_fc3ffa2fe3974d63a6611341e7a4d0a0,20261019_135608_9c907587,3,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,7
+take_54a0098d8ffb4a589c2f4004dac296c5,20261020_185237_766164bf,3,neutral,v3 neutral board_flick,False,neutral,[],True,0,42,20
+take_81a035dc062b445c8545a5b1a34fc104,20261020_185237_766164bf,3,neutral,v3 neutral phone_place,False,neutral,[],True,0,42,12
+take_a8ae7488edfc44f894cb9d184c9ca35f,20261020_185237_766164bf,3,neutral,v3 neutral hand_rest,False,neutral,[],True,0,42,8
+take_ba0c3dffeddb4365809d586da4780666,20261020_185237_766164bf,3,neutral,v3 neutral typing,False,neutral,[],True,0,42,11
+take_153df520e43044b183878ccceeae4880,20261019_135608_9c907587,4,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,8
+take_20d1ae86f12a41519889644a79eb878e,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,27
+take_20f882be3b2e43bcb372d53d2f84c87c,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,42,1
+take_3f7dccfba7ac4377be2bd89c37963a05,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,43,2
+take_4de88a6c1a28479a8cafdefe012d8394,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,43,1
+take_64f7989098494d27a45b6bbda201aae6,20261019_135608_9c907587,4,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,7
+take_7a546d79df044f968fa7d7540f1c2fe7,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_8628d54020ae4e75ab645f51ce95965b,20261019_135608_9c907587,4,knock,knock_medium_right_center,False,knock,['knock'],True,1,42,7
+take_9eafe6b32e5b4a2f898fc3050ef7526b,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,43
+take_ad4392a1cf0d4471aee799da32517ef1,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,42,2
+take_b212f226d5ea467ca47e4a7490fcfd8a,20261019_135608_9c907587,4,knock,knock_medium_right_center,False,knock,['knock'],True,1,43,6
+take_bccaad40d13849378df0c794d4714aa2,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,38
+take_ced3fee80307454aa4b3d7281e992327,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,43,2
+take_dc905f50da6d4f4f869f8960877f96cf,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,42,42
+take_e31a6a0e60764200b114f1d66e0b3250,20261019_135608_9c907587,4,rub,rub_scratch_nail_wood_normal_right_index,False,rub,['rub'],True,1,43,35
+take_f0b84ceab62d44ee8938afd8dad15aba,20261019_135608_9c907587,4,neutral,neutral,True,neutral,[],True,0,43,0
+take_3118e4fe8ff745a2bb32bae96bcfa0ff,20261020_185237_766164bf,4,neutral,v3 neutral board_flick,False,neutral,[],True,0,42,7
+take_5ce04a446b574ca89e4977a575d75b72,20261020_185237_766164bf,4,neutral,v3 neutral cup_place,False,neutral,[],True,0,43,16
+take_f513949ebc4941189aafd4ef6d9b16d3,20261020_185237_766164bf,4,neutral,v3 neutral cup_place,False,neutral,[],True,0,43,13

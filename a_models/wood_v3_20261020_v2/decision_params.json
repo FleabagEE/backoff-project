@@ -1,0 +1,53 @@
+{
+  "format_version": 2,
+  "setup_id": "A_wood30x30x6_v3_candidate2",
+  "class_names": [
+    "neutral",
+    "knock",
+    "rub"
+  ],
+  "model_file": "model.joblib",
+  "model_sha256": "907bb5779064efcde68436fa3562d2c61036c6aeaebf0bdd115c401cf3f460ab",
+  "sample_rate": 48000,
+  "fft_samples": 2400,
+  "input_features": 1200,
+  "cutoff_hz": 8000,
+  "C": 0.0003,
+  "gate": {
+    "type": "0.5-8 kHz deweighted smoothed FFT energy proxy",
+    "enabled": true,
+    "threshold": 469941572.43828094,
+    "calibration": "P95 of original 25 confirmed-quiet neutral takes ONLY; interference excluded; identical to v1"
+  },
+  "event_detector": {
+    "gate_energy": 469941572.43828094,
+    "onset_energy": 704912358.6574214,
+    "release_energy": 469941572.43828094,
+    "refractory_s": 1.7,
+    "rearm_quiet_s": 0.15,
+    "pre_s": 0.2,
+    "post_s": 1.5
+  },
+  "smoothing": {
+    "N": 1,
+    "K_knock": 1,
+    "K_rub": 1,
+    "neutral_release": 1
+  },
+  "cooldown_s": 0,
+  "decision_status": "PROVISIONAL: B event decoder unchanged; interference included; fresh live test pending",
+  "limitation": "Only two takes per interference type, one performer/setup; CV is development evidence, no untouched live test.",
+  "source_sessions": [
+    "C:\\Users\\VivoBook\\Desktop\\backoff\\data_sessions\\final_v3\\20261019_135608_9c907587",
+    "C:\\Users\\VivoBook\\Desktop\\backoff\\data_sessions\\final_v3\\20261020_185237_766164bf"
+  ],
+  "live_event_decoder": {
+    "trigger_energy": 469941572.43828094,
+    "vote_energy": 469941572.43828094,
+    "max_s": 1.0,
+    "end_quiet_s": 0.3,
+    "min_votes": 2,
+    "hold_s": 0.25,
+    "rearm_quiet_s": 0.15
+  }
+}

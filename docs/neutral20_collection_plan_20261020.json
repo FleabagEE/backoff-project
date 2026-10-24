@@ -1,0 +1,81 @@
+{
+  "setup_id": "A_wood30x30x6_v3_candidate2",
+  "original_session": "C:/Users/VivoBook/Desktop/backoff/data_sessions/final_v3/20261019_135608_9c907587",
+  "additional_session_root": "C:/Users/VivoBook/Desktop/backoff/data_sessions/final_v3",
+  "status": "COMPLETE: 20 real takes validated, 10 actions x 2",
+  "take_seconds": 2,
+  "split": "train",
+  "class_name": "neutral",
+  "performer": "A",
+  "batch_count": 20,
+  "final_training_counts": {
+    "knock": 25,
+    "rub": 25,
+    "neutral": 45,
+    "total": 95
+  },
+  "gate_calibration": "original 25 quiet neutral takes ONLY; never interference",
+  "exclude": [
+    "all older setups",
+    "pilot",
+    "diagnostics",
+    "holdout",
+    "trial_logs"
+  ],
+  "actions": [
+    {
+      "action": "palm_slap",
+      "notes": "v3 neutral palm_slap",
+      "takes": 2
+    },
+    {
+      "action": "fingertip_tap",
+      "notes": "v3 neutral fingertip_tap",
+      "takes": 2
+    },
+    {
+      "action": "board_flick",
+      "notes": "v3 neutral board_flick",
+      "takes": 2
+    },
+    {
+      "action": "phone_place",
+      "notes": "v3 neutral phone_place",
+      "takes": 2
+    },
+    {
+      "action": "phone_lift",
+      "notes": "v3 neutral phone_lift",
+      "takes": 2
+    },
+    {
+      "action": "cup_place",
+      "notes": "v3 neutral cup_place",
+      "takes": 2
+    },
+    {
+      "action": "hand_rest",
+      "notes": "v3 neutral hand_rest",
+      "takes": 2
+    },
+    {
+      "action": "table_tap",
+      "notes": "v3 neutral table_tap",
+      "takes": 2
+    },
+    {
+      "action": "typing",
+      "notes": "v3 neutral typing",
+      "takes": 2
+    },
+    {
+      "action": "object_drag",
+      "notes": "v3 neutral object_drag",
+      "takes": 2
+    }
+  ],
+  "model_output": "a_models\\wood_v3_20261020_v2",
+  "training_status": "Complete: 95 takes; fixed v1 hyperparameters; five-fold take-grouped CV",
+  "additional_session": "C:\\Users\\VivoBook\\Desktop\\backoff\\data_sessions\\final_v3\\20261020_185237_766164bf",
+  "fresh_live_test": "pending"
+}

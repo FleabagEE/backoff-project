@@ -1,3 +1,7 @@
+CURRENT RUNNABLE SNAPSHOT (October 24): [v1 + gate1.2x + B event decisions + C slides](WORKING_GATE120_20261024.md). User reports it runs; formal fresh acceptance pending. v2 below is an alternative model, not selected by the working launch command.
+
+LATEST MODEL UPDATE (October 20): v2 includes 20 interference neutral takes (95 total). See [neutral20 results](WOOD_V3_NEUTRAL20_20261020.md). Mean-score CV91/95; B event trial-set87/95, with knock misses and one duplicate. Gate/capture/decoder unchanged; fresh live test pending. Explicitly load the v2 model AND params pair. The v1 snapshot below is historical.
+
 # Current A/B/C integration snapshot — October 20, 2026
 
 Branch: **a-b-event-integration-20261020**.

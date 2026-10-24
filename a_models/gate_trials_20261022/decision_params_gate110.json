@@ -1,0 +1,47 @@
+{
+  "format_version": 1,
+  "setup_id": "A_wood30x30x6_v3_candidate2",
+  "source_session": "C:\\Users\\VivoBook\\Desktop\\backoff\\data_sessions\\final_v3\\20261019_135608_9c907587",
+  "class_names": [
+    "neutral",
+    "knock",
+    "rub"
+  ],
+  "model_file": "../wood_v3_20261019_135608_v1/model.joblib",
+  "model_sha256": "605e7a3c0dd04029783c6f5997d1872e94483786dd9bd9a74249f6bff90cc6ac",
+  "sample_rate": 48000,
+  "fft_samples": 2400,
+  "input_features": 1200,
+  "cutoff_hz": 8000,
+  "C": 0.0003,
+  "gate": {
+    "type": "0.5-8 kHz deweighted smoothed FFT energy proxy",
+    "enabled": true,
+    "threshold": 516935729.68210906,
+    "calibration": "EXPERIMENT: original quiet P95 x 1.10; not a recalibration"
+  },
+  "event_detector": {
+    "gate_energy": 516935729.68210906,
+    "onset_energy": 704912358.6574214,
+    "release_energy": 516935729.68210906,
+    "refractory_s": 1.7,
+    "rearm_quiet_s": 0.15,
+    "pre_s": 0.2,
+    "post_s": 1.5
+  },
+  "smoothing": {
+    "N": 1,
+    "K_knock": 1,
+    "K_rub": 1,
+    "neutral_release": 1
+  },
+  "cooldown_s": 0,
+  "decision_status": "EXPERIMENT ONLY: v1 model, live event trigger/vote/rearm gate x1.10; fresh test pending",
+  "limitation": "Only quiet neutral, one performer/session, no adversarial validation or untouched holdout/test yet.",
+  "gate_experiment": {
+    "multiplier": 1.1,
+    "base_threshold": 469941572.43828094,
+    "base_params_sha256": "bcc3c40a475ab473371fd433f7e5c4a495e5ec035cbdd466370ca92ee0dedba2",
+    "note": "B live event mode uses gate_energy for trigger, votes and quiet rearm. Offline onset_energy unchanged; do not use this experiment as offline segmentation tuning."
+  }
+}

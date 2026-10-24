@@ -33,10 +33,12 @@ class App:
     def __init__(self, session_root='data_sessions', device=None, final=False,
                  setup_id='A_paper_scratch_17x27_direct_table', scratch_surface='paper', event_rhythm=False,
                  fast_takes=False,trained_model=None,decision_params=None,slide_udp=DEFAULT_TARGET,
-                 trial_log_root='trial_logs',decision='event'):
+                 trial_log_root='trial_logs',decision='event',gate_debug=False):
         # C's slide app: forwards the same final label shown as Prediction (no extra decisions).
         self.slide_sender = LabelSender(parse_target(slide_udp))
         self.trial_log_root = Path(trial_log_root)
+        self.gate_debug = gate_debug
+        self.gate_trace = None
         self.ensure_bakeoff_state()
         self.session_root = session_root
         self.setup_id = setup_id
@@ -122,6 +124,19 @@ class App:
                 gate=self.wood_predictor.event_config.gate_energy
                 self.event_decoder=EventDecoder(EventDecisionConfig(trigger_energy=gate,vote_energy=gate),
                                                 self.infer_classes)
+                if self.gate_debug:
+                    from gate_debug import TracedEventDecoder
+                    trace_path = self.trial_log_root / ('gate_debug_' + time.strftime('%Y%m%d_%H%M%S') + '_' + uuid.uuid4().hex[:8] + '.jsonl')
+                    self.event_decoder = TracedEventDecoder(self.event_decoder.config, self.infer_classes, trace_path)
+                    self.gate_trace = self.event_decoder
+                    startup = dict(model_path=str(Path(trained_model).resolve()),
+                        model_sha256=hashlib.sha256(Path(trained_model).read_bytes()).hexdigest(),
+                        params_path=str(Path(decision_params).resolve()),
+                        params_sha256=hashlib.sha256(Path(decision_params).read_bytes()).hexdigest(),
+                        class_order=self.infer_classes, event_config=asdict(self.event_decoder.config),
+                        score_units='LinearSVC decision scores, not probabilities',
+                        fft_features='1200 existing processed FFT amplitudes, not raw PCM')
+                    self.gate_trace.emit('startup', **startup)
                 self.model_source.update(decision='event',event_config=asdict(self.event_decoder.config))
             dpg.set_value('mode','Infer')
             self.mode_callback(None,'Infer')
@@ -813,7 +828,10 @@ class App:
         scores = self.wood_predictor.model.decision_function(X)[0]
         decoder = self.event_decoder
         raw = self.infer_classes[int(np.argmax(scores))] if energy > decoder.config.vote_energy else 'neutral'
-        final = decoder.step(now, energy, scores)
+        if getattr(self, 'gate_debug', False):
+            final = decoder.step(now, energy, scores, features=amps)
+        else:
+            final = decoder.step(now, energy, scores)
         state = f'COLLECTING ({len(decoder.votes)} votes)' if decoder.collecting else 'idle'
         last = decoder.last_decision
         last_text = (f" | last event: {last['label']} ({last['reason']}, votes {last['vote_counts']})"
@@ -872,6 +890,8 @@ class App:
             finally:
                 if self.ear:
                     self.ear.stream_reader.terminate()
+                if self.gate_trace is not None:
+                    self.gate_trace.close_debug()
                 dpg.destroy_context()
         print(f'GUI stopped; FFT updates={self.ear.num_ffts if self.ear else 0}', flush=True)
 
@@ -894,12 +914,15 @@ def main():
     parser.add_argument('--trial-log-root', default='trial_logs', help='folder for live bakeoff SPACE trial logs (local, not training data)')
     parser.add_argument('--decision', choices=['event', 'window'], default='event',
                         help='with --trained-model: event = collect then majority vote per action; window = per-window labels')
+    parser.add_argument('--gate-debug', action='store_true', help='print every gate-passing window and event buffer; save full FFT/scores under trial-log-root')
     parser.add_argument('--smoke-seconds', type=float, help='close automatically after this many seconds (verification only)')
     args = parser.parse_args()
     if args.fast_takes and args.event_rhythm:
         parser.error('--fast-takes and --event-rhythm are different protocols; select only one')
     if bool(args.trained_model)!=bool(args.decision_params):
         parser.error('--trained-model and --decision-params must be supplied together')
+    if args.gate_debug and (not args.trained_model or args.decision != 'event'):
+        parser.error('--gate-debug requires --trained-model, --decision-params and --decision event')
     try:
         parse_target(args.slide_udp)
     except ValueError as exc:
@@ -909,7 +932,7 @@ def main():
         event_rhythm=args.event_rhythm,fast_takes=args.fast_takes,
         trained_model=args.trained_model,decision_params=args.decision_params,
         slide_udp=args.slide_udp,trial_log_root=args.trial_log_root,
-        decision=args.decision).run(args.smoke_seconds)
+        decision=args.decision,gate_debug=args.gate_debug).run(args.smoke_seconds)
 
 
 if __name__ == '__main__':
